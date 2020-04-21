@@ -1,0 +1,54 @@
+<resources>
+    <string name="app_name">ChargerGUI</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="title_activity_login">Sign in</string>
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome !"</string>
+    <string name="login_failed">"Login failed"</string>
+    <string name="standard_charging">Standard Charging</string>
+    <string name="semi_fast_charging">Semi-Fast Charging</string>
+    <string name="fast_charging">Fast Charging</string>
+    <string name="charging_mode">CHARGING MODE</string>
+    <string name="lithium_ion_battery">Lithium-ion Battery</string>
+    <string name="textview">TextView</string>
+    <string name="_5">5</string>
+    <string name="timespent">%d:%d:%d</string>
+    <string name="use_your_pin_to_authorize">Use Your PIN to Authorize</string>
+
+    <string name="authorize">Authorize</string>
+    <string name="enter_your_pin_here">Enter your PIN here</string>
+    <string name="textview2">TextView2</string>
+    <string name="user_input">User Input</string>
+    <string name="enter_amount">Enter Amount</string>
+    <string name="rupees">Rs.</string>
+    <string name="amountrupess">Amount = Rs.</string>
+    <string name="estimated_charge">"Estimated Charge = %s"</string>
+    <string name="amo">Amount = %s %s</string>
+    <string name="estimatedcharge">"Estimated Charge : %s"</string>
+    <string name="input_option">Choose only one of the Input Option</string>
+    <string name="charge_value_100"><![CDATA[Charge Value < 100 %]]></string>
+    <string name="amount_in_rupees">Amount in Rupees</string>
+    <string name="welcome_n_connect_charger">Welcome \n Connect Charger</string>
+    <string name="hh">We recommend you to use Semi-Fast Charging</string>
+    <string name="rfidplace">  Scan your RFID card/tag below to Authorize Charging</string>
+    <string name="amount">AMOUNT</string>
+    <string name="charge">CHARGE</string>
+    <string name="start_charging">Start Charging</string>
+    <string name="rate">Rate</string>
+    <string name="current_charge">current charge</string>
+    <string name="enter_pin">Enter PIN</string>
+    <string name="use_any_one_of_the_n_authorization_method">Use any one of the authorization method</string>
+    <string name="scan_rfid">Scan RFID</string>
+    <string name="want_to_charge_more">Want to Charge More</string>
+    <string name="back">BACK</string>
+    <string name="conncsms">Connection to CSMS is established</string>
+    <string name="conncsmsnot">Connection to CSMS is not established</string>
+    <string name="connmicrocontroller">Connection to Microcontroller Establised</string>
+    <string name="inoutwork">Inputstream and Outputstream working</string>
+    <string name="initialzero">0.00</string>
+</resources>

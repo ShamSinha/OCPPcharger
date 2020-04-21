@@ -1,0 +1,4 @@
+include ':app'
+rootProject.name='ChargerGUI'
+include ':gui'
+include ':gui2'
