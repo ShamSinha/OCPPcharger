@@ -128,7 +128,7 @@ public class Authorization2 extends AppCompatActivity {
         }
         else {
             progressBar.setVisibility(View.INVISIBLE);
-            
+
             Toast.makeText(getApplicationContext(), IdTokenInfoType.status.toString() + " RFID ", Toast.LENGTH_SHORT).show();
         }
 
