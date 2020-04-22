@@ -32,8 +32,8 @@ import UseCasesOCPP.SendRequestToCSMS;
 
 public class Authorization2 extends AppCompatActivity {
     ProgressBar progressBar ;
-    boolean stopThread ;
     ImageButton imageButton ;
+    boolean stopThread = false;
     TextView CablePluginStatus;
     ImageView CableIn ;
     SendRequestToCSMS toCSMS = new SendRequestToCSMS();
@@ -60,9 +60,11 @@ public class Authorization2 extends AppCompatActivity {
         Thread thread1 = new Thread(new Runnable() {
             @Override
             public void run() {
-                while (!Thread.currentThread().isInterrupted()) {
+                while (!Thread.currentThread().isInterrupted() && !stopThread) {
                     Authorization1 a = new Authorization1();
-                    a.IsCableConnectedBeforeAuthorized();
+                    if( a.IsCableConnectedBeforeAuthorized()){
+                    stopThread = true ;
+                    }
                 }
             }
         });
