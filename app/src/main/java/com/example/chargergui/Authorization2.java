@@ -182,11 +182,12 @@ public class Authorization2 extends AppCompatActivity {
             }
         }
     }
-    
+
     public void OnClickBack2(View view){
-        Intent i = new Intent(Authorization2.this, Authentication.class);
-        startActivity(i);
         IdTokenType.setType(null);
         IdTokenType.setIdToken(null);
+        Intent i = new Intent(Authorization2.this, Authentication.class);
+        startActivity(i);
+
     }
 }

@@ -108,10 +108,11 @@ public class Authorization1 extends AppCompatActivity {
     }
 
     public void OnClickBack(View view){
-        Intent i = new Intent(Authorization1.this, Authentication.class);
-        startActivity(i);
         IdTokenType.setType(null);
         IdTokenType.setIdToken(null);
+        Intent i = new Intent(Authorization1.this, Authentication.class);
+        startActivity(i);
+
     }
 
     public void OnClickAuthorize(View view) throws IOException, EncodeException, JSONException, InterruptedException {
