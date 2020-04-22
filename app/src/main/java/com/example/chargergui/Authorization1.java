@@ -6,6 +6,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView ;
 import android.view.View ;
 import android.widget.Toast;
@@ -34,6 +35,9 @@ public class Authorization1 extends AppCompatActivity {
     TextView CablePluginStatus;
     ImageView CableIn ;
     Button button ;
+    ProgressBar progressBar ;
+    boolean stopThread  ;
+
 
     ImageButton imageButton ;
     SendRequestToCSMS toCSMS = new SendRequestToCSMS();
@@ -41,6 +45,8 @@ public class Authorization1 extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_authorization1);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar1);
+        progressBar.setVisibility(View.INVISIBLE);
         PIN = (EditText) findViewById(R.id.enterpin);
         dateTime = (TextView) findViewById(R.id.date_time);
         dateTime2 dT = new dateTime2();
@@ -50,6 +56,7 @@ public class Authorization1 extends AppCompatActivity {
         CablePluginStatus = (TextView) findViewById(R.id.textView19);
         CableIn.setVisibility(View.INVISIBLE);
         CablePluginStatus.setVisibility(View.INVISIBLE);
+        stopThread = false ;
     }
 
 
@@ -63,9 +70,13 @@ public class Authorization1 extends AppCompatActivity {
         Thread thread1 = new Thread(new Runnable() {
             @Override
             public void run() {
-                while (!Thread.currentThread().isInterrupted()) {
-                    IfCableConnectedBeforeAuthorized();
+
+                while (!Thread.currentThread().isInterrupted() && !stopThread) {
+                    if(IsCableConnectedBeforeAuthorized()){
+                        stopThread = true ;
+                    }
                 }
+
             }
         });
         thread1.start();
@@ -74,7 +85,7 @@ public class Authorization1 extends AppCompatActivity {
 
 
 
-    public void IfCableConnectedBeforeAuthorized(){
+    public boolean IsCableConnectedBeforeAuthorized(){
 
         if(ChargingStationStates.isEVSideCablePluggedIn && !ChargingStationStates.isAuthorized){
             CableIn.setVisibility(View.VISIBLE);
@@ -104,8 +115,9 @@ public class Authorization1 extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-            
+            return true ;
         }
+        return false ;
     }
 
     public void OnClickBack(View view){
@@ -118,12 +130,16 @@ public class Authorization1 extends AppCompatActivity {
 
     public void OnClickAuthorize(View view) throws IOException, EncodeException, JSONException, InterruptedException {
 
+        progressBar.setVisibility(View.VISIBLE);
+
         IdTokenType.setType(IdTokenEnumType.KeyCode);
         IdTokenType.setIdToken(PIN.getText().toString());
         toCSMS.sendAuthorizeRequest();
 
 
+
         if(IdTokenInfoType.status == AuthorizationStatusEnumType.Accepted){
+
             ChargingStationStates.setAuthorized(true);
 
             TransactionEventRequest.triggerReason = TriggerReasonEnumType.Authorized ;
@@ -140,6 +156,7 @@ public class Authorization1 extends AppCompatActivity {
 
 
         if (ChargingStationStates.isAuthorized){
+            progressBar.setVisibility(View.INVISIBLE);
 
             if(ChargingStationStates.isEVSideCablePluggedIn) {
                 Toast.makeText(getApplicationContext(), "Authorization Successful", Toast.LENGTH_SHORT).show();
@@ -155,6 +172,7 @@ public class Authorization1 extends AppCompatActivity {
         }
 
         else if(IdTokenInfoType.status != null) {
+            progressBar.setVisibility(View.INVISIBLE);
             Toast.makeText(getApplicationContext(), IdTokenInfoType.status.toString() +"PIN " , Toast.LENGTH_SHORT).show();
         }
     }

@@ -23,10 +23,9 @@
         android:textSize="25sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.494"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/usepin"
-        app:layout_constraintVertical_bias="0.226" />
+        app:layout_constraintVertical_bias="0.187" />
 
     <TextView
         android:id="@+id/usepin"
@@ -65,7 +64,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/enterpin"
-        app:layout_constraintVertical_bias="0.272" />
+        app:layout_constraintVertical_bias="0.227" />
 
     <ImageButton
         android:id="@+id/backbutton"
@@ -74,13 +73,13 @@
         android:layout_height="108dp"
         android:background="#FFFFFF"
         android:onClick="OnClickBack"
-        app:srcCompat="@drawable/back"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.085"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.115" />
+        app:layout_constraintVertical_bias="0.115"
+        app:srcCompat="@drawable/back" />
 
     <ImageView
         android:id="@+id/cableconnectedview"
@@ -109,6 +108,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/cableconnectedview"
         app:layout_constraintVertical_bias="0.27" />
+
+    <ProgressBar
+        android:id="@+id/progressBar1"
+        style="@android:style/Widget.Material.ProgressBar.Large"
+        android:layout_width="100dp"
+        android:layout_height="79dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.243"
+        app:layout_constraintStart_toEndOf="@+id/textView19"
+        app:layout_constraintTop_toBottomOf="@+id/authorize"
+        app:layout_constraintVertical_bias="0.494" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

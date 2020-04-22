@@ -62,7 +62,7 @@ public class Authorization2 extends AppCompatActivity {
             public void run() {
                 while (!Thread.currentThread().isInterrupted()) {
                     Authorization1 a = new Authorization1();
-                    a.IfCableConnectedBeforeAuthorized();
+                    a.IsCableConnectedBeforeAuthorized();
                 }
             }
         });
