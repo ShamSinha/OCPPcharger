@@ -1,5 +1,6 @@
 package com.example.chargergui;
 
+import androidx.annotation.UiThread;
 import androidx.appcompat.app.AppCompatActivity;
 
 
@@ -88,10 +89,7 @@ public class Charging extends AppCompatActivity {
         super.onStart();
         BluetoothThreadMeter();
         TimerForTimeSpent();
-
         StartSendingMeterValues();
-
-
     }
 
     private Runnable sendTransReq = new Runnable() {
@@ -117,69 +115,16 @@ public class Charging extends AppCompatActivity {
     };
 
 
-    public void AfterChargingComplete(){
+    public void AfterChargingComplete()  {
 
-        if(SOC >= Target.SOC){
-
-            TransactionEventRequest.eventType = TransactionEventEnumType.Updated ;
-            TransactionEventRequest.triggerReason = TriggerReasonEnumType.MeterValuePeriodic ;
-            TransactionType.chargingState = ChargingStateEnumType.Charging;
-            SampledValueType.value = Energy ;
-            SampledValueType.context = ReadingContextEnumType.TransactionEnd ;
-            try {
-                toCSMS1.sendTransactionEventRequest();
-            } catch (JSONException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (EncodeException e) {
-                e.printStackTrace();
-            }
-
-            StopAtFinish();
-
-            try {
-                TransactionEventRequest.eventType = TransactionEventEnumType.Updated ;
-                TransactionEventRequest.triggerReason = TriggerReasonEnumType.ChargingStateChanged ;
-                TransactionType.chargingState = ChargingStateEnumType.SuspendedEVSE;
-                toCSMS1.sendTransactionEventRequest();
-            } catch (JSONException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (EncodeException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public void StopAtFinish(){
-        ChargingStationStates.setEnergyTransfer(false);
-        ImageSetBattery imageSetBattery = new ImageSetBattery(SOC,BatteryCharge);
-        WantToChargeMore.setVisibility(View.VISIBLE);
-        Payment.setVisibility(View.VISIBLE);
-        stopCharging.setVisibility(View.GONE);
-        voltage.setVisibility(View.GONE);
-        current.setVisibility(View.GONE);
         StopSendingMeterValues();
-    }
-
-    public void OnClickStop(View view ) throws IOException, EncodeException, JSONException {
         ChargingStationStates.setEnergyTransfer(false);
-        ImageSetBattery imageSetBattery = new ImageSetBattery(SOC,BatteryCharge);
-        WantToChargeMore.setVisibility(View.VISIBLE);
-        Payment.setVisibility(View.VISIBLE);
-        stopCharging.setVisibility(View.GONE);
-        voltage.setVisibility(View.GONE);
-        current.setVisibility(View.GONE);
-        StopSendingMeterValues();
-
-
-        TransactionEventRequest.eventType = TransactionEventEnumType.Updated ;
-        TransactionEventRequest.triggerReason = TriggerReasonEnumType.MeterValuePeriodic ;
+        UpdateUiAfterStop();
+        TransactionEventRequest.eventType = TransactionEventEnumType.Updated;
+        TransactionEventRequest.triggerReason = TriggerReasonEnumType.MeterValuePeriodic;
         TransactionType.chargingState = ChargingStateEnumType.Charging;
-        SampledValueType.value = Energy ;
-        SampledValueType.context = ReadingContextEnumType.TransactionEnd ;
+        SampledValueType.value = Energy;
+        SampledValueType.context = ReadingContextEnumType.TransactionEnd;
         try {
             toCSMS1.sendTransactionEventRequest();
         } catch (JSONException e) {
@@ -190,11 +135,33 @@ public class Charging extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        TransactionEventRequest.eventType = TransactionEventEnumType.Updated ;
-        TransactionEventRequest.triggerReason = TriggerReasonEnumType.ChargingStateChanged ;
+        TransactionEventRequest.eventType = TransactionEventEnumType.Updated;
+        TransactionEventRequest.triggerReason = TriggerReasonEnumType.ChargingStateChanged;
         TransactionType.chargingState = ChargingStateEnumType.SuspendedEVSE;
-        toCSMS1.sendTransactionEventRequest();
+        try {
+            toCSMS1.sendTransactionEventRequest();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (EncodeException e) {
+            e.printStackTrace();
+        }
 
+    }
+
+    public void UpdateUiAfterStop(){
+        ImageSetBattery imageSetBattery = new ImageSetBattery(SOC,BatteryCharge);
+        WantToChargeMore.setVisibility(View.VISIBLE);
+        Payment.setVisibility(View.VISIBLE);
+        stopCharging.setVisibility(View.GONE);
+        voltage.setVisibility(View.GONE);
+        current.setVisibility(View.GONE);
+
+    }
+
+    public void OnClickStop(View view ) throws IOException, EncodeException, JSONException {
+       AfterChargingComplete();
     }
 
 
@@ -260,7 +227,7 @@ public class Charging extends AppCompatActivity {
                                     //variable = V-220-I-15.6-SOC-45.6-E-10.6;
                                     handler.post(new Runnable() {
                                         public void run() {
-
+                                            if(ChargingStationStates.isEnergyTransfer) {
                                             String[] output = variable.split("-");
 
                                               // Instantaneous DC or AC RMS supply voltage
@@ -274,11 +241,12 @@ public class Charging extends AppCompatActivity {
                                               // State of charge of charging vehicle in percentage
                                                 Charge.setText(output[5]);
                                                 SOC = Float.parseFloat(output[5]);
-                                                AfterChargingComplete();
-
+                                                if(SOC >= Target.SOC) {
+                                                    AfterChargingComplete();
+                                                }
                                               // Energy in KWh
-                                                Energy = Float.parseFloat(output[7]) ;
-
+                                                Energy = Float.parseFloat(output[7]);
+                                            }
 
                                         }
                                     });
