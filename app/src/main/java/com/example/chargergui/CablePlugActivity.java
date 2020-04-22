@@ -19,6 +19,7 @@ import javax.websocket.EncodeException;
 
 import ChargingStationRequest.StatusNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
+import Controller_Components.TxCtlr;
 import DataType.IdTokenInfoType;
 import DataType.IdTokenType;
 import DataType.TransactionType;
@@ -58,29 +59,20 @@ public class CablePlugActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        final MainActivity bs = new MainActivity();
-
-        bs.BluetoothThreadforCablePlug();
-    }
-
-    @Override
-    protected void onResume(){
-        super.onResume();
+        BluetoothThreadforCablePlugInStatus() ;
 
         setCountdowntimer();
 
-        if(ChargingStationStates.isCablePluggedIn){
+    }
+
+    private void AfterCablePluggedIn(){
+
             plug1.setVisibility(View.INVISIBLE);
             plug2.setVisibility(View.INVISIBLE);
             connected.setVisibility(View.VISIBLE);
             set.setText("Cable Connected");
             textView.setText("You are all Set");
 
-            try {
-                TimeUnit.SECONDS.sleep(3);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
             try {
                 StatusNotificationRequest.setConnectorStatus(ConnectorStatusEnumType.Occupied);
                 toCSMS.sendStatusNotificationRequest();
@@ -93,25 +85,22 @@ public class CablePlugActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-            if(CALLRESULT.MessageId.equals(CALL.MessageId)) {
-                TransactionEventRequest.eventType = TransactionEventEnumType.Updated;
-                TransactionType.chargingState = ChargingStateEnumType.EVConnected;
-                TransactionEventRequest.triggerReason = TriggerReasonEnumType.CablePluggedIn;
-                try {
-
-                    toCSMS.sendTransactionEventRequest();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (EncodeException e) {
-                    e.printStackTrace();
-                }
-
-                Intent i = new Intent(CablePlugActivity.this, SOCdisplay.class);
-                startActivity(i);
+            TransactionEventRequest.eventType = TransactionEventEnumType.Updated;
+            TransactionType.chargingState = ChargingStateEnumType.EVConnected;
+            TransactionEventRequest.triggerReason = TriggerReasonEnumType.CablePluggedIn;
+            try {
+                toCSMS.sendTransactionEventRequest();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (EncodeException e) {
+                e.printStackTrace();
             }
-        }
+
+            Intent i = new Intent(CablePlugActivity.this, SOCdisplay.class);
+            startActivity(i);
+
     }
 
     public void CLEARALL(){
@@ -122,7 +111,7 @@ public class CablePlugActivity extends AppCompatActivity {
 
 
     public void setCountdowntimer(){
-        new CountDownTimer(90000, 1000){
+        new CountDownTimer(TxCtlr.EVConnectionTimeOut*1000, 1000){
             public void onTick(long millisUntilFinished){
                 textView.setText(String.valueOf(counter));
                 counter++;
@@ -155,5 +144,54 @@ public class CablePlugActivity extends AppCompatActivity {
             }
         }.start();
     }
+
+    private void BluetoothThreadforCablePlugInStatus() {
+        final MainActivity bs = new MainActivity();
+        if (bs.BTinit()) {
+            if (bs.BTconnect()) {
+                bs.deviceConnected = true;
+                Thread thread = new Thread(new Runnable() {
+                    public void run() {
+                        boolean stopThread;
+                        stopThread = false;
+                        while (!Thread.currentThread().isInterrupted() && !stopThread) {
+                            try {
+                                String string = "CABLEPLUG";
+                                bs.outputStream.write(string.getBytes());
+
+                                int byteCount = bs.inputStream.available();
+                                if (byteCount > 0) {
+                                    byte[] mmBuffer = new byte[1024];
+                                    int numBytes; // bytes returned from read()
+                                    numBytes = bs.inputStream.read(mmBuffer);
+                                    final String cableplug = new String(mmBuffer,0,numBytes,"UTF-8");
+                                    Handler handler = new Handler();
+                                    handler.post(new Runnable() {
+                                        public void run() {
+                                            if(cableplug.equals("T")) {
+                                                ChargingStationStates.setCablePluggedIn(true);
+                                                AfterCablePluggedIn();
+                                            }
+                                            else if(cableplug.equals("F")){
+                                                ChargingStationStates.setCablePluggedIn(false);
+                                            }
+
+                                        }
+                                    });
+
+                                }
+                            } catch (IOException ex) {
+                                stopThread = true;
+                            }
+                        }
+                    }
+                });
+
+                thread.start();
+            }
+        }
+    }
+
+
 
 }

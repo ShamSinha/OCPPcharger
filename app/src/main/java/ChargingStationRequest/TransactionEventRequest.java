@@ -55,7 +55,7 @@ public class TransactionEventRequest {
         if(EVSEType.id != 0) {
             jo.put("evse", EVSEType.getp());
         }
-        if(TransactionEventRequest.triggerReason == TriggerReasonEnumType.MeterValuePeriodic && TransactionType.chargingState == ChargingStateEnumType.Charging){
+        if( TransactionType.chargingState == ChargingStateEnumType.Charging || TransactionType.chargingState == ChargingStateEnumType.SuspendedEVSE ){
             jo.put("meterValue" , MeterValueType.getp());
         }
         return jo ;

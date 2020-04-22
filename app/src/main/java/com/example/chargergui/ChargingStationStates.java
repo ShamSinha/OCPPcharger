@@ -2,14 +2,14 @@ package com.example.chargergui;
 
 public class ChargingStationStates {
 
-    public static boolean isCablePluggedIn= false ;
+    public static boolean isEVSideCablePluggedIn = false ;
     public static boolean isAuthorized = false;
     public static boolean isDataSigned =false ;
     public static boolean isPowerPathClosed =false;
     public static boolean isEnergyTransfer = false;
 
     public static void setCablePluggedIn(boolean cablePluggedIn) {
-        isCablePluggedIn = cablePluggedIn;
+        isEVSideCablePluggedIn = cablePluggedIn;
     }
 
     public static void setAuthorized(boolean authorized) {
@@ -17,15 +17,15 @@ public class ChargingStationStates {
     }
 
     public static void setDataSigned(boolean dataSigned) {
-        isDataSigned = isCablePluggedIn && isAuthorized && dataSigned;
+        isDataSigned = isEVSideCablePluggedIn && isAuthorized && dataSigned;
     }
 
     public static void setPowerPathClosed(boolean powerPathClosed) {
-        isPowerPathClosed = isCablePluggedIn && isAuthorized && isDataSigned && powerPathClosed;
+        isPowerPathClosed = isEVSideCablePluggedIn && isAuthorized && isDataSigned && powerPathClosed;
     }
 
     public static void setEnergyTransfer(boolean energyTransfer) {
-        isEnergyTransfer = isCablePluggedIn && isAuthorized && isDataSigned && isPowerPathClosed && energyTransfer;
+        isEnergyTransfer = isEVSideCablePluggedIn && isAuthorized && isDataSigned && isPowerPathClosed && energyTransfer;
     }
 
 

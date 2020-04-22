@@ -64,7 +64,7 @@ public class Authorization1 extends AppCompatActivity {
             @Override
             public void run() {
                 while (!Thread.currentThread().isInterrupted()) {
-                    IsCableConnectedBeforeAuthorized();
+                    IfCableConnectedBeforeAuthorized();
                 }
             }
         });
@@ -74,9 +74,9 @@ public class Authorization1 extends AppCompatActivity {
 
 
 
-    public void IsCableConnectedBeforeAuthorized(){
+    public void IfCableConnectedBeforeAuthorized(){
 
-        if(ChargingStationStates.isCablePluggedIn && !ChargingStationStates.isAuthorized){
+        if(ChargingStationStates.isEVSideCablePluggedIn && !ChargingStationStates.isAuthorized){
             CableIn.setVisibility(View.VISIBLE);
             CablePluginStatus.setVisibility(View.VISIBLE);
 
@@ -91,20 +91,19 @@ public class Authorization1 extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-            if(CALLRESULT.MessageId.equals(CALL.MessageId)) {
-                TransactionEventRequest.eventType = TransactionEventEnumType.Started;
-                TransactionType.chargingState = ChargingStateEnumType.EVConnected;
-                TransactionEventRequest.triggerReason = TriggerReasonEnumType.CablePluggedIn;
-                try {
-                    toCSMS.sendTransactionEventRequest();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (EncodeException e) {
-                    e.printStackTrace();
-                }
+            TransactionEventRequest.eventType = TransactionEventEnumType.Started;
+            TransactionType.chargingState = ChargingStateEnumType.EVConnected;
+            TransactionEventRequest.triggerReason = TriggerReasonEnumType.CablePluggedIn;
+            try {
+                toCSMS.sendTransactionEventRequest();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (EncodeException e) {
+                e.printStackTrace();
             }
+
         }
     }
 
@@ -126,11 +125,11 @@ public class Authorization1 extends AppCompatActivity {
             ChargingStationStates.setAuthorized(true);
 
             TransactionEventRequest.triggerReason = TriggerReasonEnumType.Authorized ;
-            if(ChargingStationStates.isCablePluggedIn) {
+            if(ChargingStationStates.isEVSideCablePluggedIn) {
                 TransactionEventRequest.eventType = TransactionEventEnumType.Updated ;
                 TransactionType.chargingState = ChargingStateEnumType.EVConnected;
             }
-            if(!ChargingStationStates.isCablePluggedIn){
+            if(!ChargingStationStates.isEVSideCablePluggedIn){
                 TransactionEventRequest.eventType = TransactionEventEnumType.Started ;
                 TransactionType.chargingState =ChargingStateEnumType.Idle ;
             }
@@ -140,13 +139,13 @@ public class Authorization1 extends AppCompatActivity {
 
         if (ChargingStationStates.isAuthorized){
 
-            if(ChargingStationStates.isCablePluggedIn) {
+            if(ChargingStationStates.isEVSideCablePluggedIn) {
                 Toast.makeText(getApplicationContext(), "Authorization Successful", Toast.LENGTH_SHORT).show();
                 Intent i = new Intent(Authorization1.this, UserInput.class);
                 startActivity(i);
 
             }
-            if(!ChargingStationStates.isCablePluggedIn){
+            if(!ChargingStationStates.isEVSideCablePluggedIn){
                 Toast.makeText(getApplicationContext(), "Authorization Successful\n Now Plug in the Cable", Toast.LENGTH_SHORT).show();
                 Intent i = new Intent(Authorization1.this, CablePlugActivity.class);
                 startActivity(i);

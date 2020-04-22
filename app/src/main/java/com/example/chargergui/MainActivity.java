@@ -193,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void BluetoothThreadforCablePlug() {
+        public void BluetoothThreadforCablePlug() {
         if (BTinit()) {
             if (BTconnect()) {
                 deviceConnected = true;

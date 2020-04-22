@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Handler;
-import android.os.Looper;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -17,18 +16,15 @@ import android.widget.Toast;
 import org.json.JSONException;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 import javax.websocket.EncodeException;
 
-import ChargingStationRequest.StatusNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
 import DataType.IdTokenInfoType;
 import DataType.IdTokenType;
 import DataType.TransactionType;
 import EnumDataType.AuthorizationStatusEnumType;
 import EnumDataType.ChargingStateEnumType;
-import EnumDataType.ConnectorStatusEnumType;
 import EnumDataType.IdTokenEnumType;
 import EnumDataType.TransactionEventEnumType;
 import EnumDataType.TriggerReasonEnumType;
@@ -36,7 +32,6 @@ import UseCasesOCPP.SendRequestToCSMS;
 
 public class Authorization2 extends AppCompatActivity {
     ProgressBar progressBar ;
-    String rfid = null;
     boolean stopThread ;
     ImageButton imageButton ;
     TextView CablePluginStatus;
@@ -50,7 +45,6 @@ public class Authorization2 extends AppCompatActivity {
         imageButton.findViewById(R.id.backbutton2);
         progressBar = (ProgressBar) findViewById(R.id.pb);
         progressBar.setVisibility(View.INVISIBLE);
-        progressBar.setEnabled(false);
         CableIn = (ImageView) findViewById(R.id.cableconnectedview) ;
         CablePluginStatus = (TextView) findViewById(R.id.textView19);
         CableIn.setVisibility(View.INVISIBLE);
@@ -68,20 +62,45 @@ public class Authorization2 extends AppCompatActivity {
             public void run() {
                 while (!Thread.currentThread().isInterrupted()) {
                     Authorization1 a = new Authorization1();
-                    a.IsCableConnectedBeforeAuthorized();
+                    a.IfCableConnectedBeforeAuthorized();
                 }
             }
         });
         thread1.start();
 
-        if(rfid != null) {
-            progressBar.setVisibility(View.INVISIBLE);
-            progressBar.setEnabled(false);
+    }
 
-            IdTokenType.setType(IdTokenEnumType.ISO14443);
-            IdTokenType.setIdToken(rfid);
+    public void AfterHavingRFID(String rfid){
+
+        progressBar.setVisibility(View.VISIBLE);
+
+        IdTokenType.setType(IdTokenEnumType.ISO14443);
+        IdTokenType.setIdToken(rfid);
+        try {
+            toCSMS.sendAuthorizeRequest();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (EncodeException e) {
+            e.printStackTrace();
+        }
+
+
+        if (IdTokenInfoType.status == AuthorizationStatusEnumType.Accepted) {
+            ChargingStationStates.isAuthorized = true;
+
+            TransactionEventRequest.triggerReason = TriggerReasonEnumType.Authorized ;
+            if(ChargingStationStates.isEVSideCablePluggedIn) {
+                TransactionEventRequest.eventType = TransactionEventEnumType.Updated ;
+                TransactionType.chargingState = ChargingStateEnumType.EVConnected;
+            }
+            if(!ChargingStationStates.isEVSideCablePluggedIn){
+                TransactionEventRequest.eventType = TransactionEventEnumType.Started ;
+                TransactionType.chargingState = ChargingStateEnumType.Idle ;
+            }
             try {
-                toCSMS.sendAuthorizeRequest();
+                toCSMS.sendTransactionEventRequest();
             } catch (JSONException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -89,53 +108,30 @@ public class Authorization2 extends AppCompatActivity {
             } catch (EncodeException e) {
                 e.printStackTrace();
             }
+        }
 
 
-            if (IdTokenInfoType.status == AuthorizationStatusEnumType.Accepted) {
-                ChargingStationStates.isAuthorized = true;
+        if (ChargingStationStates.isAuthorized) {
 
-                TransactionEventRequest.triggerReason = TriggerReasonEnumType.Authorized ;
-                if(ChargingStationStates.isCablePluggedIn) {
-                    TransactionEventRequest.eventType = TransactionEventEnumType.Updated ;
-                    TransactionType.chargingState = ChargingStateEnumType.EVConnected;
-                }
-                if(!ChargingStationStates.isCablePluggedIn){
-                    TransactionEventRequest.eventType = TransactionEventEnumType.Started ;
-                    TransactionType.chargingState = ChargingStateEnumType.Idle ;
-                }
-                try {
-                    toCSMS.sendTransactionEventRequest();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (EncodeException e) {
-                    e.printStackTrace();
-                }
-            }
+            progressBar.setVisibility(View.INVISIBLE);
 
-
-            if (ChargingStationStates.isAuthorized) {
-
-                if (ChargingStationStates.isCablePluggedIn) {
-                    Toast.makeText(getApplicationContext(), "Authorization Successful", Toast.LENGTH_SHORT).show();
-                    Intent i = new Intent(Authorization2.this, UserInput.class);
-                    startActivity(i);
-                }
-                if (!ChargingStationStates.isCablePluggedIn) {
-                    Toast.makeText(getApplicationContext(), "Authorization Successful\n Now Plug in the Cable", Toast.LENGTH_SHORT).show();
-                    Intent i = new Intent(Authorization2.this, CablePlugActivity.class);
-                    startActivity(i);
-
-                }
+            if (ChargingStationStates.isEVSideCablePluggedIn) {
+                Toast.makeText(getApplicationContext(), "Authorization Successful", Toast.LENGTH_SHORT).show();
+                Intent i = new Intent(Authorization2.this, UserInput.class);
+                startActivity(i);
             }
             else {
-
-                Toast.makeText(getApplicationContext(), IdTokenInfoType.status.toString() + " RFID ", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Authorization Successful\n Now Plug in the Cable", Toast.LENGTH_SHORT).show();
+                Intent i = new Intent(Authorization2.this, CablePlugActivity.class);
+                startActivity(i);
             }
-
-
         }
+        else {
+            progressBar.setVisibility(View.INVISIBLE);
+            
+            Toast.makeText(getApplicationContext(), IdTokenInfoType.status.toString() + " RFID ", Toast.LENGTH_SHORT).show();
+        }
+
     }
 
 
@@ -159,8 +155,6 @@ public class Authorization2 extends AppCompatActivity {
                                 int byteCount = bs.inputStream.available();
                                 if(byteCount > 0)
                                 {
-                                    progressBar.setEnabled(true);
-                                    progressBar.setVisibility(View.VISIBLE);
                                     byte[] mmBuffer = new byte[1024];
                                     int numBytes; // bytes returned from read()
                                     numBytes = bs.inputStream.read(mmBuffer);
@@ -169,7 +163,8 @@ public class Authorization2 extends AppCompatActivity {
                                     handler.post(new Runnable() {
                                         public void run()
                                         {
-                                            rfid = ch ;
+
+                                            AfterHavingRFID(ch);
                                         }
                                     });
 

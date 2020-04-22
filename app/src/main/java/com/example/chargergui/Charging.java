@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
@@ -15,18 +16,24 @@ import android.widget.TextView;
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import javax.websocket.EncodeException;
 
+import ChargingStationRequest.StatusNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
 import Controller_Components.SampledDataCtrlr;
 import Controller_Components.TariffCostCtrlr;
+import Controller_Components.TxCtlr;
 import DataType.SampledValueType;
 import DataType.TransactionType;
 import EnumDataType.ChargingStateEnumType;
+import EnumDataType.ConnectorStatusEnumType;
 import EnumDataType.ReadingContextEnumType;
+import EnumDataType.ReasonEnumType;
 import EnumDataType.TransactionEventEnumType;
 import EnumDataType.TriggerReasonEnumType;
+import PhysicalComponents.CSPhysicalProperties;
 import UseCasesOCPP.SendRequestToCSMS;
 
 import static java.lang.String.*;
@@ -48,6 +55,7 @@ public class Charging extends AppCompatActivity {
     float Energy = 0 ;
     String currentsoc ;
     Handler mHandler = new Handler();
+    int counter = TxCtlr.EVConnectionTimeOut ;
     int count = 0 ;
     SendRequestToCSMS toCSMS1 = new SendRequestToCSMS();
 
@@ -120,6 +128,7 @@ public class Charging extends AppCompatActivity {
         StopSendingMeterValues();
         ChargingStationStates.setEnergyTransfer(false);
         UpdateUiAfterStop();
+
         TransactionEventRequest.eventType = TransactionEventEnumType.Updated;
         TransactionEventRequest.triggerReason = TriggerReasonEnumType.MeterValuePeriodic;
         TransactionType.chargingState = ChargingStateEnumType.Charging;
@@ -157,7 +166,6 @@ public class Charging extends AppCompatActivity {
         stopCharging.setVisibility(View.GONE);
         voltage.setVisibility(View.GONE);
         current.setVisibility(View.GONE);
-
     }
 
     public void OnClickStop(View view ) throws IOException, EncodeException, JSONException {
@@ -224,9 +232,10 @@ public class Charging extends AppCompatActivity {
                                     int numBytes; // bytes returned from read()
                                     numBytes = bs.inputStream.read(mmBuffer);
                                     final String variable = new String(mmBuffer, 0,numBytes ,"UTF-8");
-                                    //variable = V-220-I-15.6-SOC-45.6-E-10.6;
+                                    //variable = V-220-I-15.6-SOC-45.6-E-10.6-CPEV-T-EO-T;
                                     handler.post(new Runnable() {
                                         public void run() {
+
                                             if(ChargingStationStates.isEnergyTransfer) {
                                             String[] output = variable.split("-");
 
@@ -246,6 +255,39 @@ public class Charging extends AppCompatActivity {
                                                 }
                                               // Energy in KWh
                                                 Energy = Float.parseFloat(output[7]);
+
+                                                if (output[9].equals("T")) {
+                                                    ChargingStationStates.setCablePluggedIn(true);
+                                                }
+                                                if(output[9].equals("F")){
+                                                    ChargingStationStates.setCablePluggedIn(false);
+                                                    try {
+                                                        afterCableUnplugAtEVSide();
+                                                    } catch (IOException e) {
+                                                        e.printStackTrace();
+                                                    } catch (EncodeException e) {
+                                                        e.printStackTrace();
+                                                    } catch (JSONException e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                }
+                                                if (output[11].equals("T") && output[9].equals("T")) {
+
+                                                    ChargingStationStates.setEnergyTransfer(true);
+
+                                                    TransactionEventRequest.eventType = TransactionEventEnumType.Updated;
+                                                    TransactionEventRequest.triggerReason = TriggerReasonEnumType.CablePluggedIn;
+                                                    TransactionType.chargingState = ChargingStateEnumType.Charging ;
+                                                    try {
+                                                        toCSMS1.sendTransactionEventRequest();
+                                                    } catch (JSONException e) {
+                                                        e.printStackTrace();
+                                                    } catch (IOException e) {
+                                                        e.printStackTrace();
+                                                    } catch (EncodeException e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                }
                                             }
 
                                         }
@@ -272,10 +314,78 @@ public class Charging extends AppCompatActivity {
         sendTransReq.run();
     }
 
+    public void afterCableUnplugAtEVSide() throws IOException, EncodeException, JSONException {
+
+        ChargingStationStates.setEnergyTransfer(false);
+
+        if(!TxCtlr.StopTxOnEVSideDisconnect){
+            TransactionEventRequest.eventType = TransactionEventEnumType.Updated;
+            TransactionEventRequest.triggerReason = TriggerReasonEnumType.EVCommunicationLost;
+            TransactionType.chargingState = ChargingStateEnumType.SuspendedEVSE ;
+
+            toCSMS1.sendTransactionEventRequest();
+
+
+            if(CSPhysicalProperties.isCableIsPermanentAttached) {
+
+                new CountDownTimer(TxCtlr.EVConnectionTimeOut * 1000, 1000) {
+                    public void onTick(long millisUntilFinished) {
+                        counter--;
+                    }
+                    public void onFinish() {
+                        TransactionEventRequest.eventType = TransactionEventEnumType.Ended;
+                        TransactionEventRequest.triggerReason = TriggerReasonEnumType.EVCommunicationLost;
+                        TransactionType.chargingState = ChargingStateEnumType.Idle ;
+                        TransactionType.stoppedReason = ReasonEnumType.EVDisconnected ;
+                        try {
+                            toCSMS1.sendTransactionEventRequest();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (EncodeException e) {
+                            e.printStackTrace();
+                        }
+
+                        StatusNotificationRequest.setConnectorStatus(ConnectorStatusEnumType.Available);
+                        try {
+                            toCSMS1.sendStatusNotificationRequest();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (EncodeException e) {
+                            e.printStackTrace();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
 
 
 
 
 
+
+                        Intent i = new Intent(Charging.this ,)
+
+
+
+
+
+
+
+                    }
+
+                }.start() ;
+            }
+
+            }
+
+        }
 
 }
+
+
+
+
+
+
+
+
