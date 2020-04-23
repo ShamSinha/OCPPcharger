@@ -18,6 +18,7 @@
     <string name="textview">TextView</string>
     <string name="_5">5</string>
     <string name="timespent">%02d:%02d:%02d</string>
+    <string name="timersuspend">%02d:%02d</string>
     <string name="use_your_pin_to_authorize">Use Your PIN to Authorize</string>
 
     <string name="authorize">Authorize</string>

@@ -48,6 +48,8 @@ public class Charging extends AppCompatActivity {
     TextView Miles ;
     TextView updatedCost ;
     TextView ChargingText ;
+    TextView AfterSuspend ;
+    TextView SuspendTimer ;
     Button WantToChargeMore ;
     Button Payment ;
     float SOC ;
@@ -60,6 +62,7 @@ public class Charging extends AppCompatActivity {
     int count = 0 ;
     SendRequestToCSMS toCSMS1 = new SendRequestToCSMS();
     boolean stopThread =false;
+    boolean stopThread1 = false ;
     final MainActivity bs = new MainActivity();
 
     @Override
@@ -86,6 +89,11 @@ public class Charging extends AppCompatActivity {
         updatedCost.setText(format("%s 0.00", TariffCostCtrlr.Currency));
 
         ChargingText = (TextView) findViewById(R.id.chargingtext);
+        AfterSuspend = (TextView) findViewById(R.id.aftersuspend);
+        AfterSuspend.setVisibility(View.INVISIBLE);
+
+        SuspendTimer = (TextView) findViewById(R.id.suspendtimer);
+        SuspendTimer.setVisibility(View.INVISIBLE);
 
         TimeSpent = (TextView) findViewById(R.id.spent);
         WantToChargeMore.setVisibility(View.INVISIBLE);
@@ -176,6 +184,8 @@ public class Charging extends AppCompatActivity {
 
         ChargingText.setText(" CHARGING\nSuspended!");
         ImageSetBattery imageSetBattery = new ImageSetBattery(SOC,BatteryCharge);
+        AfterSuspend.setVisibility(View.VISIBLE);
+
     }
 
     public void OnClickStop(View view ) throws IOException, EncodeException, JSONException {
@@ -187,7 +197,7 @@ public class Charging extends AppCompatActivity {
         Thread t = new Thread(){
             @Override
             public void run(){
-                while(!isInterrupted()){
+                while(!isInterrupted() && !stopThread){
                     try {
                         Thread.sleep(1000);  //1000ms = 1 sec
                         runOnUiThread(new Runnable() {
@@ -199,10 +209,6 @@ public class Charging extends AppCompatActivity {
                                 int minutes = (TransactionType.timeSpentCharging % 3600) / 60;
                                 int seconds = TransactionType.timeSpentCharging % 60;
                                 TimeSpent.setText(getString(R.string.timespent,hours, minutes, seconds));
-                                if(!ChargingStationStates.isEnergyTransfer){
-                                    interrupt();
-                                }
-
                             }
                         });
 
@@ -213,10 +219,7 @@ public class Charging extends AppCompatActivity {
                 }
             }
         };
-
         t.start();
-
-
     }
 
     public void BluetoothThreadMeter() {
@@ -269,8 +272,9 @@ public class Charging extends AppCompatActivity {
                                                 if (output[9].equals("F")) {
                                                     ChargingStationStates.setCablePluggedIn(false);
                                                     try {
-                                                        afterCableUnplugAtEVSide();
                                                         stopThread =true ;
+                                                        afterCableUnplugAtEVSide();
+
                                                     } catch (IOException e) {
                                                         e.printStackTrace();
                                                     } catch (EncodeException e) {
@@ -312,7 +316,7 @@ public class Charging extends AppCompatActivity {
                 bs.deviceConnected = true;
                 Thread thread = new Thread(new Runnable() {
                     public void run() {
-                        while (!Thread.currentThread().isInterrupted() && !stopThread) {
+                        while (!Thread.currentThread().isInterrupted() && !stopThread1) {
                             try {
                                 String string = "CPEV";
                                 bs.outputStream.write(string.getBytes());
@@ -329,7 +333,7 @@ public class Charging extends AppCompatActivity {
                                             if(cableplug.equals("T")) {
                                                 ChargingStationStates.setCablePluggedIn(true);
                                                 afterSuspendCablePluggedAtEVSide();
-                                                stopThread = true ;
+                                                stopThread1 = true ;
                                             }
                                             else if(cableplug.equals("F")){
                                                 ChargingStationStates.setCablePluggedIn(false);
@@ -354,6 +358,10 @@ public class Charging extends AppCompatActivity {
     public void afterSuspendCablePluggedAtEVSide(){
 
         ChargingStationStates.setEnergyTransfer(true);
+        stopThread = false;
+
+        AfterSuspend.setVisibility(View.INVISIBLE);
+        SuspendTimer.setVisibility(View.INVISIBLE);
 
         TimerForTimeSpent();
 
@@ -370,6 +378,8 @@ public class Charging extends AppCompatActivity {
             e.printStackTrace();
         }
         BluetoothThreadMeter();
+        
+        StartSendingMeterValues();
     }
 
 
@@ -377,10 +387,12 @@ public class Charging extends AppCompatActivity {
     public void afterCableUnplugAtEVSide() throws IOException, EncodeException, JSONException {
 
         ChargingStationStates.setEnergyTransfer(false);
+        StopSendingMeterValues();
 
         if(!TxCtlr.StopTxOnEVSideDisconnect){ // Suspend Transaction After CableUnplug at EV side
 
             UpdateUiAfterSuspend();
+
             TransactionEventRequest.eventType = TransactionEventEnumType.Updated;
             TransactionEventRequest.triggerReason = TriggerReasonEnumType.EVCommunicationLost;
 
@@ -390,10 +402,15 @@ public class Charging extends AppCompatActivity {
 
                 new CountDownTimer(TxCtlr.EVConnectionTimeOut * 1000, 1000) {
                     public void onTick(long millisUntilFinished) {
+                        int minutes = counter / 60;
+                        int seconds = counter % 60;
+                        SuspendTimer.setText(getString(R.string.timersuspend, minutes, seconds));
                         counter--;
+
                     }
                     public void onFinish() {
                         if (!ChargingStationStates.isEVSideCablePluggedIn) {
+                            SuspendTimer.setText(getString(R.string.timersuspend, 0, 0));
                             TransactionEventRequest.eventType = TransactionEventEnumType.Ended;
                             TransactionEventRequest.triggerReason = TriggerReasonEnumType.EVCommunicationLost;
                             TransactionType.stoppedReason = ReasonEnumType.EVDisconnected;
