@@ -225,7 +225,7 @@ public class Charging extends AppCompatActivity {
                     public void run() {
                         while (!Thread.currentThread().isInterrupted() && !stopThread) {
                             try {
-                                final String string  = "GetMeterValue";
+                                final String string  = "METER";
                                 bs.outputStream.write(string.getBytes());
 
                                 int byteCount = bs.inputStream.available();
@@ -367,6 +367,7 @@ public class Charging extends AppCompatActivity {
         } catch (EncodeException e) {
             e.printStackTrace();
         }
+        BluetoothThreadMeter();
     }
 
 
@@ -388,33 +389,35 @@ public class Charging extends AppCompatActivity {
                         counter--;
                     }
                     public void onFinish() {
-                        TransactionEventRequest.eventType = TransactionEventEnumType.Ended;
-                        TransactionEventRequest.triggerReason = TriggerReasonEnumType.EVCommunicationLost;
-                        TransactionType.stoppedReason = ReasonEnumType.EVDisconnected ;
-                        try {
-                            toCSMS1.sendTransactionEventRequest();
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        } catch (EncodeException e) {
-                            e.printStackTrace();
+                        if (ChargingStationStates.isEVSideCablePluggedIn) {
+                            TransactionEventRequest.eventType = TransactionEventEnumType.Ended;
+                            TransactionEventRequest.triggerReason = TriggerReasonEnumType.EVCommunicationLost;
+                            TransactionType.stoppedReason = ReasonEnumType.EVDisconnected;
+                            try {
+                                toCSMS1.sendTransactionEventRequest();
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            } catch (EncodeException e) {
+                                e.printStackTrace();
+                            }
+
+                            StatusNotificationRequest.setConnectorStatus(ConnectorStatusEnumType.Available);
+                            try {
+                                toCSMS1.sendStatusNotificationRequest();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            } catch (EncodeException e) {
+                                e.printStackTrace();
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+
+                            Intent i = new Intent(Charging.this, MainActivity.class);
+                            startActivity(i);
+
                         }
-
-                        StatusNotificationRequest.setConnectorStatus(ConnectorStatusEnumType.Available);
-                        try {
-                            toCSMS1.sendStatusNotificationRequest();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        } catch (EncodeException e) {
-                            e.printStackTrace();
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-
-                        Intent i = new Intent(Charging.this , MainActivity.class);
-                        startActivity(i);
-
                     }
 
                 }.start() ;
