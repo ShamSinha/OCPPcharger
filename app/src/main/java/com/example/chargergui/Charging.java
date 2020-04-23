@@ -257,8 +257,7 @@ public class Charging extends AppCompatActivity {
                                                     AfterChargingComplete();
                                                     stopThread =true ;
                                                 }
-                                                // Energy in KWh
-                                                Energy = Float.parseFloat(output[7]);
+                                                Energy = Float.parseFloat(output[7]);  // Energy in KWh
 
                                                 if (output[9].equals("T")) {
                                                     ChargingStationStates.setCablePluggedIn(true);
@@ -278,13 +277,10 @@ public class Charging extends AppCompatActivity {
                                                 }
                                                 if (output[11].equals("T") ) {
                                                     ChargingStationStates.setEnergyTransfer(true);
-
                                                 }
                                             }
-
                                         }
                                     });
-
                                 }
                             } catch (IOException ex) {
                                 stopThread = true;
@@ -354,6 +350,8 @@ public class Charging extends AppCompatActivity {
     public void afterSuspendCablePluggedAtEVSide(){
 
         ChargingStationStates.setEnergyTransfer(true);
+
+        TimerForTimeSpent();
 
         TransactionEventRequest.eventType = TransactionEventEnumType.Updated;
         TransactionEventRequest.triggerReason = TriggerReasonEnumType.CablePluggedIn;
