@@ -47,6 +47,7 @@ public class Charging extends AppCompatActivity {
     TextView Charge ;
     TextView Miles ;
     TextView updatedCost ;
+    TextView ChargingText ;
     Button WantToChargeMore ;
     Button Payment ;
     float SOC ;
@@ -84,7 +85,7 @@ public class Charging extends AppCompatActivity {
         Charge.setText(currentsoc);
         updatedCost.setText(format("%s 0.00", TariffCostCtrlr.Currency));
 
-
+        ChargingText = (TextView) findViewById(R.id.chargingtext);
 
         TimeSpent = (TextView) findViewById(R.id.spent);
         WantToChargeMore.setVisibility(View.INVISIBLE);
@@ -168,10 +169,13 @@ public class Charging extends AppCompatActivity {
         stopCharging.setVisibility(View.GONE);
         voltage.setVisibility(View.GONE);
         current.setVisibility(View.GONE);
+        ChargingText.setText(" CHARGING\n      Done!");
     }
 
     public void UpdateUiAfterSuspend(){
 
+        ChargingText.setText(" CHARGING\nSuspended!");
+        ImageSetBattery imageSetBattery = new ImageSetBattery(SOC,BatteryCharge);
     }
 
     public void OnClickStop(View view ) throws IOException, EncodeException, JSONException {
@@ -375,6 +379,8 @@ public class Charging extends AppCompatActivity {
         ChargingStationStates.setEnergyTransfer(false);
 
         if(!TxCtlr.StopTxOnEVSideDisconnect){ // Suspend Transaction After CableUnplug at EV side
+
+            UpdateUiAfterSuspend();
             TransactionEventRequest.eventType = TransactionEventEnumType.Updated;
             TransactionEventRequest.triggerReason = TriggerReasonEnumType.EVCommunicationLost;
 

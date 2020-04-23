@@ -51,4 +51,5 @@
     <string name="connmicrocontroller">Connection to Microcontroller Establised</string>
     <string name="inoutwork">Inputstream and Outputstream working</string>
     <string name="initialzero">0.00</string>
+    <string name="chargingdone">CHARGING DONE</string>
 </resources>
