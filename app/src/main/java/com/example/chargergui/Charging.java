@@ -58,6 +58,8 @@ public class Charging extends AppCompatActivity {
     int counter = TxCtlr.EVConnectionTimeOut ;
     int count = 0 ;
     SendRequestToCSMS toCSMS1 = new SendRequestToCSMS();
+    boolean stopThread =false;
+    final MainActivity bs = new MainActivity();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -168,6 +170,10 @@ public class Charging extends AppCompatActivity {
         current.setVisibility(View.GONE);
     }
 
+    public void UpdateUiAfterSuspend(){
+
+    }
+
     public void OnClickStop(View view ) throws IOException, EncodeException, JSONException {
        AfterChargingComplete();
     }
@@ -210,7 +216,6 @@ public class Charging extends AppCompatActivity {
     }
 
     public void BluetoothThreadMeter() {
-        final MainActivity bs = new MainActivity();
 
         if (bs.BTinit()) {
             if (bs.BTconnect()) {
@@ -218,8 +223,6 @@ public class Charging extends AppCompatActivity {
                 final Handler handler = new Handler();
                 Thread thread = new Thread(new Runnable() {
                     public void run() {
-                        boolean stopThread;
-                        stopThread = false;
                         while (!Thread.currentThread().isInterrupted() && !stopThread) {
                             try {
                                 final String string  = "GetMeterValue";
@@ -236,33 +239,35 @@ public class Charging extends AppCompatActivity {
                                     handler.post(new Runnable() {
                                         public void run() {
 
-                                            if(ChargingStationStates.isEnergyTransfer) {
-                                            String[] output = variable.split("-");
+                                            if (ChargingStationStates.isEVSideCablePluggedIn && ChargingStationStates.isEnergyTransfer) {
+                                                String[] output = variable.split("-");
 
-                                              // Instantaneous DC or AC RMS supply voltage
+                                                // Instantaneous DC or AC RMS supply voltage
                                                 voltage.setText(output[1]);
                                                 Voltage = Float.parseFloat(output[1]);
 
-                                              // Instantaneous current flow to EV
+                                                // Instantaneous current flow to EV
                                                 current.setText(output[3]);
                                                 Current = Float.parseFloat(output[3]);
 
-                                              // State of charge of charging vehicle in percentage
+                                                // State of charge of charging vehicle in percentage
                                                 Charge.setText(output[5]);
                                                 SOC = Float.parseFloat(output[5]);
-                                                if(SOC >= Target.SOC) {
+                                                if (SOC >= Target.SOC) {
                                                     AfterChargingComplete();
+                                                    stopThread =true ;
                                                 }
-                                              // Energy in KWh
+                                                // Energy in KWh
                                                 Energy = Float.parseFloat(output[7]);
 
                                                 if (output[9].equals("T")) {
                                                     ChargingStationStates.setCablePluggedIn(true);
                                                 }
-                                                if(output[9].equals("F")){
+                                                if (output[9].equals("F")) {
                                                     ChargingStationStates.setCablePluggedIn(false);
                                                     try {
                                                         afterCableUnplugAtEVSide();
+                                                        stopThread =true ;
                                                     } catch (IOException e) {
                                                         e.printStackTrace();
                                                     } catch (EncodeException e) {
@@ -271,22 +276,9 @@ public class Charging extends AppCompatActivity {
                                                         e.printStackTrace();
                                                     }
                                                 }
-                                                if (output[11].equals("T") && output[9].equals("T")) {
-
+                                                if (output[11].equals("T") ) {
                                                     ChargingStationStates.setEnergyTransfer(true);
 
-                                                    TransactionEventRequest.eventType = TransactionEventEnumType.Updated;
-                                                    TransactionEventRequest.triggerReason = TriggerReasonEnumType.CablePluggedIn;
-                                                    TransactionType.chargingState = ChargingStateEnumType.Charging ;
-                                                    try {
-                                                        toCSMS1.sendTransactionEventRequest();
-                                                    } catch (JSONException e) {
-                                                        e.printStackTrace();
-                                                    } catch (IOException e) {
-                                                        e.printStackTrace();
-                                                    } catch (EncodeException e) {
-                                                        e.printStackTrace();
-                                                    }
                                                 }
                                             }
 
@@ -314,17 +306,80 @@ public class Charging extends AppCompatActivity {
         sendTransReq.run();
     }
 
+    public void BluetoothThreadforCablePlug() {
+        if (bs.BTinit()) {
+            if (bs.BTconnect()) {
+                bs.deviceConnected = true;
+                Thread thread = new Thread(new Runnable() {
+                    public void run() {
+                        while (!Thread.currentThread().isInterrupted() && !stopThread) {
+                            try {
+                                String string = "CPEV";
+                                bs.outputStream.write(string.getBytes());
+
+                                int byteCount = bs.inputStream.available();
+                                if (byteCount > 0) {
+                                    byte[] mmBuffer = new byte[1024];
+                                    int numBytes; // bytes returned from read()
+                                    numBytes = bs.inputStream.read(mmBuffer);
+                                    final String cableplug = new String(mmBuffer,0,numBytes,"UTF-8");
+                                    Handler handler = new Handler();
+                                    handler.post(new Runnable() {
+                                        public void run() {
+                                            if(cableplug.equals("T")) {
+                                                ChargingStationStates.setCablePluggedIn(true);
+                                                afterSuspendCablePluggedAtEVSide();
+                                                stopThread = true ;
+                                            }
+                                            else if(cableplug.equals("F")){
+                                                ChargingStationStates.setCablePluggedIn(false);
+                                            }
+
+                                        }
+                                    });
+
+                                }
+                            } catch (IOException ex) {
+                                stopThread = true;
+                            }
+                        }
+                    }
+                });
+
+                thread.start();
+            }
+        }
+    }
+
+    public void afterSuspendCablePluggedAtEVSide(){
+
+        ChargingStationStates.setEnergyTransfer(true);
+
+        TransactionEventRequest.eventType = TransactionEventEnumType.Updated;
+        TransactionEventRequest.triggerReason = TriggerReasonEnumType.CablePluggedIn;
+        TransactionType.chargingState = ChargingStateEnumType.Charging;
+        try {
+            toCSMS1.sendTransactionEventRequest();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (EncodeException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
     public void afterCableUnplugAtEVSide() throws IOException, EncodeException, JSONException {
 
         ChargingStationStates.setEnergyTransfer(false);
 
-        if(!TxCtlr.StopTxOnEVSideDisconnect){
+        if(!TxCtlr.StopTxOnEVSideDisconnect){ // Suspend Transaction After CableUnplug at EV side
             TransactionEventRequest.eventType = TransactionEventEnumType.Updated;
             TransactionEventRequest.triggerReason = TriggerReasonEnumType.EVCommunicationLost;
-            TransactionType.chargingState = ChargingStateEnumType.SuspendedEVSE ;
 
             toCSMS1.sendTransactionEventRequest();
-
 
             if(CSPhysicalProperties.isCableIsPermanentAttached) {
 
@@ -335,7 +390,6 @@ public class Charging extends AppCompatActivity {
                     public void onFinish() {
                         TransactionEventRequest.eventType = TransactionEventEnumType.Ended;
                         TransactionEventRequest.triggerReason = TriggerReasonEnumType.EVCommunicationLost;
-                        TransactionType.chargingState = ChargingStateEnumType.Idle ;
                         TransactionType.stoppedReason = ReasonEnumType.EVDisconnected ;
                         try {
                             toCSMS1.sendTransactionEventRequest();
@@ -358,27 +412,45 @@ public class Charging extends AppCompatActivity {
                             e.printStackTrace();
                         }
 
-
-
-
-
-
-                        Intent i = new Intent(Charging.this ,)
-
-
-
-
-
-
+                        Intent i = new Intent(Charging.this , MainActivity.class);
+                        startActivity(i);
 
                     }
 
                 }.start() ;
             }
 
-            }
+            BluetoothThreadforCablePlug();
 
         }
+
+        if(TxCtlr.StopTxOnEVSideDisconnect){   // Stop Transaction After CableUnplug at EV side
+            TransactionEventRequest.eventType = TransactionEventEnumType.Ended;
+            TransactionEventRequest.triggerReason = TriggerReasonEnumType.EVCommunicationLost;
+            TransactionType.stoppedReason = ReasonEnumType.EVDisconnected ;
+            try {
+                toCSMS1.sendTransactionEventRequest();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (EncodeException e) {
+                e.printStackTrace();
+            }
+
+            StatusNotificationRequest.setConnectorStatus(ConnectorStatusEnumType.Available);
+            try {
+                toCSMS1.sendStatusNotificationRequest();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (EncodeException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
 
 }
 

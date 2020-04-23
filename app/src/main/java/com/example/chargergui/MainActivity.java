@@ -203,7 +203,7 @@ public class MainActivity extends AppCompatActivity {
                         stopThread = false;
                         while (!Thread.currentThread().isInterrupted() && !stopThread) {
                             try {
-                                String string = "CablePlug";
+                                String string = "CPEV";
                                 outputStream.write(string.getBytes());
 
                                 int byteCount = inputStream.available();
@@ -215,10 +215,10 @@ public class MainActivity extends AppCompatActivity {
                                     Handler handler = new Handler();
                                     handler.post(new Runnable() {
                                         public void run() {
-                                            if(cableplug == "TRUE") {
+                                            if(cableplug.equals("T")) {
                                                 ChargingStationStates.setCablePluggedIn(true);
                                             }
-                                            else if(cableplug == "FALSE"){
+                                            else if(cableplug.equals("F")){
                                                 ChargingStationStates.setCablePluggedIn(false);
                                             }
 
