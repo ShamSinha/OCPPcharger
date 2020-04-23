@@ -57,49 +57,48 @@ public class Charging extends AppCompatActivity {
     float Current = 0;
     float Energy = 0 ;
     String currentsoc ;
-    Handler mHandler = new Handler();
     int counter = TxCtlr.EVConnectionTimeOut ;
     int count = 0 ;
-    SendRequestToCSMS toCSMS1 = new SendRequestToCSMS();
     boolean stopThread =false;
     boolean stopThread1 = false ;
+    Handler mHandler = new Handler();
+    SendRequestToCSMS toCSMS1 = new SendRequestToCSMS();
     final MainActivity bs = new MainActivity();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_charging);
+
         Payment = (Button) findViewById(R.id.paybutton);
         BatteryCharge = (ImageView) findViewById(R.id.imageViewcharge);
-        Intent intent = getIntent();
-        currentsoc = intent.getStringExtra("currentsoc");
-        SOC = Float.parseFloat(currentsoc);
-        ImageChargeBattery imageChargeBattery = new ImageChargeBattery(SOC, BatteryCharge);
-
         voltage = (TextView) findViewById(R.id.voltage);
         current = (TextView) findViewById(R.id.current);
         Charge = (TextView) findViewById(R.id.charge);
         Miles = (TextView) findViewById(R.id.miles);
         updatedCost = (TextView) findViewById(R.id.costupdated) ;
+        stopCharging = (Button) findViewById(R.id.stopbutton);
+        WantToChargeMore = (Button) findViewById(R.id.button4);
+        ChargingText = (TextView) findViewById(R.id.chargingtext);
+        AfterSuspend = (TextView) findViewById(R.id.aftersuspend);
+        SuspendTimer = (TextView) findViewById(R.id.suspendtimer);
+        TimeSpent = (TextView) findViewById(R.id.spent);
 
+        Intent intent = getIntent();
+        currentsoc = intent.getStringExtra("currentsoc");
+        SOC = Float.parseFloat(currentsoc);
+        ImageChargeBattery imageChargeBattery = new ImageChargeBattery(SOC, BatteryCharge);
 
         voltage.setText(R.string.initialzero); // 0.00
         current.setText(R.string.initialzero); // 0.00
         Charge.setText(currentsoc);
         updatedCost.setText(format("%s 0.00", TariffCostCtrlr.Currency));
 
-        ChargingText = (TextView) findViewById(R.id.chargingtext);
-        AfterSuspend = (TextView) findViewById(R.id.aftersuspend);
-        AfterSuspend.setVisibility(View.INVISIBLE);
-
-        SuspendTimer = (TextView) findViewById(R.id.suspendtimer);
         SuspendTimer.setVisibility(View.INVISIBLE);
-
-        TimeSpent = (TextView) findViewById(R.id.spent);
+        AfterSuspend.setVisibility(View.INVISIBLE);
         WantToChargeMore.setVisibility(View.INVISIBLE);
         Payment.setVisibility(View.INVISIBLE);
-        stopCharging = (Button) findViewById(R.id.stopbutton);
-        WantToChargeMore = (Button) findViewById(R.id.button4);
+
 
     }
 
@@ -192,6 +191,13 @@ public class Charging extends AppCompatActivity {
        AfterChargingComplete();
     }
 
+    public void OnClickPayment(View view){
+
+    }
+
+    public void OnClickWantToChargeMore(View view){
+
+    }
 
     public void TimerForTimeSpent(){
         Thread t = new Thread(){
@@ -378,7 +384,7 @@ public class Charging extends AppCompatActivity {
             e.printStackTrace();
         }
         BluetoothThreadMeter();
-        
+
         StartSendingMeterValues();
     }
 

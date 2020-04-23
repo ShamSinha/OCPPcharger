@@ -138,6 +138,7 @@
         android:layout_width="151dp"
         android:layout_height="86dp"
         android:text="@string/want_to_charge_more"
+        android:onClick="OnClickWantToChargeMore"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.889"
@@ -150,6 +151,7 @@
         android:layout_width="120dp"
         android:layout_height="70dp"
         android:text="Payment"
+        android:onClick="OnClickPayment"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.112"
@@ -185,16 +187,15 @@
 
     <TextView
         android:id="@+id/textView16"
-        android:layout_width="40dp"
-        android:layout_height="46dp"
+        android:layout_width="44dp"
+        android:layout_height="37dp"
         android:text="A"
         android:textAppearance="@style/TextAppearance.AppCompat.Display1"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/imageViewcharge"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/current"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.491" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/textView17"
