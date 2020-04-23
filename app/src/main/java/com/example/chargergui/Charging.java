@@ -389,7 +389,7 @@ public class Charging extends AppCompatActivity {
                         counter--;
                     }
                     public void onFinish() {
-                        if (ChargingStationStates.isEVSideCablePluggedIn) {
+                        if (!ChargingStationStates.isEVSideCablePluggedIn) {
                             TransactionEventRequest.eventType = TransactionEventEnumType.Ended;
                             TransactionEventRequest.triggerReason = TriggerReasonEnumType.EVCommunicationLost;
                             TransactionType.stoppedReason = ReasonEnumType.EVDisconnected;
