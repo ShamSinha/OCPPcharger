@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.json.JSONException;
@@ -25,10 +26,14 @@ import ChargingStationRequest.TransactionEventRequest;
 import Controller_Components.SampledDataCtrlr;
 import Controller_Components.TariffCostCtrlr;
 import Controller_Components.TxCtlr;
+import DataType.IdTokenInfoType;
+import DataType.IdTokenType;
 import DataType.SampledValueType;
 import DataType.TransactionType;
+import EnumDataType.AuthorizationStatusEnumType;
 import EnumDataType.ChargingStateEnumType;
 import EnumDataType.ConnectorStatusEnumType;
+import EnumDataType.IdTokenEnumType;
 import EnumDataType.ReadingContextEnumType;
 import EnumDataType.ReasonEnumType;
 import EnumDataType.TransactionEventEnumType;
@@ -38,7 +43,7 @@ import UseCasesOCPP.SendRequestToCSMS;
 
 import static java.lang.String.*;
 
-public class Charging extends AppCompatActivity {
+public class Charging extends AppCompatActivity implements PINauthorizeDialog.PINauthorizeDialogListener {
     ImageView BatteryCharge ;
     Button stopCharging;
     TextView voltage;
@@ -50,8 +55,10 @@ public class Charging extends AppCompatActivity {
     TextView ChargingText ;
     TextView AfterSuspend ;
     TextView SuspendTimer ;
+    TextView AfterStopButton ;
     Button WantToChargeMore ;
     Button Payment ;
+    ProgressBar progressBar ;
     float SOC ;
     float Voltage = 0;
     float Current = 0;
@@ -83,6 +90,8 @@ public class Charging extends AppCompatActivity {
         AfterSuspend = (TextView) findViewById(R.id.aftersuspend);
         SuspendTimer = (TextView) findViewById(R.id.suspendtimer);
         TimeSpent = (TextView) findViewById(R.id.spent);
+        AfterStopButton = (TextView) findViewById(R.id.textView14) ;
+        progressBar = (ProgressBar) findViewById(R.id.progressBar1);
 
         Intent intent = getIntent();
         currentsoc = intent.getStringExtra("currentsoc");
@@ -94,11 +103,11 @@ public class Charging extends AppCompatActivity {
         Charge.setText(currentsoc);
         updatedCost.setText(format("%s 0.00", TariffCostCtrlr.Currency));
 
-        SuspendTimer.setVisibility(View.INVISIBLE);
-        AfterSuspend.setVisibility(View.INVISIBLE);
-        WantToChargeMore.setVisibility(View.INVISIBLE);
-        Payment.setVisibility(View.INVISIBLE);
-
+        SuspendTimer.setVisibility(View.GONE);
+        AfterSuspend.setVisibility(View.GONE);
+        WantToChargeMore.setVisibility(View.GONE);
+        Payment.setVisibility(View.GONE);
+        progressBar.setVisibility(View.GONE);
 
     }
 
@@ -188,7 +197,47 @@ public class Charging extends AppCompatActivity {
     }
 
     public void OnClickStop(View view ) throws IOException, EncodeException, JSONException {
-       AfterChargingComplete();
+        if(IdTokenType.type == IdTokenEnumType.KeyCode){
+            openDialogPIN();
+        }
+        if(IdTokenType.type == IdTokenEnumType.ISO14443){
+            openDialogRFID();
+        }
+        AfterChargingComplete();
+    }
+
+    public void openDialogPIN(){
+        PINauthorizeDialog piNauthorizeDialog = new PINauthorizeDialog();
+        piNauthorizeDialog.show(getSupportFragmentManager(),"");
+    }
+
+    public void openDialogRFID(){
+
+
+    }
+
+    @Override
+    public void applyTexts(final String s) {
+
+        progressBar.setVisibility(View.VISIBLE);
+        new CountDownTimer(10000, 1000) {
+            public void onTick(long millisUntilFinished) {
+                count-- ;
+                if(count==4){
+                    progressBar.setVisibility(View.GONE);
+                    AfterStopButton.setText(s);
+                }
+            }
+            @Override
+            public void onFinish() {
+                if(IdTokenInfoType.status != AuthorizationStatusEnumType.Accepted) {
+                    AfterStopButton.setText("To stop charging\n first show your IDTOKEN");
+                }
+                if(IdTokenInfoType.status == AuthorizationStatusEnumType.Accepted){
+                    AfterStopButton.setVisibility(View.GONE);
+                }
+            }
+        }.start();
     }
 
     public void OnClickPayment(View view){
@@ -481,6 +530,7 @@ public class Charging extends AppCompatActivity {
         }
 
     }
+
 
 }
 

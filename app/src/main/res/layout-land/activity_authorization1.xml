@@ -32,6 +32,7 @@
         android:layout_width="422dp"
         android:layout_height="57dp"
         android:background="#FFEB3B"
+        android:gravity="center"
         android:text="@string/use_your_pin_to_authorize"
         android:textAppearance="@style/TextAppearance.AppCompat.Display1"
         app:layout_constraintBottom_toBottomOf="parent"

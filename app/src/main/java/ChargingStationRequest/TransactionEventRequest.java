@@ -49,7 +49,7 @@ public class TransactionEventRequest {
         jo.put("offline",offline);
         jo.put("cableMaxCurrent",cableMaxCurrent);
         jo.put("transactionInfo", TransactionType.getp());
-        if(TransactionEventRequest.triggerReason == TriggerReasonEnumType.Authorized) {
+        if(TransactionEventRequest.triggerReason == TriggerReasonEnumType.Authorized || TransactionEventRequest.triggerReason == TriggerReasonEnumType.Deauthorized) {
             jo.put("idToken", IdTokenType.getp());
         }
         if(EVSEType.id != 0) {

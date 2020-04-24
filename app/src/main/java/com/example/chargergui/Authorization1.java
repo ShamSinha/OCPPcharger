@@ -165,7 +165,7 @@ public class Authorization1 extends AppCompatActivity {
 
             }
             if(!ChargingStationStates.isEVSideCablePluggedIn){
-                Toast.makeText(getApplicationContext(), "Authorization Successful\n Now Plug in the Cable", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Authorization Successful\n Now Plug the Cable to the Car", Toast.LENGTH_SHORT).show();
                 Intent i = new Intent(Authorization1.this, CablePlugActivity.class);
                 startActivity(i);
                 }
