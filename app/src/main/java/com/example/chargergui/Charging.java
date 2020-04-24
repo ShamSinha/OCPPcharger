@@ -231,7 +231,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
             @Override
             public void onFinish() {
                 if(IdTokenInfoType.status != AuthorizationStatusEnumType.Accepted) {
-                    AfterStopButton.setText("To stop charging\n first show your IDTOKEN");
+                    AfterStopButton.setText("To stop charging\n first verify your IDTOKEN");
                 }
                 if(IdTokenInfoType.status == AuthorizationStatusEnumType.Accepted){
                     AfterStopButton.setVisibility(View.GONE);
