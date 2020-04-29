@@ -1,6 +1,7 @@
 package com.example.chargergui;
 
 import android.content.Intent;
+import android.widget.TextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,6 +25,7 @@ import javax.websocket.RemoteEndpoint;
 import javax.websocket.Session;
 import javax.websocket.Decoder;
 import javax.websocket.Encoder ;
+import javax.websocket.WebSocketContainer;
 
 import ChargingStationRequest.BootNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
@@ -34,10 +36,12 @@ import ChargingStationResponse.SetDisplayMessageResponse;
 import Controller_Components.OCPPCommCtrlr;
 import DataType.IdTokenInfoType;
 import DataType.IdTokenType;
+import DataType.MessageContentType;
 import EnumDataType.AuthorizationStatusEnumType;
 import EnumDataType.RegistrationStatusEnumType;
 import EnumDataType.ResetStatusEnumType;
 import EnumDataType.TransactionEventEnumType;
+import UseCasesOCPP.SendRequestToCSMS;
 
 @ClientEndpoint(
         decoders = {MessageDecoder.class},
@@ -47,14 +51,91 @@ import EnumDataType.TransactionEventEnumType;
 )
 
 public class MyClientEndpoint  {
-    private static Session session = null;
-    public MyClientEndpoint(URI uri) throws IOException, DeploymentException, URISyntaxException {
-        session = ContainerProvider.getWebSocketContainer().connectToServer(this,uri);
+
+    private Session session ;
+    SendRequestToCSMS toCSMS = new SendRequestToCSMS() ;
+
+
+    Session ConnectClientToServer(final TextView text) {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                connectToWebSocket(text);
+            }
+        });
+        thread.start();
+        return session;
+    }
+
+    private void connectToWebSocket(TextView text) {
+        WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+
+        URI uri = URI.create("ws://0f53e667.ngrok.io/mavenjavafxserver/chat");
+        try {
+            session = container.connectToServer(this, uri);
+            if(session != null){
+                toCSMS.sendBootNotificationRequest();
+                text.setText("Connected to Session : \n" + session.getId() + "\n" +  R.string.conncsms);
+            }
+        } catch (DeploymentException e) {
+            e.printStackTrace();
+            text.setText("Deployment Exception"+ R.string.conncsmsnot);
+        } catch (IOException e) {
+            e.printStackTrace();
+            text.setText("IO Exception" + R.string.conncsmsnot);
+        } catch (EncodeException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
     }
 
-    public static Session getSession(){
-        return session ;
+    public void SendRequestToServer(final CALL call) {
+        Thread thread1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    session.getBasicRemote().sendObject(call);
+                    //textView1.setText("Message Sent");
+                } catch (IOException | EncodeException e) {
+                    //textView1.setText("IOException in sending Message");
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread1.start();
+    }
+    public void SendResponseToServer(final CALLRESULT callresult){
+        Thread thread1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    session.getBasicRemote().sendObject(callresult);
+                    //textView1.setText("Message Sent");
+                } catch (IOException | EncodeException e) {
+                    //textView1.setText("IOException in sending Message");
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread1.start();
+    }
+
+    public void SendResponseErrorToServer(final CALLERROR callerror){
+        Thread thread1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    session.getBasicRemote().sendObject(callerror);
+                    //textView1.setText("Message Sent");
+                } catch (IOException | EncodeException e) {
+                    //textView1.setText("IOException in sending Message");
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread1.start();
     }
 
 
@@ -105,29 +186,40 @@ public class MyClientEndpoint  {
         if (msg instanceof CALLRESULT) {
             JSONObject payload = null ;
             if (CALLRESULT.MessageId.equals(CALL.MessageId)) {
+                payload = ((CALLRESULT) msg).getPayload();
                 switch (CALL.Action) {
+
                     case "BootNotification":
-                        JSONObject j1 = ((CALLRESULT) msg).getPayload() ;
-                        RegistrationStatusEnumType r = RegistrationStatusEnumType.valueOf(j1.getString("status"));
-                        OCPPCommCtrlr.HeartbeatInterval = j1.getInt("interval") ;
+                        RegistrationStatusEnumType r = RegistrationStatusEnumType.valueOf(payload.getString("status"));
+                        OCPPCommCtrlr.HeartbeatInterval = payload.getInt("interval") ;
                         break;
                     case "Authorize":
-                        payload = ((CALLRESULT) msg).getPayload();
+
                         JSONObject j2 = payload.getJSONObject("idTokenInfo");
                         IdTokenInfoType.status = AuthorizationStatusEnumType.valueOf(j2.getString("status") );
+                        IdTokenInfoType.cacheExpiryDateTime = j2.getString("cacheExpiryDateTime");
+                        MessageContentType.content = j2.getJSONObject("personalMessage").getString("content");
 
                         break;
                     case "HeartBeat":
+                        String currentTime = payload.getString("currentTime");
 
                         break;
                     case "StatusNotification":
 
+
+
                         break;
                     case "TransactionEvent":
+                        double totalCost = payload.getDouble("totalCost");
+
 
 
                         break;
                     case "ChangeAvailability":
+
+
+
                         break;
 
                 }
@@ -147,6 +239,7 @@ public class MyClientEndpoint  {
             IdTokenType.setType(null);
             TransactionEventRequest.eventType =TransactionEventEnumType.Started ;
         }
+
 
     }
 

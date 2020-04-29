@@ -19,11 +19,7 @@ import EnumDataType.TransactionEventEnumType;
 
 
 public class SendRequestToCSMS {
-
-    private Session session ;
-    public SendRequestToCSMS(){
-        session = MyClientEndpoint.getSession();
-    }
+    MyClientEndpoint myClientEndpoint = new MyClientEndpoint();
 
     // BootReason default  = PowerUp
 
@@ -31,8 +27,7 @@ public class SendRequestToCSMS {
         CheckNewCallMessageCanBeSent();
         CALL call = new CALL("BootNotification", BootNotificationRequest.payload());
         CALL.setMessageId();
-        this.session.getBasicRemote().sendObject(call);
-
+        myClientEndpoint.SendRequestToServer(call);
     }
 
     //  ConnectorStatus default = Available
@@ -42,14 +37,14 @@ public class SendRequestToCSMS {
         StatusNotificationRequest.setTimestamp();
         CALL call = new CALL("StatusNotification",StatusNotificationRequest.payload());
         CALL.setMessageId();
-        session.getBasicRemote().sendObject(call);
+        myClientEndpoint.SendRequestToServer(call);
     }
 
     public void sendHeartBeatRequest() throws JSONException, IOException, EncodeException {
         CheckNewCallMessageCanBeSent();
         CALL call = new CALL("HeartBeat",HeartBeatRequest.payload());
         CALL.setMessageId();
-        session.getBasicRemote().sendObject(call);
+        myClientEndpoint.SendRequestToServer(call);
     }
 
     //Before Sending this make sure IdTokenType is set.
@@ -57,7 +52,7 @@ public class SendRequestToCSMS {
         CheckNewCallMessageCanBeSent();
         CALL call = new CALL("Authorize",AuthorizeRequest.payload()) ;
         CALL.setMessageId();
-        session.getBasicRemote().sendObject(call);
+        myClientEndpoint.SendRequestToServer(call);
     }
 
     //Before Sending this make sure TransactionEvent , TriggerReason, TransactionType.ChargingStatus are set ;
@@ -68,8 +63,8 @@ public class SendRequestToCSMS {
         TransactionEventRequest.setTimestamp();
         CALL call = new CALL("TransactionEvent", TransactionEventRequest.payload());
         CALL.setMessageId();
-        session.getBasicRemote().sendObject(call);
-        }
+        myClientEndpoint.SendRequestToServer(call);
+    }
 
 
     private static String TransId(TransactionEventEnumType transactionEventEnumType){

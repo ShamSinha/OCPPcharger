@@ -14,7 +14,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".CablePlugActivity"></activity>
+        <activity android:name=".WelcomeAndStart"></activity>
+        <activity android:name=".CablePlugActivity" />
         <activity android:name=".Authentication" />
         <activity android:name=".Authorization2" />
         <activity android:name=".Charging" />
@@ -34,7 +35,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".Authorization1" />
-
     </application>
 
 </manifest>

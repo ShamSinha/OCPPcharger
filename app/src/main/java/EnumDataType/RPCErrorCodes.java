@@ -14,6 +14,4 @@ public enum RPCErrorCodes {
     SecurityError, // During the processing of Action a security issue occurred preventing receiver from completing the Action successfully
     TypeConstraintViolation , //Payload for Action is syntactically correct but at least one of the fields violates data type constraints (e.g. "somestring": 12)
 
-
-
 }

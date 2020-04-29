@@ -8,10 +8,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.ImageButton;
 
-public class Authentication extends Activity {
-
+public class WelcomeAndStart extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,21 +17,12 @@ public class Authentication extends Activity {
         requestWindowFeature(Window.FEATURE_NO_TITLE) ;
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(R.layout.activity_authentication);
-
+        setContentView(R.layout.activity_welcome_and_start);
     }
-    public void OnClickPIN(View view) {
-        Intent i = new Intent(Authentication.this, Authorization1.class);
+
+
+    public void onClickStart(View view){
+        Intent i = new Intent(WelcomeAndStart.this , Authentication.class);
         startActivity(i);
     }
-
-    public void OnClickRFID(View view) {
-        Intent i = new Intent(Authentication.this, Authorization2.class);
-        startActivity(i);
-    }
-
-
-
-
-
 }

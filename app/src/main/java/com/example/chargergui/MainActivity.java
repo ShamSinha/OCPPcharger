@@ -1,48 +1,27 @@
 package com.example.chargergui;
 
 import android.app.Activity;
-import android.app.ActivityOptions;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-
 import android.bluetooth.BluetoothSocket;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
-import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.arch.core.util.Function;
-
-import org.json.JSONException;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Method;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.websocket.DeploymentException;
-import javax.websocket.EncodeException;
-import javax.websocket.Session;
 
-import UseCasesOCPP.SendRequestToCSMS;
-
-
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
     private static final String TAG = "main";
     // private final String DEVICE_NAME="BATTERYMETER";
 
@@ -60,6 +39,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE) ;
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
         textView = (TextView) findViewById(R.id.viewblue);
         textView.setVisibility(View.INVISIBLE);
@@ -68,58 +50,14 @@ public class MainActivity extends AppCompatActivity {
         websocket.setVisibility(View.INVISIBLE);
     }
 
-        /*Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                }
-        };
-        Handler handler = new Handler();
-
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-
-            }
-        });
-        Thread thread = new Thread(runnable);
-        thread.start();
-    */
-
-
 
     @Override
     protected void onStart() {
         super.onStart();
         welcome.setEnabled(false);
-        try {
-            new MyClientEndpoint();
-            Session session = MyClientEndpoint.getSession() ;
 
-            if(session.isOpen()) {
-                websocket.setVisibility(View.VISIBLE);
-                websocket.setText(R.string.conncsms);
-                SendRequestToCSMS toCSMS = new SendRequestToCSMS() ;
-                toCSMS.sendBootNotificationRequest();
-
-
-            }
-            else {
-                websocket.setVisibility(View.VISIBLE);
-                websocket.setText(R.string.conncsmsnot);
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (DeploymentException e) {
-            e.printStackTrace();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        } catch (EncodeException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        MyClientEndpoint myClientEndpoint = new MyClientEndpoint();
+        myClientEndpoint.ConnectClientToServer(websocket);
 
         if(BTinit()){
             textView.setVisibility(View.VISIBLE);
@@ -133,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void OnClickWelcome(View view){
-        Intent w = new Intent(MainActivity.this, Authentication.class);
+        Intent w = new Intent(MainActivity.this, WelcomeAndStart.class);
         startActivity(w);
     }
 

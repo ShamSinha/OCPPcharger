@@ -2,9 +2,12 @@ package com.example.chargergui;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Handler;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -30,7 +33,7 @@ import EnumDataType.TransactionEventEnumType;
 import EnumDataType.TriggerReasonEnumType;
 import UseCasesOCPP.SendRequestToCSMS;
 
-public class Authorization2 extends AppCompatActivity {
+public class Authorization2 extends Activity {
     ProgressBar progressBar ;
     ImageButton imageButton ;
     boolean stopThread = false;
@@ -41,6 +44,9 @@ public class Authorization2 extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE) ;
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_rfid_auth);
         imageButton.findViewById(R.id.backbutton2);
         progressBar = (ProgressBar) findViewById(R.id.pb);

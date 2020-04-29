@@ -1,23 +1,22 @@
 package com.example.chargergui;
 
-import androidx.annotation.UiThread;
-import androidx.appcompat.app.AppCompatActivity;
-
-
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import org.json.JSONException;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 import javax.websocket.EncodeException;
 
@@ -41,7 +40,7 @@ import EnumDataType.TriggerReasonEnumType;
 import PhysicalComponents.CSPhysicalProperties;
 import UseCasesOCPP.SendRequestToCSMS;
 
-import static java.lang.String.*;
+import static java.lang.String.format;
 
 public class Charging extends AppCompatActivity implements PINauthorizeDialog.PINauthorizeDialogListener {
     ImageView BatteryCharge ;
@@ -75,6 +74,8 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_charging);
 
         Payment = (Button) findViewById(R.id.paybutton);
@@ -147,6 +148,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
         StopSendingMeterValues();
         ChargingStationStates.setEnergyTransfer(false);
         UpdateUiAfterStop();
+        stopThread = true ;
 
         TransactionEventRequest.eventType = TransactionEventEnumType.Updated;
         TransactionEventRequest.triggerReason = TriggerReasonEnumType.MeterValuePeriodic;
@@ -207,8 +209,10 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
     }
 
     public void openDialogPIN(){
+
         PINauthorizeDialog piNauthorizeDialog = new PINauthorizeDialog();
-        piNauthorizeDialog.show(getSupportFragmentManager(),"");
+
+        piNauthorizeDialog.show(getSupportFragmentManager(),"3");
     }
 
     public void openDialogRFID(){
@@ -249,7 +253,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
     }
 
     public void TimerForTimeSpent(){
-        Thread t = new Thread(){
+        final Thread t = new Thread(){
             @Override
             public void run(){
                 while(!isInterrupted() && !stopThread){
@@ -264,6 +268,9 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
                                 int minutes = (TransactionType.timeSpentCharging % 3600) / 60;
                                 int seconds = TransactionType.timeSpentCharging % 60;
                                 TimeSpent.setText(getString(R.string.timespent,hours, minutes, seconds));
+                                if(getString(R.string.timespent,hours, minutes, seconds)== IdTokenInfoType.cacheExpiryDateTime){
+                                    AfterChargingComplete();
+                                }
                             }
                         });
 
@@ -317,7 +324,6 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
                                                 SOC = Float.parseFloat(output[5]);
                                                 if (SOC >= Target.SOC) {
                                                     AfterChargingComplete();
-                                                    stopThread =true ;
                                                 }
                                                 Energy = Float.parseFloat(output[7]);  // Energy in KWh
 
@@ -327,7 +333,6 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
                                                 if (output[9].equals("F")) {
                                                     ChargingStationStates.setCablePluggedIn(false);
                                                     try {
-                                                        stopThread =true ;
                                                         afterCableUnplugAtEVSide();
 
                                                     } catch (IOException e) {
@@ -443,6 +448,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
 
         ChargingStationStates.setEnergyTransfer(false);
         StopSendingMeterValues();
+        stopThread = true ;
 
         if(!TxCtlr.StopTxOnEVSideDisconnect){ // Suspend Transaction After CableUnplug at EV side
 

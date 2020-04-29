@@ -4,10 +4,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Intent;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 
 import android.widget.ImageView;
@@ -20,7 +23,7 @@ import java.util.Calendar;
 
 import Controller_Components.TariffCostCtrlr;
 
-public class SOCdisplay extends AppCompatActivity {
+public class SOCdisplay extends Activity {
     TextView Batterytype;
     TextView Charge ;
     TextView EnergyinKWh ;
@@ -40,6 +43,9 @@ public class SOCdisplay extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE) ;
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_socdisplay);
         Batterytype = (TextView) findViewById(R.id.batterytype);
         Charge = (TextView) findViewById(R.id.charge);
