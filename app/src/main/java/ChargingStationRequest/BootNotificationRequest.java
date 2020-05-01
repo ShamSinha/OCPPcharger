@@ -13,6 +13,9 @@ public class BootNotificationRequest {
     public static void setReason(BootReasonEnumType reason) {  // use when reason is different type of PowerUp
         BootNotificationRequest.reason = reason;
     }
+    public static BootReasonEnumType getReason() {
+        return BootNotificationRequest.reason ;
+    }
 
     public static JSONObject payload() throws JSONException {
         JSONObject jo  = new JSONObject();

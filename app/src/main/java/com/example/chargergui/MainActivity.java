@@ -6,19 +6,24 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
-import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import org.json.JSONException;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Set;
 import java.util.UUID;
+
+import javax.websocket.EncodeException;
+
+import EnumDataType.RegistrationStatusEnumType;
+import UseCasesOCPP.SendRequestToCSMS;
 
 
 public class MainActivity extends Activity {
@@ -31,10 +36,8 @@ public class MainActivity extends Activity {
     public OutputStream outputStream;
     public InputStream inputStream;
     boolean deviceConnected = false;
-    Button welcome ;
-    TextView textView;
-    TextView websocket ;
-
+    TextView Boot;
+    String DEVICE_ADDRESS = "98:D3:32:71:14:A8";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,44 +46,53 @@ public class MainActivity extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
-        textView = (TextView) findViewById(R.id.viewblue);
-        textView.setVisibility(View.INVISIBLE);
-        welcome = (Button) findViewById(R.id.button);
-        websocket = (TextView) findViewById(R.id.viewwebsocket);
-        websocket.setVisibility(View.INVISIBLE);
+        Boot = (TextView) findViewById(R.id.boottext);
     }
 
 
     @Override
     protected void onStart() {
         super.onStart();
-        welcome.setEnabled(false);
-
-        MyClientEndpoint myClientEndpoint = new MyClientEndpoint();
-        myClientEndpoint.ConnectClientToServer(websocket);
 
         if(BTinit()){
-            textView.setVisibility(View.VISIBLE);
-            textView.setText(R.string.connmicrocontroller);
+
+            Boot.append("\nConnection to Meter Established.\n");
             if (BTconnect()){
-                textView.setText(R.string.connmicrocontroller + R.string.inoutwork);
-                welcome.setEnabled(true);
+                Boot.append("\n InputStream and OutputStream Established");
             }
         }
-        BluetoothThreadforCablePlug();
+        StartConnection();
     }
 
-    public void OnClickWelcome(View view){
-        Intent w = new Intent(MainActivity.this, WelcomeAndStart.class);
-        startActivity(w);
+    private void StartConnection(){
+        MyClientEndpoint myClientEndpoint = new MyClientEndpoint();
+        myClientEndpoint.ConnectClientToServer(Boot);
+
+        if(StoreResponseFromCSMS.status == RegistrationStatusEnumType.Accepted){
+            Intent i = new Intent(MainActivity.this , WelcomeAndStart.class);
+            startActivity(i);
+        }
+        if(StoreResponseFromCSMS.status == RegistrationStatusEnumType.Pending || StoreResponseFromCSMS.status == RegistrationStatusEnumType.Rejected) {
+            new CountDownTimer(StoreResponseFromCSMS.interval*1000, 1000) {
+                public void onTick(long millisUntilFinished) {
+
+                }
+                public void onFinish() {
+                    StartConnection();
+                }
+
+            };
+        }
     }
 
     public boolean BTinit() {
         boolean found = false;
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null) {
-            Toast.makeText(getApplicationContext(), "Device doesnt Support Bluetooth", Toast.LENGTH_SHORT).show();
+            Boot.append("\nDevice doesnot Support Bluetooth\n");
+            //Toast.makeText(getApplicationContext(), "Device doesnt Support Bluetooth", Toast.LENGTH_SHORT).show();
         }
+        assert bluetoothAdapter != null;
         if (!bluetoothAdapter.isEnabled()) {
             Intent enableAdapter = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableAdapter, 0);
@@ -92,11 +104,14 @@ public class MainActivity extends Activity {
         }
         Set<BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
         if (bondedDevices.isEmpty()) {
-            Toast.makeText(getApplicationContext(), "Please Pair the Device first", Toast.LENGTH_SHORT).show();
+            Boot.append("\nPair the Meter first\n");
+            //Toast.makeText(getApplicationContext(), "Please Pair the Device first", Toast.LENGTH_SHORT).show();
         } else {
             for (BluetoothDevice iterator : bondedDevices) {
-                String DEVICE_ADDRESS = "98:D3:32:71:14:A8";
+                //DEVICE_ADDRESS = "98:D3:32:71:14:A8";
+                Boot.append("\nConnecting To Meter" + DEVICE_ADDRESS + "\n");
                 if (iterator.getAddress().equals(DEVICE_ADDRESS)) {
+                    Boot.append(". ");
                     device = iterator;
                     found = true;
                     break;

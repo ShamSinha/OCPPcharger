@@ -1,39 +1,31 @@
 package com.example.chargergui;
 
-import android.content.Intent;
 import android.widget.TextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
-import java.util.logging.Logger;
 
 import javax.websocket.ClientEndpoint ;
 import javax.websocket.ContainerProvider;
 import javax.websocket.DeploymentException;
 import javax.websocket.EncodeException;
 import javax.websocket.OnOpen ;
-import javax.websocket.OnClose ;
 import javax.websocket.OnMessage ;
-import javax.websocket.OnError ;
-import javax.websocket.RemoteEndpoint;
 import javax.websocket.Session;
-import javax.websocket.Decoder;
-import javax.websocket.Encoder ;
 import javax.websocket.WebSocketContainer;
 
 import ChargingStationRequest.BootNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
 import ChargingStationResponse.CostUpdatedResponse;
-import ChargingStationResponse.ReserveNowResponse;
 import ChargingStationResponse.ResetResponse;
 import ChargingStationResponse.SetDisplayMessageResponse;
 import Controller_Components.OCPPCommCtrlr;
+import DataType.ChargingStationType;
 import DataType.IdTokenInfoType;
 import DataType.IdTokenType;
 import DataType.MessageContentType;
@@ -53,10 +45,10 @@ import UseCasesOCPP.SendRequestToCSMS;
 public class MyClientEndpoint  {
 
     private Session session ;
-    SendRequestToCSMS toCSMS = new SendRequestToCSMS() ;
+    private SendRequestToCSMS toCSMS = new SendRequestToCSMS() ;
 
 
-    Session ConnectClientToServer(final TextView text) {
+    void ConnectClientToServer(final TextView text) {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -64,7 +56,6 @@ public class MyClientEndpoint  {
             }
         });
         thread.start();
-        return session;
     }
 
     private void connectToWebSocket(TextView text) {
@@ -73,16 +64,29 @@ public class MyClientEndpoint  {
         URI uri = URI.create("ws://0f53e667.ngrok.io/mavenjavafxserver/chat");
         try {
             session = container.connectToServer(this, uri);
+
             if(session != null){
+                text.append("Connection with CSMS Established");
+                text.append("\nConnected to Session :"+ session.getId() + "\n" );
+                text.append("\nBoot Reason: "+ BootNotificationRequest.getReason()+"\n");
+                text.append("\nCharging Station\n");
+                text.append("\nserialNumber: "+ChargingStationType.serialNumber+"\n");
+                text.append("\nmodel: "+ChargingStationType.model+"\n");
+                text.append("\nvendorName: "+ChargingStationType.vendorName+"\n");
+                text.append("\nfirmwareVersion: "+ChargingStationType.firmwareVersion+"\n");
+                text.append("\nmodem: "+ChargingStationType.modem+"\n");
+                text.append("\nSending BootNotificationRequest to CSMS\n");
                 toCSMS.sendBootNotificationRequest();
-                text.setText("Connected to Session : \n" + session.getId() + "\n" +  R.string.conncsms);
+                if(CALLRESULT.MessageId.equals(CALL.MessageId)){
+                    text.append("\nBoot status: "+ StoreResponseFromCSMS.status + "\n");
+                }
             }
         } catch (DeploymentException e) {
             e.printStackTrace();
-            text.setText("Deployment Exception"+ R.string.conncsmsnot);
+            text.append("\nDeployment Exception"+ R.string.conncsmsnot + "\n");
         } catch (IOException e) {
             e.printStackTrace();
-            text.setText("IO Exception" + R.string.conncsmsnot);
+            text.append("\nIO Exception" + R.string.conncsmsnot+"\n");
         } catch (EncodeException e) {
             e.printStackTrace();
         } catch (JSONException e) {
@@ -97,9 +101,9 @@ public class MyClientEndpoint  {
             public void run() {
                 try {
                     session.getBasicRemote().sendObject(call);
-                    //textView1.setText("Message Sent");
+
                 } catch (IOException | EncodeException e) {
-                    //textView1.setText("IOException in sending Message");
+
                     e.printStackTrace();
                 }
             }
@@ -112,9 +116,9 @@ public class MyClientEndpoint  {
             public void run() {
                 try {
                     session.getBasicRemote().sendObject(callresult);
-                    //textView1.setText("Message Sent");
+
                 } catch (IOException | EncodeException e) {
-                    //textView1.setText("IOException in sending Message");
+
                     e.printStackTrace();
                 }
             }
@@ -128,9 +132,9 @@ public class MyClientEndpoint  {
             public void run() {
                 try {
                     session.getBasicRemote().sendObject(callerror);
-                    //textView1.setText("Message Sent");
+
                 } catch (IOException | EncodeException e) {
-                    //textView1.setText("IOException in sending Message");
+
                     e.printStackTrace();
                 }
             }
@@ -167,7 +171,6 @@ public class MyClientEndpoint  {
                     payload = CostUpdatedResponse.payload();
                     break;
                 case "SetDisplayMessage":
-
                     payload = SetDisplayMessageResponse.payload();
                     break;
                 case "Reset":
@@ -190,8 +193,13 @@ public class MyClientEndpoint  {
                 switch (CALL.Action) {
 
                     case "BootNotification":
-                        RegistrationStatusEnumType r = RegistrationStatusEnumType.valueOf(payload.getString("status"));
-                        OCPPCommCtrlr.HeartbeatInterval = payload.getInt("interval") ;
+                        StoreResponseFromCSMS.status = RegistrationStatusEnumType.valueOf(payload.getString("status"));
+                        if(StoreResponseFromCSMS.status == RegistrationStatusEnumType.Accepted) {
+                            OCPPCommCtrlr.HeartbeatInterval = payload.getInt("interval");
+                        }
+                        if(StoreResponseFromCSMS.status == RegistrationStatusEnumType.Rejected || StoreResponseFromCSMS.status == RegistrationStatusEnumType.Pending ){
+                            StoreResponseFromCSMS.interval = payload.getInt("interval");
+                        }
                         break;
                     case "Authorize":
 
@@ -206,7 +214,6 @@ public class MyClientEndpoint  {
 
                         break;
                     case "StatusNotification":
-
 
 
                         break;
