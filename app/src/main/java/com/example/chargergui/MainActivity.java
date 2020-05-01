@@ -12,18 +12,13 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 
-import org.json.JSONException;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.websocket.EncodeException;
-
 import EnumDataType.RegistrationStatusEnumType;
-import UseCasesOCPP.SendRequestToCSMS;
 
 
 public class MainActivity extends Activity {
@@ -80,7 +75,6 @@ public class MainActivity extends Activity {
                 public void onFinish() {
                     StartConnection();
                 }
-
             };
         }
     }
@@ -90,7 +84,6 @@ public class MainActivity extends Activity {
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null) {
             Boot.append("\nDevice doesnot Support Bluetooth\n");
-            //Toast.makeText(getApplicationContext(), "Device doesnt Support Bluetooth", Toast.LENGTH_SHORT).show();
         }
         assert bluetoothAdapter != null;
         if (!bluetoothAdapter.isEnabled()) {
@@ -105,11 +98,10 @@ public class MainActivity extends Activity {
         Set<BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
         if (bondedDevices.isEmpty()) {
             Boot.append("\nPair the Meter first\n");
-            //Toast.makeText(getApplicationContext(), "Please Pair the Device first", Toast.LENGTH_SHORT).show();
         } else {
             for (BluetoothDevice iterator : bondedDevices) {
                 //DEVICE_ADDRESS = "98:D3:32:71:14:A8";
-                Boot.append("\nConnecting To Meter" + DEVICE_ADDRESS + "\n");
+                Boot.append("\nConnecting To Meter  " + DEVICE_ADDRESS + "\n");
                 if (iterator.getAddress().equals(DEVICE_ADDRESS)) {
                     Boot.append(". ");
                     device = iterator;
@@ -190,38 +182,7 @@ public class MainActivity extends Activity {
             }
         }
     }
-
-
-
-
-
-
 }
-
-
-
-
-    /*public void onClickSend(View view) {
-        String string = editText.getText().toString();
-        string.concat("\n");
-        try {
-            outputStream.write(string.getBytes());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        textView.append("\nSent Data:"+string+"\n");
-
-    }
-
-    public void onClickStop(View view) throws IOException {
-        stopThread = true;
-        outputStream.close();
-        inputStream.close();
-        socket.close();
-        setUiEnabled(false);
-        deviceConnected=false;
-        textView.append("\nConnection Closed!\n");
-    }*/
 
 
 
