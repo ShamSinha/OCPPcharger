@@ -52,6 +52,15 @@ public class MyClientEndpoint  {
 
     private Session session ;
     private SendRequestToCSMS toCSMS = new SendRequestToCSMS() ;
+    private static MyClientEndpoint instance = new MyClientEndpoint(); // Eagerly Loading of single ton instance
+
+    private MyClientEndpoint(){
+        // private to prevent anyone else from instantiating
+    }
+
+    public static MyClientEndpoint getInstance(){
+        return instance;
+    }
 
     //BootNotificationResponse
     private BootNotificationResponse bootNotificationResponse = new BootNotificationResponse();

@@ -44,7 +44,7 @@ public class Authorization1 extends Activity {
     boolean stopThread  ;
     ImageButton imageButton ;
     SendRequestToCSMS toCSMS = new SendRequestToCSMS();
-    MyClientEndpoint myClientEndpoint = new MyClientEndpoint(); /////////////////////////////////////////
+    MyClientEndpoint myClientEndpoint;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,6 +64,8 @@ public class Authorization1 extends Activity {
         CableIn.setVisibility(View.INVISIBLE);
         CablePluginStatus.setVisibility(View.INVISIBLE);
         stopThread = false ;
+
+        myClientEndpoint = MyClientEndpoint.getInstance() ;
     }
 
 

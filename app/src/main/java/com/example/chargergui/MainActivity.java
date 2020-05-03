@@ -34,6 +34,7 @@ public class MainActivity extends Activity {
     boolean deviceConnected = false;
     TextView Boot;
     String DEVICE_ADDRESS = "98:D3:32:71:14:A8";
+    MyClientEndpoint myClientEndpoint ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +44,7 @@ public class MainActivity extends Activity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
         Boot = (TextView) findViewById(R.id.boottext);
+        myClientEndpoint = MyClientEndpoint.getInstance() ;
     }
 
 
@@ -61,7 +63,7 @@ public class MainActivity extends Activity {
     }
 
     private void StartConnection(){
-        MyClientEndpoint myClientEndpoint = new MyClientEndpoint();
+
         myClientEndpoint.ConnectClientToServer(Boot);
 
         if(myClientEndpoint.getBootNotificationResponse().getBootStatus() == RegistrationStatusEnumType.Accepted){

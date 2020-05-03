@@ -22,7 +22,7 @@ import EnumDataType.TransactionEventEnumType;
 
 
 public class SendRequestToCSMS {
-    private MyClientEndpoint myClientEndpoint = new MyClientEndpoint();
+    MyClientEndpoint myClientEndpoint;
 
     // BootReason default  = PowerUp
 

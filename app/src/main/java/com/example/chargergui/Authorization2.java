@@ -39,7 +39,7 @@ public class Authorization2 extends Activity {
     ImageView CableIn ;
     SendRequestToCSMS toCSMS = new SendRequestToCSMS();
     final MainActivity bs = new MainActivity();
-    MyClientEndpoint myClientEndpoint = new MyClientEndpoint();
+    MyClientEndpoint myClientEndpoint ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,6 +54,8 @@ public class Authorization2 extends Activity {
         CablePluginStatus = (TextView) findViewById(R.id.textView19);
         CableIn.setVisibility(View.INVISIBLE);
         CablePluginStatus.setVisibility(View.INVISIBLE);
+
+        myClientEndpoint = MyClientEndpoint.getInstance() ;
 
     }
     @Override

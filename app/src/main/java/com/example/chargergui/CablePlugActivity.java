@@ -111,7 +111,6 @@ public class CablePlugActivity extends AppCompatActivity {
     public void CLEARALL(){
         IdTokenType.setIdToken(null);
         IdTokenType.setType(null);
-        IdTokenInfoType.status = AuthorizationStatusEnumType.Invalid ;
     }
 
 

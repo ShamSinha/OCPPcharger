@@ -68,8 +68,8 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
     boolean stopThread1 = false ;
     Handler mHandler = new Handler();
     SendRequestToCSMS toCSMS1 = new SendRequestToCSMS();
-    final MainActivity bs = new MainActivity();
-    MyClientEndpoint myClientEndpoint = new MyClientEndpoint();
+    MainActivity bs ;
+    MyClientEndpoint myClientEndpoint ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,6 +110,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
         Payment.setVisibility(View.GONE);
         progressBar.setVisibility(View.GONE);
 
+        myClientEndpoint = MyClientEndpoint.getInstance() ;
     }
 
     @Override
