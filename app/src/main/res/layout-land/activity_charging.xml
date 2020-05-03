@@ -101,10 +101,10 @@
         android:textAppearance="@style/TextAppearance.AppCompat.Display3"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.372"
+        app:layout_constraintHorizontal_bias="0.292"
         app:layout_constraintStart_toEndOf="@+id/imageViewcharge"
         app:layout_constraintTop_toBottomOf="@+id/charge"
-        app:layout_constraintVertical_bias="0.121" />
+        app:layout_constraintVertical_bias="0.124" />
 
     <TextView
         android:id="@+id/current"

@@ -5,10 +5,13 @@ import com.example.chargergui.CALLERROR;
 import com.example.chargergui.CALLRESULT;
 import com.example.chargergui.MyClientEndpoint;
 import com.example.chargergui.TransactionIdGenerator;
+
 import org.json.JSONException;
+
 import java.io.IOException;
+
 import javax.websocket.EncodeException;
-import javax.websocket.Session;
+
 import ChargingStationRequest.AuthorizeRequest;
 import ChargingStationRequest.BootNotificationRequest;
 import ChargingStationRequest.HeartBeatRequest;

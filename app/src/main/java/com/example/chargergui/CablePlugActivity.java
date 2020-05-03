@@ -22,7 +22,7 @@ import javax.websocket.EncodeException;
 import ChargingStationRequest.StatusNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
 import Controller_Components.TxCtlr;
-import DataType.IdTokenInfoType;
+import UseCasesOCPP.IdTokenInfoType;
 import DataType.IdTokenType;
 import DataType.TransactionType;
 import EnumDataType.AuthorizationStatusEnumType;

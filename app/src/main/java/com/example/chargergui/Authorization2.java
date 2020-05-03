@@ -1,7 +1,5 @@
 package com.example.chargergui;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Handler;
@@ -23,7 +21,7 @@ import java.io.IOException;
 import javax.websocket.EncodeException;
 
 import ChargingStationRequest.TransactionEventRequest;
-import DataType.IdTokenInfoType;
+import UseCasesOCPP.IdTokenInfoType;
 import DataType.IdTokenType;
 import DataType.TransactionType;
 import EnumDataType.AuthorizationStatusEnumType;
@@ -41,6 +39,7 @@ public class Authorization2 extends Activity {
     ImageView CableIn ;
     SendRequestToCSMS toCSMS = new SendRequestToCSMS();
     final MainActivity bs = new MainActivity();
+    MyClientEndpoint myClientEndpoint = new MyClientEndpoint();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,7 +94,7 @@ public class Authorization2 extends Activity {
         }
 
 
-        if (IdTokenInfoType.status == AuthorizationStatusEnumType.Accepted) {
+        if (myClientEndpoint.getIdInfo().getStatus() == AuthorizationStatusEnumType.Accepted) {
             ChargingStationStates.isAuthorized = true;
 
             TransactionEventRequest.triggerReason = TriggerReasonEnumType.Authorized ;
@@ -137,7 +136,7 @@ public class Authorization2 extends Activity {
         else {
             progressBar.setVisibility(View.INVISIBLE);
 
-            Toast.makeText(getApplicationContext(), IdTokenInfoType.status.toString() + " RFID ", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), myClientEndpoint.getIdInfo().getStatus() + " RFID ", Toast.LENGTH_SHORT).show();
         }
 
     }

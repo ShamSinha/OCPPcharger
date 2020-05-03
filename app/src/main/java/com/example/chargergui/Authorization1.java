@@ -22,7 +22,7 @@ import javax.websocket.EncodeException;
 
 import ChargingStationRequest.StatusNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
-import DataType.IdTokenInfoType;
+import UseCasesOCPP.IdTokenInfoType;
 import DataType.IdTokenType;
 import DataType.TransactionType;
 import EnumDataType.AuthorizationStatusEnumType;
@@ -42,10 +42,9 @@ public class Authorization1 extends Activity {
     Button button ;
     ProgressBar progressBar ;
     boolean stopThread  ;
-
-
     ImageButton imageButton ;
     SendRequestToCSMS toCSMS = new SendRequestToCSMS();
+    MyClientEndpoint myClientEndpoint = new MyClientEndpoint(); /////////////////////////////////////////
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -144,9 +143,7 @@ public class Authorization1 extends Activity {
         IdTokenType.setIdToken(PIN.getText().toString());
         toCSMS.sendAuthorizeRequest();
 
-
-
-        if(IdTokenInfoType.status == AuthorizationStatusEnumType.Accepted){
+        if(myClientEndpoint.getIdInfo().getStatus() == AuthorizationStatusEnumType.Accepted){
 
             ChargingStationStates.setAuthorized(true);
 
@@ -179,9 +176,9 @@ public class Authorization1 extends Activity {
                 }
         }
 
-        else if(IdTokenInfoType.status != null) {
+        else if(myClientEndpoint.getIdInfo().getStatus()  != null) {
             progressBar.setVisibility(View.INVISIBLE);
-            Toast.makeText(getApplicationContext(), IdTokenInfoType.status.toString() +"PIN " , Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), myClientEndpoint.getIdInfo().getStatus() +"PIN " , Toast.LENGTH_SHORT).show();
         }
     }
 

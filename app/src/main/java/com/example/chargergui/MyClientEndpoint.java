@@ -24,15 +24,21 @@ import ChargingStationRequest.TransactionEventRequest;
 import ChargingStationResponse.CostUpdatedResponse;
 import ChargingStationResponse.ResetResponse;
 import ChargingStationResponse.SetDisplayMessageResponse;
-import Controller_Components.OCPPCommCtrlr;
 import DataType.ChargingStationType;
-import DataType.IdTokenInfoType;
+import EnumDataType.MessageFormatEnumType;
+import EnumDataType.MessagePriorityEnumType;
+import EnumDataType.MessageStateEnumType;
+import EnumDataType.ResetEnumType;
+import UseCasesOCPP.BootNotificationResponse;
+import UseCasesOCPP.CostUpdatedRequest;
+import UseCasesOCPP.IdTokenInfoType;
 import DataType.IdTokenType;
 import DataType.MessageContentType;
 import EnumDataType.AuthorizationStatusEnumType;
 import EnumDataType.RegistrationStatusEnumType;
 import EnumDataType.ResetStatusEnumType;
 import EnumDataType.TransactionEventEnumType;
+import UseCasesOCPP.MessageInfoType;
 import UseCasesOCPP.SendRequestToCSMS;
 
 @ClientEndpoint(
@@ -46,6 +52,18 @@ public class MyClientEndpoint  {
 
     private Session session ;
     private SendRequestToCSMS toCSMS = new SendRequestToCSMS() ;
+
+    //BootNotificationResponse
+    private BootNotificationResponse bootNotificationResponse = new BootNotificationResponse();
+
+    //AuthorizeResponse
+    private IdTokenInfoType idInfo = new IdTokenInfoType();
+
+    //SetDisplayMessageRequest
+    private MessageInfoType messageInfo = new MessageInfoType();
+
+    //CostUpdatedRequest
+    private CostUpdatedRequest costUpdated = new CostUpdatedRequest();
 
 
     void ConnectClientToServer(final TextView text) {
@@ -78,7 +96,7 @@ public class MyClientEndpoint  {
                 text.append("\nSending BootNotificationRequest to CSMS\n");
                 toCSMS.sendBootNotificationRequest();
                 if(CALLRESULT.MessageId.equals(CALL.MessageId)){
-                    text.append("\nBoot status: "+ StoreResponseFromCSMS.status + "\n");
+                    text.append("\nBoot status: "+ bootNotificationResponse.getBootStatus() + "\n");
                 }
             }
         } catch (DeploymentException e) {
@@ -92,7 +110,6 @@ public class MyClientEndpoint  {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
     }
 
     public void SendRequestToServer(final CALL call) {
@@ -163,69 +180,66 @@ public class MyClientEndpoint  {
     public void onMessage(WebsocketMessage msg) throws JSONException, IOException, EncodeException {
 
         if(msg instanceof CALL){
-            JSONObject payload = null ;
-
+            JSONObject responsePayload ;   // responsePayload is JSON payload requested by CSMS.
+            JSONObject requestPayload = ((CALL) msg).getPayload() ; // get JSON payload from server request
             switch (CALL.Action) {
                 case "CostUpdated":
-                    ((CALL) msg).getPayload().getString("totalCost");
-                    payload = CostUpdatedResponse.payload();
+                    processCostUpdatedRequest(requestPayload);
+                    responsePayload = CostUpdatedResponse.payload();
                     break;
                 case "SetDisplayMessage":
-                    payload = SetDisplayMessageResponse.payload();
+                    JSONObject DisplayMessage = requestPayload.getJSONObject("message");
+                    processDisplayMessageRequest(DisplayMessage);
+                    responsePayload = SetDisplayMessageResponse.payload();
                     break;
                 case "Reset":
-                    AfterResetCommand(((CALL) msg).getPayload().getString("type"));
-                    payload = ResetResponse.payload();
+                    AfterResetCommand(ResetEnumType.valueOf(requestPayload.getString("type")));
+                    responsePayload = ResetResponse.payload();
                     break;
                 /*case "ReserveNow" :
                     ReserveNowResponse reserveNowResponse = new ReserveNowResponse();
                     payload = reserveNowResponse.payload();
                     break;*/
 
+                default:
+                    throw new IllegalStateException("Unexpected value: " + CALL.Action);
             }
-            CALLRESULT callresult = new CALLRESULT(payload);
+            CALLRESULT callresult = new CALLRESULT(responsePayload);
             session.getBasicRemote().sendObject(callresult);
         }
         if (msg instanceof CALLRESULT) {
-            JSONObject payload = null ;
+
+            JSONObject respondedPayload ;  // respondedPayload is a CALL message Response from CSMS
+
             if (CALLRESULT.MessageId.equals(CALL.MessageId)) {
-                payload = ((CALLRESULT) msg).getPayload();
+                respondedPayload = ((CALLRESULT) msg).getPayload();
                 switch (CALL.Action) {
 
                     case "BootNotification":
-                        StoreResponseFromCSMS.status = RegistrationStatusEnumType.valueOf(payload.getString("status"));
-                        if(StoreResponseFromCSMS.status == RegistrationStatusEnumType.Accepted) {
-                            OCPPCommCtrlr.HeartbeatInterval = payload.getInt("interval");
-                        }
-                        if(StoreResponseFromCSMS.status == RegistrationStatusEnumType.Rejected || StoreResponseFromCSMS.status == RegistrationStatusEnumType.Pending ){
-                            StoreResponseFromCSMS.interval = payload.getInt("interval");
-                        }
+
+                        processBootResponse(respondedPayload);
                         break;
+
                     case "Authorize":
 
-                        JSONObject j2 = payload.getJSONObject("idTokenInfo");
-                        IdTokenInfoType.status = AuthorizationStatusEnumType.valueOf(j2.getString("status") );
-                        IdTokenInfoType.cacheExpiryDateTime = j2.getString("cacheExpiryDateTime");
-                        MessageContentType.content = j2.getJSONObject("personalMessage").getString("content");
-
+                        JSONObject authResponse = respondedPayload.getJSONObject("idTokenInfo");
+                        processAuthResponse(authResponse);
                         break;
+
                     case "HeartBeat":
-                        String currentTime = payload.getString("currentTime");
+                        String currentTime = respondedPayload.getString("currentTime");
 
                         break;
                     case "StatusNotification":
 
-
                         break;
+
                     case "TransactionEvent":
-                        double totalCost = payload.getDouble("totalCost");
 
-
+                        double totalCost = respondedPayload.getDouble("totalCost");
 
                         break;
                     case "ChangeAvailability":
-
-
 
                         break;
 
@@ -240,22 +254,74 @@ public class MyClientEndpoint  {
 
     }
 
-    public void AfterResetCommand(String type) {
-        if(type == "Immediate" && ResetResponse.status == ResetStatusEnumType.Accepted) {
+    public void AfterResetCommand(ResetEnumType type) {
+        if(type == ResetEnumType.Immediate && ResetResponse.status == ResetStatusEnumType.Accepted) {
             IdTokenType.setIdToken(null);
             IdTokenType.setType(null);
             TransactionEventRequest.eventType =TransactionEventEnumType.Started ;
         }
 
+        if(type == ResetEnumType.OnIdle && ResetResponse.status == ResetStatusEnumType.Accepted){
 
+        }
+    }
+    private void processDisplayMessageRequest(JSONObject j) throws JSONException {
+
+        messageInfo.setId(j.getInt("id"));
+        messageInfo.setPriority(MessagePriorityEnumType.valueOf(j.getString("priority")));
+        messageInfo.setState(MessageStateEnumType.valueOf(j.getString("state")));
+        messageInfo.setStartDateTime(j.getString("startDateTime"));
+        messageInfo.setEndDataTime(j.getString("endDataTime"));
+        messageInfo.setTransactionId(j.getString("transactionId"));
+
+        MessageContentType messageContent = new MessageContentType();
+        JSONObject displaymessage = j.getJSONObject("message");
+        messageContent.setContent(displaymessage.getString("content"));
+        messageContent.setFormat(MessageFormatEnumType.valueOf(displaymessage.getString("format")));
+        messageContent.setLanguage(displaymessage.getString("language"));
+
+        messageInfo.setMessage(messageContent);
     }
 
+    private void processAuthResponse(JSONObject j2) throws JSONException {
+        idInfo.setStatus(AuthorizationStatusEnumType.valueOf(j2.getString("status")));
+        idInfo.setCacheExpiryDateTime(j2.getString("cacheExpiryDateTime"));
+        idInfo.setChargingPriority(j2.getInt("chargingPriority"));
+        MessageContentType personalMessage = new MessageContentType();
+        JSONObject j3 = j2.getJSONObject("personalMessage");
+        personalMessage.setContent(j3.getString("content"));
+        personalMessage.setLanguage(j3.getString("language"));
+        personalMessage.setFormat(MessageFormatEnumType.valueOf(j3.getString("format")));
+        idInfo.setPersonalMessage(personalMessage);
+    }
 
+    private void processBootResponse(JSONObject jsonObject) throws JSONException {
+        bootNotificationResponse.setBootStatus(RegistrationStatusEnumType.valueOf(jsonObject.getString("status"))) ;
+        bootNotificationResponse.setBootInterval(jsonObject.getInt("interval"));
+    }
 
+    private void processCostUpdatedRequest(JSONObject jsonObject) throws JSONException {
+        costUpdated.setTotalCost((float)jsonObject.getDouble("totalCost"));
+        costUpdated.setTransactionId(jsonObject.getString("transactionId"));
+    }
 
+    //BOOT
+    public BootNotificationResponse getBootNotificationResponse(){
+        return bootNotificationResponse;
+    }
 
+    //AUTHORIZE
+    public IdTokenInfoType getIdInfo() {
+        return idInfo;
+    }
 
+    public MessageInfoType getMessageInfo(){
+        return messageInfo ;
+    }
 
+    public CostUpdatedRequest getCostUpdated(){
+        return costUpdated ;
+    }
 
 
 

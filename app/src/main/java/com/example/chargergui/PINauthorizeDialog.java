@@ -20,7 +20,7 @@ import java.io.IOException;
 import javax.websocket.EncodeException;
 
 import ChargingStationRequest.TransactionEventRequest;
-import DataType.IdTokenInfoType;
+import UseCasesOCPP.IdTokenInfoType;
 import DataType.IdTokenType;
 import DataType.TransactionType;
 import EnumDataType.AuthorizationStatusEnumType;

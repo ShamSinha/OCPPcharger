@@ -1,6 +1,5 @@
 package com.example.chargergui;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -25,7 +24,7 @@ import ChargingStationRequest.TransactionEventRequest;
 import Controller_Components.SampledDataCtrlr;
 import Controller_Components.TariffCostCtrlr;
 import Controller_Components.TxCtlr;
-import DataType.IdTokenInfoType;
+import UseCasesOCPP.IdTokenInfoType;
 import DataType.IdTokenType;
 import DataType.SampledValueType;
 import DataType.TransactionType;
@@ -70,6 +69,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
     Handler mHandler = new Handler();
     SendRequestToCSMS toCSMS1 = new SendRequestToCSMS();
     final MainActivity bs = new MainActivity();
+    MyClientEndpoint myClientEndpoint = new MyClientEndpoint();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,6 +131,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
                 SampledValueType.value = Energy ;
                 SampledValueType.context = ReadingContextEnumType.SamplePeriodic ;
                 toCSMS1.sendTransactionEventRequest() ;
+                updatedCost.setText(String.format("%s %s", TariffCostCtrlr.Currency, myClientEndpoint.getCostUpdated().getTotalCost()));
                 mHandler.postDelayed(this,1000* SampledDataCtrlr.TxUpdatedInterval) ;
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -234,10 +235,10 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
             }
             @Override
             public void onFinish() {
-                if(IdTokenInfoType.status != AuthorizationStatusEnumType.Accepted) {
+                if(myClientEndpoint.getIdInfo().getStatus() != AuthorizationStatusEnumType.Accepted) {
                     AfterStopButton.setText("To stop charging\n first verify your IDTOKEN");
                 }
-                if(IdTokenInfoType.status == AuthorizationStatusEnumType.Accepted){
+                if(myClientEndpoint.getIdInfo().getStatus() == AuthorizationStatusEnumType.Accepted){
                     AfterStopButton.setVisibility(View.GONE);
                 }
             }
@@ -268,7 +269,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
                                 int minutes = (TransactionType.timeSpentCharging % 3600) / 60;
                                 int seconds = TransactionType.timeSpentCharging % 60;
                                 TimeSpent.setText(getString(R.string.timespent,hours, minutes, seconds));
-                                if(getString(R.string.timespent,hours, minutes, seconds)== IdTokenInfoType.cacheExpiryDateTime){
+                                if(getString(R.string.timespent,hours, minutes, seconds)== myClientEndpoint.getIdInfo().getCacheExpiryDateTime() ){
                                     AfterChargingComplete();
                                 }
                             }
@@ -534,10 +535,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
                 e.printStackTrace();
             }
         }
-
     }
-
-
 }
 
 

@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import EnumDataType.RegistrationStatusEnumType;
+import UseCasesOCPP.BootNotificationResponse;
 
 
 public class MainActivity extends Activity {
@@ -63,12 +64,12 @@ public class MainActivity extends Activity {
         MyClientEndpoint myClientEndpoint = new MyClientEndpoint();
         myClientEndpoint.ConnectClientToServer(Boot);
 
-        if(StoreResponseFromCSMS.status == RegistrationStatusEnumType.Accepted){
+        if(myClientEndpoint.getBootNotificationResponse().getBootStatus() == RegistrationStatusEnumType.Accepted){
             Intent i = new Intent(MainActivity.this , WelcomeAndStart.class);
             startActivity(i);
         }
-        if(StoreResponseFromCSMS.status == RegistrationStatusEnumType.Pending || StoreResponseFromCSMS.status == RegistrationStatusEnumType.Rejected) {
-            new CountDownTimer(StoreResponseFromCSMS.interval*1000, 1000) {
+        if(myClientEndpoint.getBootNotificationResponse().getBootStatus() != RegistrationStatusEnumType.Accepted) {
+            new CountDownTimer(myClientEndpoint.getBootNotificationResponse().getBootInterval()*1000, 1000) {
                 public void onTick(long millisUntilFinished) {
 
                 }
@@ -138,50 +139,50 @@ public class MainActivity extends Activity {
     }
 
 
-        public void BluetoothThreadforCablePlug() {
-        if (BTinit()) {
-            if (BTconnect()) {
-                deviceConnected = true;
-                Thread thread = new Thread(new Runnable() {
-                    public void run() {
-                        boolean stopThread;
-                        stopThread = false;
-                        while (!Thread.currentThread().isInterrupted() && !stopThread) {
-                            try {
-                                String string = "CPEV";
-                                outputStream.write(string.getBytes());
+    public void BluetoothThreadforCablePlug() {
+    if (BTinit()) {
+        if (BTconnect()) {
+            deviceConnected = true;
+            Thread thread = new Thread(new Runnable() {
+                public void run() {
+                    boolean stopThread;
+                    stopThread = false;
+                    while (!Thread.currentThread().isInterrupted() && !stopThread) {
+                        try {
+                            String string = "CPEV";
+                            outputStream.write(string.getBytes());
 
-                                int byteCount = inputStream.available();
-                                if (byteCount > 0) {
-                                    byte[] mmBuffer = new byte[1024];
-                                    int numBytes; // bytes returned from read()
-                                    numBytes = inputStream.read(mmBuffer);
-                                    final String cableplug = new String(mmBuffer,0,numBytes,"UTF-8");
-                                    Handler handler = new Handler();
-                                    handler.post(new Runnable() {
-                                        public void run() {
-                                            if(cableplug.equals("T")) {
-                                                ChargingStationStates.setCablePluggedIn(true);
-                                            }
-                                            else if(cableplug.equals("F")){
-                                                ChargingStationStates.setCablePluggedIn(false);
-                                            }
-
+                            int byteCount = inputStream.available();
+                            if (byteCount > 0) {
+                                byte[] mmBuffer = new byte[1024];
+                                int numBytes; // bytes returned from read()
+                                numBytes = inputStream.read(mmBuffer);
+                                final String cableplug = new String(mmBuffer,0,numBytes,"UTF-8");
+                                Handler handler = new Handler();
+                                handler.post(new Runnable() {
+                                    public void run() {
+                                        if(cableplug.equals("T")) {
+                                            ChargingStationStates.setCablePluggedIn(true);
                                         }
-                                    });
+                                        else if(cableplug.equals("F")){
+                                            ChargingStationStates.setCablePluggedIn(false);
+                                        }
 
-                                }
-                            } catch (IOException ex) {
-                                stopThread = true;
+                                    }
+                                });
+
                             }
+                        } catch (IOException ex) {
+                            stopThread = true;
                         }
                     }
-                });
+                }
+            });
 
-                thread.start();
-            }
+            thread.start();
         }
     }
+}
 }
 
 
