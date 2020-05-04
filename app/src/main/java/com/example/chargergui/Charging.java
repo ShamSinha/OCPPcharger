@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -24,7 +25,6 @@ import ChargingStationRequest.TransactionEventRequest;
 import Controller_Components.SampledDataCtrlr;
 import Controller_Components.TariffCostCtrlr;
 import Controller_Components.TxCtlr;
-import UseCasesOCPP.IdTokenInfoType;
 import DataType.IdTokenType;
 import DataType.SampledValueType;
 import DataType.TransactionType;
@@ -131,21 +131,18 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
                 TransactionType.chargingState = ChargingStateEnumType.Charging;
                 SampledValueType.value = Energy ;
                 SampledValueType.context = ReadingContextEnumType.SamplePeriodic ;
-                toCSMS1.sendTransactionEventRequest() ;
+                send(toCSMS1.createTransactionEventRequest()) ;
+
                 updatedCost.setText(String.format("%s %s", TariffCostCtrlr.Currency, myClientEndpoint.getCostUpdated().getTotalCost()));
                 mHandler.postDelayed(this,1000* SampledDataCtrlr.TxUpdatedInterval) ;
             } catch (JSONException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (EncodeException e) {
                 e.printStackTrace();
             }
         }
     };
 
 
-    public void AfterChargingComplete()  {
+    private void AfterChargingComplete()  {
 
         StopSendingMeterValues();
         ChargingStationStates.setEnergyTransfer(false);
@@ -158,12 +155,8 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
         SampledValueType.value = Energy;
         SampledValueType.context = ReadingContextEnumType.TransactionEnd;
         try {
-            toCSMS1.sendTransactionEventRequest();
+            send(toCSMS1.createTransactionEventRequest());
         } catch (JSONException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (EncodeException e) {
             e.printStackTrace();
         }
 
@@ -171,18 +164,14 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
         TransactionEventRequest.triggerReason = TriggerReasonEnumType.ChargingStateChanged;
         TransactionType.chargingState = ChargingStateEnumType.SuspendedEVSE;
         try {
-            toCSMS1.sendTransactionEventRequest();
+            send(toCSMS1.createTransactionEventRequest());
         } catch (JSONException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (EncodeException e) {
             e.printStackTrace();
         }
 
     }
 
-    public void UpdateUiAfterStop(){
+    private void UpdateUiAfterStop(){
         ImageSetBattery imageSetBattery = new ImageSetBattery(SOC,BatteryCharge);
         WantToChargeMore.setVisibility(View.VISIBLE);
         Payment.setVisibility(View.VISIBLE);
@@ -192,7 +181,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
         ChargingText.setText(" CHARGING\n      Done!");
     }
 
-    public void UpdateUiAfterSuspend(){
+    private void UpdateUiAfterSuspend(){
 
         ChargingText.setText(" CHARGING\nSuspended!");
         ImageSetBattery imageSetBattery = new ImageSetBattery(SOC,BatteryCharge);
@@ -200,7 +189,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
 
     }
 
-    public void OnClickStop(View view ) throws IOException, EncodeException, JSONException {
+    private void OnClickStop(View view )  {
         if(IdTokenType.type == IdTokenEnumType.KeyCode){
             openDialogPIN();
         }
@@ -254,7 +243,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
 
     }
 
-    public void TimerForTimeSpent(){
+    private void TimerForTimeSpent(){
         final Thread t = new Thread(){
             @Override
             public void run(){
@@ -286,7 +275,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
         t.start();
     }
 
-    public void BluetoothThreadMeter() {
+    private void BluetoothThreadMeter() {
 
         if (bs.BTinit()) {
             if (bs.BTconnect()) {
@@ -364,15 +353,15 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
         }
     }
 
-    public void StopSendingMeterValues(){
+    private void StopSendingMeterValues(){
         mHandler.removeCallbacks(sendTransReq); // stop runnable
     }
 
-    public void StartSendingMeterValues(){
+    private void StartSendingMeterValues(){
         sendTransReq.run();
     }
 
-    public void BluetoothThreadforCablePlug() {
+    private void BluetoothThreadforCablePlug() {
         if (bs.BTinit()) {
             if (bs.BTconnect()) {
                 bs.deviceConnected = true;
@@ -417,7 +406,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
         }
     }
 
-    public void afterSuspendCablePluggedAtEVSide(){
+    private void afterSuspendCablePluggedAtEVSide(){
 
         ChargingStationStates.setEnergyTransfer(true);
         stopThread = false;
@@ -431,12 +420,8 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
         TransactionEventRequest.triggerReason = TriggerReasonEnumType.CablePluggedIn;
         TransactionType.chargingState = ChargingStateEnumType.Charging;
         try {
-            toCSMS1.sendTransactionEventRequest();
+            toCSMS1.createTransactionEventRequest();
         } catch (JSONException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (EncodeException e) {
             e.printStackTrace();
         }
         BluetoothThreadMeter();
@@ -446,7 +431,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
 
 
 
-    public void afterCableUnplugAtEVSide() throws IOException, EncodeException, JSONException {
+    private void afterCableUnplugAtEVSide() throws IOException, EncodeException, JSONException {
 
         ChargingStationStates.setEnergyTransfer(false);
         StopSendingMeterValues();
@@ -459,7 +444,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
             TransactionEventRequest.eventType = TransactionEventEnumType.Updated;
             TransactionEventRequest.triggerReason = TriggerReasonEnumType.EVCommunicationLost;
 
-            toCSMS1.sendTransactionEventRequest();
+            send(toCSMS1.createTransactionEventRequest());
 
             if(CSPhysicalProperties.isCableIsPermanentAttached) {
 
@@ -478,22 +463,14 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
                             TransactionEventRequest.triggerReason = TriggerReasonEnumType.EVCommunicationLost;
                             TransactionType.stoppedReason = ReasonEnumType.EVDisconnected;
                             try {
-                                toCSMS1.sendTransactionEventRequest();
+                                send(toCSMS1.createTransactionEventRequest());
                             } catch (JSONException e) {
-                                e.printStackTrace();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            } catch (EncodeException e) {
                                 e.printStackTrace();
                             }
 
                             StatusNotificationRequest.setConnectorStatus(ConnectorStatusEnumType.Available);
                             try {
-                                toCSMS1.sendStatusNotificationRequest();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            } catch (EncodeException e) {
-                                e.printStackTrace();
+                                send(toCSMS1.createStatusNotificationRequest());
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -516,26 +493,36 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
             TransactionEventRequest.triggerReason = TriggerReasonEnumType.EVCommunicationLost;
             TransactionType.stoppedReason = ReasonEnumType.EVDisconnected ;
             try {
-                toCSMS1.sendTransactionEventRequest();
+                send(toCSMS1.createTransactionEventRequest());
             } catch (JSONException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (EncodeException e) {
                 e.printStackTrace();
             }
 
             StatusNotificationRequest.setConnectorStatus(ConnectorStatusEnumType.Available);
             try {
-                toCSMS1.sendStatusNotificationRequest();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (EncodeException e) {
-                e.printStackTrace();
+                send(toCSMS1.createStatusNotificationRequest());
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void send(final CALL call) {
+        Thread thread1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    myClientEndpoint.getOpenSession().getBasicRemote().sendObject(call);
+                    Log.d("TAG" , "Message Sent" + CALL.Action);
+                    Log.d("TAG", myClientEndpoint.getOpenSession().getId());
+
+                } catch (IOException | EncodeException e) {
+                    Log.e("ERROR" , "IOException in BasicRemote") ;
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread1.start();
     }
 }
 

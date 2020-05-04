@@ -51,7 +51,8 @@ import UseCasesOCPP.SendRequestToCSMS;
 public class MyClientEndpoint  {
 
     private Session session ;
-    private SendRequestToCSMS toCSMS = new SendRequestToCSMS() ;
+    
+
     private static MyClientEndpoint instance = new MyClientEndpoint(); // Eagerly Loading of single ton instance
 
     private MyClientEndpoint(){
@@ -74,6 +75,9 @@ public class MyClientEndpoint  {
     //CostUpdatedRequest
     private CostUpdatedRequest costUpdated = new CostUpdatedRequest();
 
+    public Session getOpenSession() {
+        return session;
+    }
 
     void ConnectClientToServer(final TextView text) {
         Thread thread = new Thread(new Runnable() {
@@ -103,7 +107,7 @@ public class MyClientEndpoint  {
                 text.append("\nfirmwareVersion: "+ChargingStationType.firmwareVersion+"\n");
                 text.append("\nmodem: "+ChargingStationType.modem+"\n");
                 text.append("\nSending BootNotificationRequest to CSMS\n");
-                toCSMS.sendBootNotificationRequest();
+                toCSMS.createBootNotificationRequest();
                 if(CALLRESULT.MessageId.equals(CALL.MessageId)){
                     text.append("\nBoot status: "+ bootNotificationResponse.getBootStatus() + "\n");
                 }
@@ -114,65 +118,17 @@ public class MyClientEndpoint  {
         } catch (IOException e) {
             e.printStackTrace();
             text.append("\nIO Exception" + R.string.conncsmsnot+"\n");
-        } catch (EncodeException e) {
-            e.printStackTrace();
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    public void SendRequestToServer(final CALL call) {
-        Thread thread1 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    session.getBasicRemote().sendObject(call);
-
-                } catch (IOException | EncodeException e) {
-
-                    e.printStackTrace();
-                }
-            }
-        });
-        thread1.start();
-    }
-    public void SendResponseToServer(final CALLRESULT callresult){
-        Thread thread1 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    session.getBasicRemote().sendObject(callresult);
-
-                } catch (IOException | EncodeException e) {
-
-                    e.printStackTrace();
-                }
-            }
-        });
-        thread1.start();
-    }
-
-    public void SendResponseErrorToServer(final CALLERROR callerror){
-        Thread thread1 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    session.getBasicRemote().sendObject(callerror);
-
-                } catch (IOException | EncodeException e) {
-
-                    e.printStackTrace();
-                }
-            }
-        });
-        thread1.start();
-    }
-
 
 
     @OnOpen
-    public void onOpen() throws IOException, DeploymentException, URISyntaxException {
-        String content = "Websocket connection is alive";
+    public void onOpen(Session session1) throws IOException, DeploymentException, URISyntaxException {
+        session = session1 ;
+        /*String content = "Websocket connection is alive";
         ByteBuffer buffer = ByteBuffer.wrap(content.getBytes("UTF-8"));
         try {
             session.getBasicRemote().sendPing(buffer);
@@ -180,8 +136,7 @@ public class MyClientEndpoint  {
             e.printStackTrace();
            // new MyClientEndpoint();
         }
-
-
+         */
     }
 
 

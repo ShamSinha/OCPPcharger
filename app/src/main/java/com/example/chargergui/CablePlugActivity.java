@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -22,10 +23,8 @@ import javax.websocket.EncodeException;
 import ChargingStationRequest.StatusNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
 import Controller_Components.TxCtlr;
-import UseCasesOCPP.IdTokenInfoType;
 import DataType.IdTokenType;
 import DataType.TransactionType;
-import EnumDataType.AuthorizationStatusEnumType;
 import EnumDataType.ChargingStateEnumType;
 import EnumDataType.ConnectorStatusEnumType;
 import EnumDataType.ReasonEnumType;
@@ -42,6 +41,7 @@ public class CablePlugActivity extends AppCompatActivity {
     ImageView plug1 ;
     ImageView plug2 ;
     SendRequestToCSMS toCSMS = new SendRequestToCSMS();
+    MyClientEndpoint myClientEndpoint ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +57,7 @@ public class CablePlugActivity extends AppCompatActivity {
         connected.setVisibility(View.INVISIBLE);
         plug1 = (ImageView) findViewById(R.id.imageView3);
         plug2 = (ImageView) findViewById(R.id.imageView2);
+        myClientEndpoint = MyClientEndpoint.getInstance() ;
 
     }
 
@@ -80,12 +81,8 @@ public class CablePlugActivity extends AppCompatActivity {
 
             try {
                 StatusNotificationRequest.setConnectorStatus(ConnectorStatusEnumType.Occupied);
-                toCSMS.sendStatusNotificationRequest();
+                send(toCSMS.createStatusNotificationRequest());
 
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (EncodeException e) {
-                e.printStackTrace();
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -94,16 +91,13 @@ public class CablePlugActivity extends AppCompatActivity {
             TransactionType.chargingState = ChargingStateEnumType.EVConnected;
             TransactionEventRequest.triggerReason = TriggerReasonEnumType.CablePluggedIn;
             try {
-                toCSMS.sendTransactionEventRequest();
+                send(toCSMS.createTransactionEventRequest());
+
             } catch (JSONException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (EncodeException e) {
                 e.printStackTrace();
             }
 
-            Intent i = new Intent(CablePlugActivity.this, SOCdisplay.class);
+        Intent i = new Intent(CablePlugActivity.this, SOCdisplay.class);
             startActivity(i);
 
     }
@@ -132,12 +126,8 @@ public class CablePlugActivity extends AppCompatActivity {
                 TransactionEventRequest.triggerReason = TriggerReasonEnumType.EVConnectTimeout ;
                 TransactionType.stoppedReason = ReasonEnumType.Timeout;
                 try {
-                    toCSMS.sendTransactionEventRequest();
+                    send(toCSMS.createTransactionEventRequest());
                 } catch (JSONException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (EncodeException e) {
                     e.printStackTrace();
                 }
 
@@ -194,6 +184,24 @@ public class CablePlugActivity extends AppCompatActivity {
                 thread.start();
             }
         }
+    }
+
+    private void send(final CALL call) {
+        Thread thread1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    myClientEndpoint.getOpenSession().getBasicRemote().sendObject(call);
+                    Log.d("TAG" , "Message Sent" + CALL.Action);
+                    Log.d("TAG", myClientEndpoint.getOpenSession().getId());
+
+                } catch (IOException | EncodeException e) {
+                    Log.e("ERROR" , "IOException in BasicRemote") ;
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread1.start();
     }
 
 

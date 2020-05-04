@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -35,10 +36,11 @@ public class PINauthorizeDialog extends AppCompatDialogFragment {
     private TextView UseYourPIN ;
 
     private PINauthorizeDialogListener listener ;
-
+    MyClientEndpoint myClientEndpoint ;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        myClientEndpoint = MyClientEndpoint.getInstance();
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
         LayoutInflater inflater = getActivity().getLayoutInflater();
@@ -63,35 +65,27 @@ public class PINauthorizeDialog extends AppCompatDialogFragment {
                         IdTokenType.setIdToken(PIN.getText().toString());
 
                         try {
-                            toCSMS2.sendAuthorizeRequest();
+                            send(toCSMS2.createAuthorizeRequest());
                         } catch (JSONException e) {
-                            e.printStackTrace();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        } catch (EncodeException e) {
                             e.printStackTrace();
                         }
 
-                        if(IdTokenInfoType.status == AuthorizationStatusEnumType.Accepted ){
+                        if(myClientEndpoint.getIdInfo().getStatus() == AuthorizationStatusEnumType.Accepted ){
 
                             TransactionEventRequest.triggerReason = TriggerReasonEnumType.Deauthorized ;
                             TransactionEventRequest.eventType = TransactionEventEnumType.Updated ;
                             TransactionType.chargingState = ChargingStateEnumType.EVConnected;
 
                             try {
-                                toCSMS2.sendTransactionEventRequest();
+                                send(toCSMS2.createTransactionEventRequest());
                             } catch (JSONException e) {
                                 e.printStackTrace();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            } catch (EncodeException e) {
-                                e.printStackTrace();
                             }
-                            listener.applyTexts("PIN "+IdTokenInfoType.status.toString() );
+                            listener.applyTexts("PIN "+ myClientEndpoint.getIdInfo().getStatus().toString() );
 
                         }
                         else {
-                            listener.applyTexts("PIN "+IdTokenInfoType.status.toString() );
+                            listener.applyTexts("PIN "+ myClientEndpoint.getIdInfo().getStatus().toString() );
                         }
 
                     }
@@ -115,6 +109,23 @@ public class PINauthorizeDialog extends AppCompatDialogFragment {
 
     public interface PINauthorizeDialogListener{
         void applyTexts(String s) ;
+    }
+    private void send(final CALL call) {
+        Thread thread1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    myClientEndpoint.getOpenSession().getBasicRemote().sendObject(call);
+                    Log.d("TAG" , "Message Sent" + CALL.Action);
+                    Log.d("TAG", myClientEndpoint.getOpenSession().getId());
+
+                } catch (IOException | EncodeException e) {
+                    Log.e("ERROR" , "IOException in BasicRemote") ;
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread1.start();
     }
 
 }

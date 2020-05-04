@@ -22,51 +22,60 @@ import EnumDataType.TransactionEventEnumType;
 
 
 public class SendRequestToCSMS {
-    MyClientEndpoint myClientEndpoint;
 
-    // BootReason default  = PowerUp
+    private static SendRequestToCSMS instance = new SendRequestToCSMS(); // Eagerly Loading of single ton instance
 
-    public void sendBootNotificationRequest() throws JSONException, IOException, EncodeException {
+    private SendRequestToCSMS(){
+        // private to prevent anyone else from instantiating
+    }
+
+    public static SendRequestToCSMS getInstance(){
+        return instance;
+    }
+
+        // BootReason default  = PowerUp
+    public CALL createBootNotificationRequest() throws JSONException {
         CheckNewCallMessageCanBeSent();
         CALL call = new CALL("BootNotification", BootNotificationRequest.payload());
         CALL.setMessageId();
-        myClientEndpoint.SendRequestToServer(call);
+        return call ;
     }
 
     //  ConnectorStatus default = Available
     //  Before Sending this request Set EVSE.id and EVSE.connectorId
-    public void sendStatusNotificationRequest() throws IOException, EncodeException, JSONException {
+    public CALL createStatusNotificationRequest() throws JSONException {
         CheckNewCallMessageCanBeSent();
         StatusNotificationRequest.setTimestamp();
         CALL call = new CALL("StatusNotification",StatusNotificationRequest.payload());
         CALL.setMessageId();
-        myClientEndpoint.SendRequestToServer(call);
+        return call ;
     }
 
-    public void sendHeartBeatRequest() throws JSONException, IOException, EncodeException {
+    public CALL createHeartBeatRequest() throws JSONException {
         CheckNewCallMessageCanBeSent();
         CALL call = new CALL("HeartBeat",HeartBeatRequest.payload());
         CALL.setMessageId();
-        myClientEndpoint.SendRequestToServer(call);
+        return call ;
     }
 
     //Before Sending this make sure IdTokenType is set.
-    public void sendAuthorizeRequest() throws JSONException, IOException, EncodeException {
+    public CALL createAuthorizeRequest() throws JSONException {
         CheckNewCallMessageCanBeSent();
         CALL call = new CALL("Authorize",AuthorizeRequest.payload()) ;
         CALL.setMessageId();
-        myClientEndpoint.SendRequestToServer(call);
+        return call ;
+
     }
 
     //Before Sending this make sure TransactionEvent , TriggerReason, TransactionType.ChargingStatus are set ;
-    public void sendTransactionEventRequest() throws JSONException, IOException, EncodeException {
+    public CALL createTransactionEventRequest() throws JSONException {
         CheckNewCallMessageCanBeSent();
         TransactionType.transactionId = TransId(TransactionEventRequest.eventType);
         TransactionEventRequest.SetSeqNo();
         TransactionEventRequest.setTimestamp();
         CALL call = new CALL("TransactionEvent", TransactionEventRequest.payload());
         CALL.setMessageId();
-        myClientEndpoint.SendRequestToServer(call);
+        return call;
     }
 
 

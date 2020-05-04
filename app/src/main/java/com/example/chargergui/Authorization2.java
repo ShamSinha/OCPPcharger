@@ -3,6 +3,7 @@ package com.example.chargergui;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -21,7 +22,6 @@ import java.io.IOException;
 import javax.websocket.EncodeException;
 
 import ChargingStationRequest.TransactionEventRequest;
-import UseCasesOCPP.IdTokenInfoType;
 import DataType.IdTokenType;
 import DataType.TransactionType;
 import EnumDataType.AuthorizationStatusEnumType;
@@ -86,12 +86,8 @@ public class Authorization2 extends Activity {
         IdTokenType.setType(IdTokenEnumType.ISO14443);
         IdTokenType.setIdToken(rfid);
         try {
-            toCSMS.sendAuthorizeRequest();
+            send(toCSMS.createAuthorizeRequest());
         } catch (JSONException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (EncodeException e) {
             e.printStackTrace();
         }
 
@@ -109,12 +105,8 @@ public class Authorization2 extends Activity {
                 TransactionType.chargingState = ChargingStateEnumType.Idle ;
             }
             try {
-                toCSMS.sendTransactionEventRequest();
+                send(toCSMS.createTransactionEventRequest());
             } catch (JSONException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (EncodeException e) {
                 e.printStackTrace();
             }
         }
@@ -197,6 +189,23 @@ public class Authorization2 extends Activity {
         IdTokenType.setIdToken(null);
         Intent i = new Intent(Authorization2.this, Authentication.class);
         startActivity(i);
+    }
 
+    private void send(final CALL call) {
+        Thread thread1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    myClientEndpoint.getOpenSession().getBasicRemote().sendObject(call);
+                    Log.d("TAG" , "Message Sent" + CALL.Action);
+                    Log.d("TAG", myClientEndpoint.getOpenSession().getId());
+
+                } catch (IOException | EncodeException e) {
+                    Log.e("ERROR" , "IOException in BasicRemote") ;
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread1.start();
     }
 }

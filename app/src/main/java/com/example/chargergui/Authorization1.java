@@ -3,6 +3,7 @@ package com.example.chargergui;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -22,7 +23,6 @@ import javax.websocket.EncodeException;
 
 import ChargingStationRequest.StatusNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
-import UseCasesOCPP.IdTokenInfoType;
 import DataType.IdTokenType;
 import DataType.TransactionType;
 import EnumDataType.AuthorizationStatusEnumType;
@@ -102,11 +102,7 @@ public class Authorization1 extends Activity {
 
             StatusNotificationRequest.setConnectorStatus(ConnectorStatusEnumType.Occupied);
             try {
-                toCSMS.sendStatusNotificationRequest();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (EncodeException e) {
-                e.printStackTrace();
+                send(toCSMS.createStatusNotificationRequest());
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -115,12 +111,8 @@ public class Authorization1 extends Activity {
             TransactionType.chargingState = ChargingStateEnumType.EVConnected;
             TransactionEventRequest.triggerReason = TriggerReasonEnumType.CablePluggedIn;
             try {
-                toCSMS.sendTransactionEventRequest();
+                send(toCSMS.createTransactionEventRequest());
             } catch (JSONException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (EncodeException e) {
                 e.printStackTrace();
             }
 
@@ -143,7 +135,7 @@ public class Authorization1 extends Activity {
 
         IdTokenType.setType(IdTokenEnumType.KeyCode);
         IdTokenType.setIdToken(PIN.getText().toString());
-        toCSMS.sendAuthorizeRequest();
+        send(toCSMS.createAuthorizeRequest());
 
         if(myClientEndpoint.getIdInfo().getStatus() == AuthorizationStatusEnumType.Accepted){
 
@@ -158,7 +150,7 @@ public class Authorization1 extends Activity {
                 TransactionEventRequest.eventType = TransactionEventEnumType.Started ;
                 TransactionType.chargingState =ChargingStateEnumType.Idle ;
             }
-            toCSMS.sendTransactionEventRequest();
+            send(toCSMS.createTransactionEventRequest());
         }
 
 
@@ -182,6 +174,23 @@ public class Authorization1 extends Activity {
             progressBar.setVisibility(View.INVISIBLE);
             Toast.makeText(getApplicationContext(), myClientEndpoint.getIdInfo().getStatus() +"PIN " , Toast.LENGTH_SHORT).show();
         }
+    }
+    private void send(final CALL call) {
+        Thread thread1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    myClientEndpoint.getOpenSession().getBasicRemote().sendObject(call);
+                    Log.d("TAG" , "Message Sent" + CALL.Action);
+                    Log.d("TAG", myClientEndpoint.getOpenSession().getId());
+
+                } catch (IOException | EncodeException e) {
+                    Log.e("ERROR" , "IOException in BasicRemote") ;
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread1.start();
     }
 
 }
