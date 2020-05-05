@@ -9,6 +9,8 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
+import Controller_Components.AuthCtrlr;
+
 public class WelcomeAndStart extends Activity {
 
     @Override
@@ -20,9 +22,14 @@ public class WelcomeAndStart extends Activity {
         setContentView(R.layout.activity_welcome_and_start);
     }
 
-
     public void onClickStart(View view){
-        Intent i = new Intent(WelcomeAndStart.this , Authentication.class);
-        startActivity(i);
+        if(AuthCtrlr.isEnabled()) {
+            Intent i = new Intent(WelcomeAndStart.this, Authentication.class);
+            startActivity(i);
+        }
+        else{
+            Intent i = new Intent(WelcomeAndStart.this, CablePlugActivity.class);
+            startActivity(i);
+        }
     }
 }

@@ -51,7 +51,8 @@ import UseCasesOCPP.SendRequestToCSMS;
 public class MyClientEndpoint  {
 
     private Session session ;
-    
+
+
 
     private static MyClientEndpoint instance = new MyClientEndpoint(); // Eagerly Loading of single ton instance
 
@@ -62,6 +63,8 @@ public class MyClientEndpoint  {
     public static MyClientEndpoint getInstance(){
         return instance;
     }
+
+    public SendRequestToCSMS toCSMS = new SendRequestToCSMS();
 
     //BootNotificationResponse
     private BootNotificationResponse bootNotificationResponse = new BootNotificationResponse();
@@ -107,7 +110,7 @@ public class MyClientEndpoint  {
                 text.append("\nfirmwareVersion: "+ChargingStationType.firmwareVersion+"\n");
                 text.append("\nmodem: "+ChargingStationType.modem+"\n");
                 text.append("\nSending BootNotificationRequest to CSMS\n");
-                toCSMS.createBootNotificationRequest();
+                session.getBasicRemote().sendObject(toCSMS.createBootNotificationRequest());
                 if(CALLRESULT.MessageId.equals(CALL.MessageId)){
                     text.append("\nBoot status: "+ bootNotificationResponse.getBootStatus() + "\n");
                 }
@@ -120,10 +123,10 @@ public class MyClientEndpoint  {
             text.append("\nIO Exception" + R.string.conncsmsnot+"\n");
         } catch (JSONException e) {
             e.printStackTrace();
+        } catch (EncodeException e) {
+            e.printStackTrace();
         }
     }
-
-
 
     @OnOpen
     public void onOpen(Session session1) throws IOException, DeploymentException, URISyntaxException {
@@ -262,6 +265,7 @@ public class MyClientEndpoint  {
     private void processBootResponse(JSONObject jsonObject) throws JSONException {
         bootNotificationResponse.setBootStatus(RegistrationStatusEnumType.valueOf(jsonObject.getString("status"))) ;
         bootNotificationResponse.setBootInterval(jsonObject.getInt("interval"));
+
     }
 
     private void processCostUpdatedRequest(JSONObject jsonObject) throws JSONException {

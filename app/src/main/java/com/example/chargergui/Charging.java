@@ -62,7 +62,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
     float Current = 0;
     float Energy = 0 ;
     String currentsoc ;
-    int counter = TxCtlr.EVConnectionTimeOut ;
+    int counter = TxCtlr.getEVConnectionTimeOut() ;
     int count = 0 ;
     boolean stopThread =false;
     boolean stopThread1 = false ;
@@ -102,7 +102,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
         voltage.setText(R.string.initialzero); // 0.00
         current.setText(R.string.initialzero); // 0.00
         Charge.setText(currentsoc);
-        updatedCost.setText(format("%s 0.00", TariffCostCtrlr.Currency));
+        updatedCost.setText(format("%s 0.00", TariffCostCtrlr.getCurrency()));
 
         SuspendTimer.setVisibility(View.GONE);
         AfterSuspend.setVisibility(View.GONE);
@@ -133,7 +133,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
                 SampledValueType.context = ReadingContextEnumType.SamplePeriodic ;
                 send(toCSMS1.createTransactionEventRequest()) ;
 
-                updatedCost.setText(String.format("%s %s", TariffCostCtrlr.Currency, myClientEndpoint.getCostUpdated().getTotalCost()));
+                updatedCost.setText(String.format("%s %s", TariffCostCtrlr.getCurrency(), myClientEndpoint.getCostUpdated().getTotalCost()));
                 mHandler.postDelayed(this,1000* SampledDataCtrlr.TxUpdatedInterval) ;
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -437,7 +437,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
         StopSendingMeterValues();
         stopThread = true ;
 
-        if(!TxCtlr.StopTxOnEVSideDisconnect){ // Suspend Transaction After CableUnplug at EV side
+        if(!TxCtlr.isStopTxOnEVSideDisconnect()){ // Suspend Transaction After CableUnplug at EV side
 
             UpdateUiAfterSuspend();
 
@@ -448,7 +448,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
 
             if(CSPhysicalProperties.isCableIsPermanentAttached) {
 
-                new CountDownTimer(TxCtlr.EVConnectionTimeOut * 1000, 1000) {
+                new CountDownTimer(TxCtlr.getEVConnectionTimeOut() * 1000, 1000) {
                     public void onTick(long millisUntilFinished) {
                         int minutes = counter / 60;
                         int seconds = counter % 60;
@@ -488,7 +488,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
 
         }
 
-        if(TxCtlr.StopTxOnEVSideDisconnect){   // Stop Transaction After CableUnplug at EV side
+        if(TxCtlr.isStopTxOnEVSideDisconnect()){   // Stop Transaction After CableUnplug at EV side
             TransactionEventRequest.eventType = TransactionEventEnumType.Ended;
             TransactionEventRequest.triggerReason = TriggerReasonEnumType.EVCommunicationLost;
             TransactionType.stoppedReason = ReasonEnumType.EVDisconnected ;

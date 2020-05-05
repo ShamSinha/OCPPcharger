@@ -109,7 +109,7 @@ public class CablePlugActivity extends AppCompatActivity {
 
 
     public void setCountdowntimer(){
-        new CountDownTimer(TxCtlr.EVConnectionTimeOut*1000, 1000){
+        new CountDownTimer(TxCtlr.getEVConnectionTimeOut()*1000, 1000){
             public void onTick(long millisUntilFinished){
                 textView.setText(String.valueOf(counter));
                 counter++;

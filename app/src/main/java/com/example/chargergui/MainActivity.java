@@ -18,6 +18,7 @@ import java.io.OutputStream;
 import java.util.Set;
 import java.util.UUID;
 
+import Controller_Components.OCPPCommCtrlr;
 import EnumDataType.RegistrationStatusEnumType;
 import UseCasesOCPP.BootNotificationResponse;
 
@@ -47,7 +48,6 @@ public class MainActivity extends Activity {
         myClientEndpoint = MyClientEndpoint.getInstance() ;
     }
 
-
     @Override
     protected void onStart() {
         super.onStart();
@@ -67,6 +67,7 @@ public class MainActivity extends Activity {
         myClientEndpoint.ConnectClientToServer(Boot);
 
         if(myClientEndpoint.getBootNotificationResponse().getBootStatus() == RegistrationStatusEnumType.Accepted){
+            OCPPCommCtrlr.setHeartbeatInterval(myClientEndpoint.getBootNotificationResponse().getBootInterval());
             Intent i = new Intent(MainActivity.this , WelcomeAndStart.class);
             startActivity(i);
         }

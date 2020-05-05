@@ -129,7 +129,7 @@ public class Authorization1 extends Activity {
 
     }
 
-    public void OnClickAuthorize(View view) throws IOException, EncodeException, JSONException, InterruptedException {
+    public void OnClickAuthorize(View view) throws  JSONException {
 
         progressBar.setVisibility(View.VISIBLE);
 
@@ -179,16 +179,16 @@ public class Authorization1 extends Activity {
         Thread thread1 = new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    myClientEndpoint.getOpenSession().getBasicRemote().sendObject(call);
-                    Log.d("TAG" , "Message Sent" + CALL.Action);
-                    Log.d("TAG", myClientEndpoint.getOpenSession().getId());
+                    try {
+                        myClientEndpoint.getOpenSession().getBasicRemote().sendObject(call);
+                        Log.d("TAG", "Message Sent" + CALL.Action);
+                        Log.d("TAG", myClientEndpoint.getOpenSession().getId());
 
-                } catch (IOException | EncodeException e) {
-                    Log.e("ERROR" , "IOException in BasicRemote") ;
-                    e.printStackTrace();
+                    } catch (IOException | EncodeException e) {
+                        Log.e("ERROR", "IOException in BasicRemote");
+                        e.printStackTrace();
+                    }
                 }
-            }
         });
         thread1.start();
     }
