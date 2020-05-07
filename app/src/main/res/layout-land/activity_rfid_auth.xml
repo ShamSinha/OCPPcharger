@@ -105,19 +105,19 @@
 
     <TextView
         android:id="@+id/instructplugintext2"
-        android:layout_width="273dp"
-        android:layout_height="129dp"
+        android:layout_width="217dp"
+        android:layout_height="102dp"
         android:background="#FFFFFF"
         android:gravity="center"
         android:text="Now Plug in Cable into EV"
-        android:textAppearance="@style/TextAppearance.AppCompat.Display2"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
         android:textColor="#3D5AFE"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.931"
+        app:layout_constraintHorizontal_bias="0.875"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.854" />
+        app:layout_constraintVertical_bias="0.857" />
 
     <TextView
         android:id="@+id/textView26"
