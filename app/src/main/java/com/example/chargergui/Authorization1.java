@@ -3,6 +3,7 @@ package com.example.chargergui;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -38,6 +39,8 @@ public class Authorization1 extends Activity {
     EditText PIN ;
     TextView dateTime ;
     TextView CablePluginStatus;
+    TextView AuthStatusText ;
+    TextView InstructPlugInText ;
     ImageView CableIn ;
     Button button ;
     ProgressBar progressBar ;
@@ -61,8 +64,13 @@ public class Authorization1 extends Activity {
         button = (Button) findViewById(R.id.authorize);
         CableIn = (ImageView) findViewById(R.id.cableconnectedview) ;
         CablePluginStatus = (TextView) findViewById(R.id.textView19);
-        CableIn.setVisibility(View.INVISIBLE);
-        CablePluginStatus.setVisibility(View.INVISIBLE);
+        AuthStatusText = (TextView) findViewById(R.id.authtext);
+        InstructPlugInText = (TextView) findViewById(R.id.instructplugintext);
+
+        InstructPlugInText.setVisibility(View.GONE);
+        AuthStatusText.setVisibility(View.GONE);
+        CableIn.setVisibility(View.GONE);
+        CablePluginStatus.setVisibility(View.GONE);
         stopThread = false ;
 
         myClientEndpoint = MyClientEndpoint.getInstance() ;
@@ -137,43 +145,7 @@ public class Authorization1 extends Activity {
         IdTokenType.setIdToken(PIN.getText().toString());
         send(toCSMS.createAuthorizeRequest());
 
-        if(myClientEndpoint.getIdInfo().getStatus() == AuthorizationStatusEnumType.Accepted){
-
-            ChargingStationStates.setAuthorized(true);
-
-            TransactionEventRequest.triggerReason = TriggerReasonEnumType.Authorized ;
-            if(ChargingStationStates.isEVSideCablePluggedIn) {
-                TransactionEventRequest.eventType = TransactionEventEnumType.Updated ;
-                TransactionType.chargingState = ChargingStateEnumType.EVConnected;
-            }
-            if(!ChargingStationStates.isEVSideCablePluggedIn){
-                TransactionEventRequest.eventType = TransactionEventEnumType.Started ;
-                TransactionType.chargingState =ChargingStateEnumType.Idle ;
-            }
-            send(toCSMS.createTransactionEventRequest());
-        }
-
-
-        if (ChargingStationStates.isAuthorized){
-            progressBar.setVisibility(View.INVISIBLE);
-
-            if(ChargingStationStates.isEVSideCablePluggedIn) {
-                Toast.makeText(getApplicationContext(), "Authorization Successful", Toast.LENGTH_SHORT).show();
-                Intent i = new Intent(Authorization1.this, UserInput.class);
-                startActivity(i);
-
-            }
-            if(!ChargingStationStates.isEVSideCablePluggedIn){
-                Toast.makeText(getApplicationContext(), "Authorization Successful\n Now Plug the Cable to the Car", Toast.LENGTH_SHORT).show();
-                Intent i = new Intent(Authorization1.this, CablePlugActivity.class);
-                startActivity(i);
-                }
-        }
-
-        else if(myClientEndpoint.getIdInfo().getStatus()  != null) {
-            progressBar.setVisibility(View.INVISIBLE);
-            Toast.makeText(getApplicationContext(), myClientEndpoint.getIdInfo().getStatus() +"PIN " , Toast.LENGTH_SHORT).show();
-        }
+        getResponse();
     }
     private void send(final CALL call) {
         Thread thread1 = new Thread(new Runnable() {
@@ -181,8 +153,7 @@ public class Authorization1 extends Activity {
             public void run() {
                     try {
                         myClientEndpoint.getOpenSession().getBasicRemote().sendObject(call);
-                        Log.d("TAG", "Message Sent" + CALL.getAction());
-                        Log.d("TAG", myClientEndpoint.getOpenSession().getId());
+                        Log.d("TAG", "Message Sent: " + CALL.getAction() + call.getPayload());
 
                     } catch (IOException | EncodeException e) {
                         Log.e("ERROR", "IOException in BasicRemote");
@@ -191,6 +162,75 @@ public class Authorization1 extends Activity {
                 }
         });
         thread1.start();
+    }
+
+    private void getResponse(){
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                if(myClientEndpoint.getIdInfo().getStatus() == AuthorizationStatusEnumType.Accepted){
+
+                    ChargingStationStates.setAuthorized(true);
+
+                    TransactionEventRequest.triggerReason = TriggerReasonEnumType.Authorized ;
+                    if(ChargingStationStates.isEVSideCablePluggedIn) {
+                        TransactionEventRequest.eventType = TransactionEventEnumType.Updated ;
+                        TransactionType.chargingState = ChargingStateEnumType.EVConnected;
+                    }
+                    if(!ChargingStationStates.isEVSideCablePluggedIn){
+                        TransactionEventRequest.eventType = TransactionEventEnumType.Started ;
+                        TransactionType.chargingState =ChargingStateEnumType.Idle ;
+                    }
+                    try {
+                        send(toCSMS.createTransactionEventRequest());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (ChargingStationStates.isAuthorized){
+                            progressBar.setVisibility(View.GONE);
+                            new CountDownTimer(3000, 1000) {
+                                public void onTick(long millisUntilFinished) {
+                                    AuthStatusText.setVisibility(View.VISIBLE);
+                                    AuthStatusText.setText("Authorization\nSuccessful");
+
+                                    if(ChargingStationStates.isEVSideCablePluggedIn){
+                                        InstructPlugInText.setVisibility(View.VISIBLE);
+                                    }
+
+                                }
+                                public void onFinish() {
+                                    if(ChargingStationStates.isEVSideCablePluggedIn) {
+                                        Intent i = new Intent(Authorization1.this, UserInput.class);
+                                        startActivity(i);
+                                    }
+                                    if(!ChargingStationStates.isEVSideCablePluggedIn){
+                                        Intent i = new Intent(Authorization1.this, CablePlugActivity.class);
+                                        startActivity(i);
+                                    }
+                                }
+                            }.start();
+                        }
+                        else {
+                            progressBar.setVisibility(View.GONE);
+                            AuthStatusText.setVisibility(View.VISIBLE);
+                            AuthStatusText.setText(String.format("%s\nPIN", myClientEndpoint.getIdInfo().getStatus()));
+                        }
+                    }
+                });
+
+            }
+        });
+        thread.start();
     }
 
 }

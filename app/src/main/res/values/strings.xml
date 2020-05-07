@@ -36,7 +36,7 @@
     <string name="amount_in_rupees">Amount in Rupees</string>
     <string name="welcome_n_connect_charger">Welcome \n Connect Charger</string>
     <string name="hh">We recommend you to use Semi-Fast Charging</string>
-    <string name="rfidplace">  Scan your RFID card/tag below to Authorize Charging</string>
+    <string name="rfidplace">  Scan your RFID card/tag below </string>
     <string name="amount">AMOUNT</string>
     <string name="charge">CHARGE</string>
     <string name="start_charging">Start Charging</string>

@@ -55,8 +55,8 @@
 
     <Button
         android:id="@+id/authorize"
-        android:layout_width="150dp"
-        android:layout_height="75dp"
+        android:layout_width="142dp"
+        android:layout_height="61dp"
         android:onClick="OnClickAuthorize"
         android:text="@string/authorize"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
@@ -83,15 +83,15 @@
 
     <ImageView
         android:id="@+id/cableconnectedview"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
         android:src="@drawable/connected"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.056"
+        app:layout_constraintHorizontal_bias="0.091"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.614" />
+        app:layout_constraintVertical_bias="0.64" />
 
     <TextView
         android:id="@+id/textView19"
@@ -104,10 +104,10 @@
         android:textColorHighlight="#D81B60"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.035"
+        app:layout_constraintHorizontal_bias="0.053"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/cableconnectedview"
-        app:layout_constraintVertical_bias="0.27" />
+        app:layout_constraintVertical_bias="0.181" />
 
     <ProgressBar
         android:id="@+id/progressBar1"
@@ -116,10 +116,36 @@
         android:layout_height="79dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.243"
+        app:layout_constraintHorizontal_bias="0.226"
         app:layout_constraintStart_toEndOf="@+id/textView19"
         app:layout_constraintTop_toBottomOf="@+id/authorize"
-        app:layout_constraintVertical_bias="0.494" />
+        app:layout_constraintVertical_bias="0.483" />
+
+    <TextView
+        android:id="@+id/authtext"
+        android:layout_width="127dp"
+        android:layout_height="60dp"
+        android:gravity="center"
+        android:text="Authorization Successful"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/authorize" />
+
+    <TextView
+        android:id="@+id/instructplugintext"
+        android:layout_width="287dp"
+        android:layout_height="168dp"
+        android:gravity="center"
+        android:text="Now Plug in Cable into EV"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display2"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.927"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.815" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

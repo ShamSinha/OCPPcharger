@@ -115,7 +115,7 @@ public class CablePlugActivity extends AppCompatActivity {
                 counter++;
             }
             public  void onFinish(){
-                textView.setText("OOPs! You Have to Authorize Again");
+                textView.setText("OOPs!\n You Have to Authorize Again");
                 try {
                     TimeUnit.SECONDS.sleep(3);
                 } catch (InterruptedException e) {
@@ -192,7 +192,7 @@ public class CablePlugActivity extends AppCompatActivity {
             public void run() {
                 try {
                     myClientEndpoint.getOpenSession().getBasicRemote().sendObject(call);
-                    Log.d("TAG" , "Message Sent" + CALL.getAction());
+                    Log.d("TAG" , "Message Sent" + CALL.getAction() + call.getPayload());
                     Log.d("TAG", myClientEndpoint.getOpenSession().getId());
 
                 } catch (IOException | EncodeException e) {
