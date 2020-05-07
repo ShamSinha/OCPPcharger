@@ -77,8 +77,9 @@
 
     <TextView
         android:id="@+id/textView24"
-        android:layout_width="311dp"
+        android:layout_width="342dp"
         android:layout_height="114dp"
+        android:background="#FFFFFF"
         android:gravity="center"
         android:text="Authorize Using RFID Tag"
         android:textAppearance="@style/TextAppearance.AppCompat.Display2"
@@ -87,7 +88,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.395" />
+        app:layout_constraintVertical_bias="0.509" />
 
     <TextView
         android:id="@+id/tagstatus"
@@ -104,11 +105,13 @@
 
     <TextView
         android:id="@+id/instructplugintext2"
-        android:layout_width="287dp"
-        android:layout_height="168dp"
+        android:layout_width="273dp"
+        android:layout_height="129dp"
+        android:background="#FFFFFF"
         android:gravity="center"
         android:text="Now Plug in Cable into EV"
         android:textAppearance="@style/TextAppearance.AppCompat.Display2"
+        android:textColor="#3D5AFE"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.931"
@@ -128,6 +131,21 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.802" />
+
+    <TextView
+        android:id="@+id/textView25"
+        android:layout_width="172dp"
+        android:layout_height="55dp"
+        android:background="#FFFFFF"
+        android:gravity="center"
+        android:text="2020-05-07T20:24"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.934"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.049" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

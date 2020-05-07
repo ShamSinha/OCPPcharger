@@ -24,34 +24,36 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/usepin"
-        app:layout_constraintVertical_bias="0.187" />
+        app:layout_constraintVertical_bias="0.182" />
 
     <TextView
         android:id="@+id/usepin"
-        android:layout_width="422dp"
-        android:layout_height="57dp"
-        android:background="#FFEB3B"
+        android:layout_width="342dp"
+        android:layout_height="132dp"
+        android:background="#FFFFFF"
         android:gravity="center"
-        android:text="@string/use_your_pin_to_authorize"
-        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+        android:text="Authorize Using PIN"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display2"
+        android:textColor="#013D40"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.248"
+        app:layout_constraintVertical_bias="0.131"
         tools:ignore="MissingConstraints" />
 
     <TextView
         android:id="@+id/date_time"
         android:layout_width="199dp"
         android:layout_height="47dp"
+        android:background="#FFFFFF"
         android:text="@string/textview"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.883"
+        app:layout_constraintHorizontal_bias="0.947"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.079" />
+        app:layout_constraintVertical_bias="0.028" />
 
     <Button
         android:id="@+id/authorize"
@@ -64,7 +66,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/enterpin"
-        app:layout_constraintVertical_bias="0.227" />
+        app:layout_constraintVertical_bias="0.153" />
 
     <ImageButton
         android:id="@+id/backbutton"
