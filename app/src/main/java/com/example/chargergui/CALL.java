@@ -8,17 +8,33 @@ import java.util.UUID;
 public class CALL extends WebsocketMessage{
 
 
-    public static String Action ;
+    private static String Action ;
     private final JSONObject Payload ;
-    public static String MessageId ;
+    private static String MessageId ;
 
     public CALL(String Action,JSONObject Payload){
         CALL.Action = Action ;
         this.Payload = Payload ;
     }
 
-    public static void setMessageId() {
+    public static String getMessageId() {
+        return MessageId;
+    }
+
+    public static void setMessageIdIfCallHasToSent() {
         MessageId = UUID.randomUUID().toString();
+    }
+
+    public static void setMessageIdIfCallReceived(String messageId) {
+        MessageId = messageId;
+    }
+
+    public static String getAction() {
+        return Action;
+    }
+
+    public static void setAction(String action) {
+        Action = action;
     }
 
     public JSONObject getPayload() { return this.Payload ;}

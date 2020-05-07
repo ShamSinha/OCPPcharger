@@ -18,11 +18,12 @@ import EnumDataType.TransactionEventEnumType;
 
 public class SendRequestToCSMS {
 
-        // BootReason default  = PowerUp
+
+    // BootReason default  = PowerUp
     public CALL createBootNotificationRequest() throws JSONException {
         if(CheckNewCallMessageCanBeSent()) {
             CALL call = new CALL("BootNotification", BootNotificationRequest.payload());
-            CALL.setMessageId();
+            CALL.setMessageIdIfCallHasToSent();
             return call;
         }
         return null;
@@ -34,7 +35,7 @@ public class SendRequestToCSMS {
         if(CheckNewCallMessageCanBeSent()) {
             StatusNotificationRequest.setTimestamp();
             CALL call = new CALL("StatusNotification", StatusNotificationRequest.payload());
-            CALL.setMessageId();
+            CALL.setMessageIdIfCallHasToSent();
             return call;
         }
         return null ;
@@ -43,7 +44,7 @@ public class SendRequestToCSMS {
     public CALL createHeartBeatRequest() throws JSONException {
         if(CheckNewCallMessageCanBeSent()) {
             CALL call = new CALL("HeartBeat", HeartBeatRequest.payload());
-            CALL.setMessageId();
+            CALL.setMessageIdIfCallHasToSent();
             return call;
         }
         return null;
@@ -53,7 +54,7 @@ public class SendRequestToCSMS {
     public CALL createAuthorizeRequest() throws JSONException {
         if(CheckNewCallMessageCanBeSent()) {
             CALL call = new CALL("Authorize", AuthorizeRequest.payload());
-            CALL.setMessageId();
+            CALL.setMessageIdIfCallHasToSent();
             return call;
         }
         return null;
@@ -66,7 +67,7 @@ public class SendRequestToCSMS {
             TransactionEventRequest.SetSeqNo();
             TransactionEventRequest.setTimestamp();
             CALL call = new CALL("TransactionEvent", TransactionEventRequest.payload());
-            CALL.setMessageId();
+            CALL.setMessageIdIfCallHasToSent();
             return call;
         }
         return null;
@@ -88,6 +89,6 @@ public class SendRequestToCSMS {
     }
 
     private boolean CheckNewCallMessageCanBeSent(){
-        return CALLRESULT.MessageId.equals(CALL.MessageId) || CALLERROR.MessageId.equals(CALL.MessageId);
+        return CALLRESULT.getMessageId().equals(CALL.getMessageId()) || CALLERROR.getMessageId().equals(CALL.getMessageId());
     }
 }

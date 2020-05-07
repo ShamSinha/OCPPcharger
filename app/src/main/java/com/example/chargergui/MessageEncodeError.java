@@ -9,7 +9,7 @@ import javax.websocket.EndpointConfig;
 public class MessageEncodeError implements Encoder.Text<CALLERROR> {
     @Override
     public String encode(CALLERROR callerror) throws EncodeException {
-        return MessageFormat.format("{0},{1},{2},{3},{4}", CALLERROR.MessageTypeId, CALLERROR.MessageId, callerror.getErrorCode(), callerror.getErrorDescription(),callerror.getErrorDetails());
+        return MessageFormat.format("{0}#{1}#{2}#{3}#{4}", CALLERROR.getMessageTypeId(), CALLERROR.getMessageId(), callerror.getErrorCode(), callerror.getErrorDescription(),callerror.getErrorDetails());
     }
 
     @Override

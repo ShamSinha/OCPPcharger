@@ -192,7 +192,7 @@ public class CablePlugActivity extends AppCompatActivity {
             public void run() {
                 try {
                     myClientEndpoint.getOpenSession().getBasicRemote().sendObject(call);
-                    Log.d("TAG" , "Message Sent" + CALL.Action);
+                    Log.d("TAG" , "Message Sent" + CALL.getAction());
                     Log.d("TAG", myClientEndpoint.getOpenSession().getId());
 
                 } catch (IOException | EncodeException e) {

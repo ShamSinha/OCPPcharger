@@ -101,7 +101,7 @@ public class UserInput extends AppCompatActivity implements AmountDialog.AmountD
 
 
     public void applyTexts(int i) {
-        amounttext.setText(String.format(getString(R.string.amo), TariffCostCtrlr.Currency ,String.valueOf(i)));
+        amounttext.setText(String.format(getString(R.string.amo), TariffCostCtrlr.getCurrency() ,String.valueOf(i)));
         //float l = estimatedcharge(i) ;
         //chargetext.setText(String.format(getString(R.string.estimated_charge), String.valueOf(l)));
 

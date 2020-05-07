@@ -3,7 +3,14 @@ package com.example.chargergui;
 
 public class WebsocketMessage {
 
-    public static int MessageTypeId;
+    private static int MessageTypeId;
 
+    public static void setMessageTypeId(int messageTypeId) {
+        MessageTypeId = messageTypeId;
+    }
+
+    public static int getMessageTypeId() {
+        return MessageTypeId;
+    }
 }
 

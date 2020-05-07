@@ -111,9 +111,7 @@ public class MyClientEndpoint  {
                 text.append("\nmodem: "+ChargingStationType.modem+"\n");
                 text.append("\nSending BootNotificationRequest to CSMS\n");
                 session.getBasicRemote().sendObject(toCSMS.createBootNotificationRequest());
-                if(CALLRESULT.MessageId.equals(CALL.MessageId)){
-                    text.append("\nBoot status: "+ bootNotificationResponse.getBootStatus() + "\n");
-                }
+                text.append("\nBoot status: "+ bootNotificationResponse.getBootStatus() + "\n");
             }
         } catch (DeploymentException e) {
             e.printStackTrace();
@@ -149,7 +147,7 @@ public class MyClientEndpoint  {
         if(msg instanceof CALL){
             JSONObject responsePayload ;   // responsePayload is JSON payload requested by CSMS.
             JSONObject requestPayload = ((CALL) msg).getPayload() ; // get JSON payload from server request
-            switch (CALL.Action) {
+            switch (CALL.getAction()) {
                 case "CostUpdated":
                     processCostUpdatedRequest(requestPayload);
                     responsePayload = CostUpdatedResponse.payload();
@@ -169,7 +167,7 @@ public class MyClientEndpoint  {
                     break;*/
 
                 default:
-                    throw new IllegalStateException("Unexpected value: " + CALL.Action);
+                    throw new IllegalStateException("Unexpected value: " + CALL.getAction());
             }
             CALLRESULT callresult = new CALLRESULT(responsePayload);
             session.getBasicRemote().sendObject(callresult);
@@ -178,9 +176,9 @@ public class MyClientEndpoint  {
 
             JSONObject respondedPayload ;  // respondedPayload is a CALL message Response from CSMS
 
-            if (CALLRESULT.MessageId.equals(CALL.MessageId)) {
+            if (CALLRESULT.getMessageId().equals(CALL.getMessageId())) {
                 respondedPayload = ((CALLRESULT) msg).getPayload();
-                switch (CALL.Action) {
+                switch (CALL.getAction()) {
 
                     case "BootNotification":
 

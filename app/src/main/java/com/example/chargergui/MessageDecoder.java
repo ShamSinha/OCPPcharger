@@ -15,7 +15,7 @@ public class MessageDecoder implements Decoder.Text<WebsocketMessage> {
     @Override
     public WebsocketMessage decode(String s) throws DecodeException {
 
-        StringTokenizer st = new StringTokenizer(s,",");
+        StringTokenizer st = new StringTokenizer(s,"#");
         int messagetypeId = Integer.parseInt(st.nextToken());
         if(messagetypeId == 2){
             String messageId = st.nextToken();
@@ -26,8 +26,8 @@ public class MessageDecoder implements Decoder.Text<WebsocketMessage> {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            CALL.MessageTypeId = messagetypeId ;
-            CALL.MessageId = messageId ;
+            CALL.setMessageTypeId(messagetypeId) ;
+            CALL.setMessageIdIfCallReceived(messageId);
             return new CALL(action, payload) ;
         }
 
@@ -39,8 +39,8 @@ public class MessageDecoder implements Decoder.Text<WebsocketMessage> {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            CALLRESULT.MessageTypeId = messagetypeId ;
-            CALLRESULT.MessageId = messageId ;
+            CALLRESULT.setMessageTypeId(messagetypeId) ;
+            CALLRESULT.setMessageId(messageId);
             return new CALLRESULT(payload) ;
         }
         if(messagetypeId == 4){
@@ -54,8 +54,8 @@ public class MessageDecoder implements Decoder.Text<WebsocketMessage> {
                 e.printStackTrace();
             }
 
-            CALLERROR.MessageTypeId = messagetypeId ;
-            CALLERROR.MessageId = messageId ;
+            CALLERROR.setMessageTypeId(messagetypeId) ;
+            CALLERROR.setMessageId(messageId) ;
 
             return new CALLERROR(errorcode,errordescription, errordetails) ;
         }
@@ -69,11 +69,7 @@ public class MessageDecoder implements Decoder.Text<WebsocketMessage> {
     public boolean willDecode(String s) {
         StringTokenizer st = new StringTokenizer(s,",");
         int messagetypeId = Integer.parseInt(st.nextToken());
-        if(messagetypeId == 2 || messagetypeId == 3 || messagetypeId == 4){
-            return true ;
-        }
-        else
-            return false ;
+        return messagetypeId == 2 || messagetypeId == 3 || messagetypeId == 4;
     }
 
     @Override

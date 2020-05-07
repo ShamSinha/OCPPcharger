@@ -70,7 +70,7 @@ public class SOCdisplay extends Activity {
 
         Intent i = new Intent(SOCdisplay.this, UserInput.class);
         i.putExtra("ch", chargeValue);
-        i.putExtra("rate",String.format("STANDARD CHARGING\n "+ TariffCostCtrlr.Currency + " %s/KWh",String.valueOf(standardrate)));
+        i.putExtra("rate",String.format("STANDARD CHARGING\n "+ TariffCostCtrlr.getCurrency() + " %s/KWh",String.valueOf(standardrate)));
         // currentContext.startActivity(activityChangeIntent);
         startActivity(i);
     }
@@ -78,7 +78,7 @@ public class SOCdisplay extends Activity {
     public void onClickSemi(View view) {
         Intent i = new Intent(SOCdisplay.this, UserInput.class);
         i.putExtra("ch", chargeValue);
-        i.putExtra("rate",String.format("SEMI-FAST CHARGING\n "+ TariffCostCtrlr.Currency + " %s/KWh",String.valueOf(semifastrate)));
+        i.putExtra("rate",String.format("SEMI-FAST CHARGING\n "+ TariffCostCtrlr.getCurrency() + " %s/KWh",String.valueOf(semifastrate)));
 
         // currentContext.startActivity(activityChangeIntent);
         startActivity(i);
@@ -87,7 +87,7 @@ public class SOCdisplay extends Activity {
     public void onClickFast(View view) {
         Intent i = new Intent(SOCdisplay.this, UserInput.class);
         i.putExtra("ch", chargeValue);
-        i.putExtra("rate",String.format("FAST CHARGING\n "+ TariffCostCtrlr.Currency + " %s/KWh",String.valueOf(fastrate)));
+        i.putExtra("rate",String.format("FAST CHARGING\n "+ TariffCostCtrlr.getCurrency() + " %s/KWh",String.valueOf(fastrate)));
 
         // currentContext.startActivity(activityChangeIntent);
         startActivity(i);

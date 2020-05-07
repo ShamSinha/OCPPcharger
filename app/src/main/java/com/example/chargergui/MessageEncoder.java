@@ -38,7 +38,7 @@ public class MessageEncoder implements Encoder.Text<CALL> {
 
         return buffer;*/
 
-        return MessageFormat.format("{0},{1},{2},{3}", CALL.MessageTypeId, CALL.MessageId, CALL.Action,call.getPayload());
+        return MessageFormat.format("{0}#{1}#{2}#{3}", CALL.getMessageTypeId(), CALL.getMessageId(), CALL.getAction(),call.getPayload());
     }
 
 
