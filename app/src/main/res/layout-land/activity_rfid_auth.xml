@@ -54,10 +54,10 @@
         android:src="@drawable/connected"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.073"
+        app:layout_constraintHorizontal_bias="0.09"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.628" />
+        app:layout_constraintVertical_bias="0.713" />
 
     <TextView
         android:id="@+id/textView19"
@@ -70,10 +70,10 @@
         android:textColorHighlight="#D81B60"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.038"
+        app:layout_constraintHorizontal_bias="0.05"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/cableconnectedview"
-        app:layout_constraintVertical_bias="0.192" />
+        app:layout_constraintVertical_bias="0.214" />
 
     <TextView
         android:id="@+id/textView24"
@@ -121,16 +121,17 @@
 
     <TextView
         android:id="@+id/textView26"
-        android:layout_width="143dp"
-        android:layout_height="73dp"
+        android:layout_width="169dp"
+        android:layout_height="50dp"
         android:gravity="center"
         android:text="AUTHORIZATION SUCCESSFUL"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.802" />
+        app:layout_constraintVertical_bias="0.81" />
 
     <TextView
         android:id="@+id/textView25"
