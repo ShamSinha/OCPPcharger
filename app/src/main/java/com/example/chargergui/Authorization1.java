@@ -175,6 +175,12 @@ public class Authorization1 extends Activity {
                 }
 
                 if(myClientEndpoint.getIdInfo().getStatus() == AuthorizationStatusEnumType.Accepted){
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            progressBar.setVisibility(View.VISIBLE);
+                        }
+                    });
 
                     ChargingStationStates.setAuthorized(true);
 
@@ -203,12 +209,13 @@ public class Authorization1 extends Activity {
                                     AuthStatusText.setVisibility(View.VISIBLE);
                                     AuthStatusText.setText("Authorization\nSuccessful");
 
-                                    if(ChargingStationStates.isEVSideCablePluggedIn){
+                                    if(!ChargingStationStates.isEVSideCablePluggedIn){
                                         InstructPlugInText.setVisibility(View.VISIBLE);
                                     }
 
                                 }
                                 public void onFinish() {
+
                                     if(ChargingStationStates.isEVSideCablePluggedIn) {
                                         Intent i = new Intent(Authorization1.this, UserInput.class);
                                         startActivity(i);

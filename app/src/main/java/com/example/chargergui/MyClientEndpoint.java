@@ -1,5 +1,6 @@
 package com.example.chargergui;
 
+import android.util.Log;
 import android.widget.TextView;
 
 import org.json.JSONException;
@@ -8,14 +9,13 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
 
-import javax.websocket.ClientEndpoint ;
+import javax.websocket.ClientEndpoint;
 import javax.websocket.ContainerProvider;
 import javax.websocket.DeploymentException;
 import javax.websocket.EncodeException;
-import javax.websocket.OnOpen ;
-import javax.websocket.OnMessage ;
+import javax.websocket.OnMessage;
+import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 
@@ -25,19 +25,19 @@ import ChargingStationResponse.CostUpdatedResponse;
 import ChargingStationResponse.ResetResponse;
 import ChargingStationResponse.SetDisplayMessageResponse;
 import DataType.ChargingStationType;
-import EnumDataType.MessageFormatEnumType;
-import EnumDataType.MessagePriorityEnumType;
-import EnumDataType.MessageStateEnumType;
-import EnumDataType.ResetEnumType;
-import UseCasesOCPP.BootNotificationResponse;
-import UseCasesOCPP.CostUpdatedRequest;
-import UseCasesOCPP.IdTokenInfoType;
 import DataType.IdTokenType;
 import DataType.MessageContentType;
 import EnumDataType.AuthorizationStatusEnumType;
+import EnumDataType.MessageFormatEnumType;
+import EnumDataType.MessagePriorityEnumType;
+import EnumDataType.MessageStateEnumType;
 import EnumDataType.RegistrationStatusEnumType;
+import EnumDataType.ResetEnumType;
 import EnumDataType.ResetStatusEnumType;
 import EnumDataType.TransactionEventEnumType;
+import UseCasesOCPP.BootNotificationResponse;
+import UseCasesOCPP.CostUpdatedRequest;
+import UseCasesOCPP.IdTokenInfoType;
 import UseCasesOCPP.MessageInfoType;
 import UseCasesOCPP.SendRequestToCSMS;
 
@@ -143,10 +143,12 @@ public class MyClientEndpoint  {
 
     @OnMessage
     public void onMessage(WebsocketMessage msg) throws JSONException, IOException, EncodeException {
-
+        Log.d("TAG","Websocket Message Received");
         if(msg instanceof CALL){
+            Log.d("TAG","CALL received: " + CALL.getAction());
             JSONObject responsePayload ;   // responsePayload is JSON payload requested by CSMS.
             JSONObject requestPayload = ((CALL) msg).getPayload() ; // get JSON payload from server request
+            Log.d("TAG", "requestPayload: " + requestPayload);
             switch (CALL.getAction()) {
                 case "CostUpdated":
                     processCostUpdatedRequest(requestPayload);
@@ -161,23 +163,23 @@ public class MyClientEndpoint  {
                     AfterResetCommand(ResetEnumType.valueOf(requestPayload.getString("type")));
                     responsePayload = ResetResponse.payload();
                     break;
-                /*case "ReserveNow" :
-                    ReserveNowResponse reserveNowResponse = new ReserveNowResponse();
-                    payload = reserveNowResponse.payload();
-                    break;*/
 
                 default:
                     throw new IllegalStateException("Unexpected value: " + CALL.getAction());
             }
             CALLRESULT callresult = new CALLRESULT(responsePayload);
+            Log.d("TAG","responsePayload: "+ responsePayload);
             session.getBasicRemote().sendObject(callresult);
+            Log.d("TAG","Message Sent");
         }
         if (msg instanceof CALLRESULT) {
-
+            Log.d("TAG","CALL received: " + CALL.getAction());
             JSONObject respondedPayload ;  // respondedPayload is a CALL message Response from CSMS
 
             if (CALLRESULT.getMessageId().equals(CALL.getMessageId())) {
+                Log.d("TAG","CALLRESULT received: " + CALL.getAction());
                 respondedPayload = ((CALLRESULT) msg).getPayload();
+                Log.d("TAG","respondedPayload: " + respondedPayload);
                 switch (CALL.getAction()) {
 
                     case "BootNotification":

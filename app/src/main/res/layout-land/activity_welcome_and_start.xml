@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".WelcomeAndStart">
+
+    <Button
+        android:id="@+id/button3"
+        style="@style/Widget.AppCompat.Button"
+        android:layout_width="183dp"
+        android:layout_height="75dp"
+        android:background="#1976D2"
+        android:onClick="onClickStart"
+        android:shadowColor="#FFFFFF"
+        android:text="START"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold|italic"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.852"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.817" />
+
+    <TextView
+        android:id="@+id/textView23"
+        android:layout_width="641dp"
+        android:layout_height="158dp"
+        android:background="#FFFFFF"
+        android:fontFamily="@font/bradhitc"
+        android:text="EV Solutions"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display4"
+        android:textColor="#36CA33"
+        app:layout_constraintBottom_toTopOf="@+id/button3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.501"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.81" />
+
+    <TextView
+        android:id="@+id/textView25"
+        android:layout_width="172dp"
+        android:layout_height="55dp"
+        android:background="#FFFFFF"
+        android:gravity="center"
+        android:text="2020-05-07T20:24"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.934"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.049" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
