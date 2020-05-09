@@ -175,12 +175,6 @@ public class Authorization1 extends Activity {
                 }
 
                 if(myClientEndpoint.getIdInfo().getStatus() == AuthorizationStatusEnumType.Accepted){
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            progressBar.setVisibility(View.VISIBLE);
-                        }
-                    });
 
                     ChargingStationStates.setAuthorized(true);
 

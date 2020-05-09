@@ -8,7 +8,8 @@ public class IdTokenInfoType {
     private AuthorizationStatusEnumType status ;
     private String cacheExpiryDateTime ;
     private int chargingPriority ;
-    private MessageContentType personalMessage  ;
+    private MessageContentType personalMessage ;
+    private int evseId ;
 
     public AuthorizationStatusEnumType getStatus() {
         return status;
@@ -40,5 +41,13 @@ public class IdTokenInfoType {
 
     public void setPersonalMessage(MessageContentType personalMessage) {
         this.personalMessage = personalMessage;
+    }
+
+    public int getEvseId() {
+        return evseId;
+    }
+
+    public void setEvseId(int evseId) {
+        this.evseId = evseId;
     }
 }

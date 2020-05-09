@@ -52,8 +52,6 @@ public class MyClientEndpoint  {
 
     private Session session ;
 
-
-
     private static MyClientEndpoint instance = new MyClientEndpoint(); // Eagerly Loading of single ton instance
 
     private MyClientEndpoint(){
@@ -64,7 +62,9 @@ public class MyClientEndpoint  {
         return instance;
     }
 
-    public SendRequestToCSMS toCSMS = new SendRequestToCSMS();
+    public static boolean isCALLarrived = false;
+
+    private SendRequestToCSMS toCSMS = new SendRequestToCSMS();
 
     //BootNotificationResponse
     private BootNotificationResponse bootNotificationResponse = new BootNotificationResponse();
@@ -145,6 +145,7 @@ public class MyClientEndpoint  {
     public void onMessage(WebsocketMessage msg) throws JSONException, IOException, EncodeException {
         Log.d("TAG","Websocket Message Received");
         if(msg instanceof CALL){
+            isCALLarrived = true ;
             Log.d("TAG","CALL received: " + CALL.getAction());
             JSONObject responsePayload ;   // responsePayload is JSON payload requested by CSMS.
             JSONObject requestPayload = ((CALL) msg).getPayload() ; // get JSON payload from server request
