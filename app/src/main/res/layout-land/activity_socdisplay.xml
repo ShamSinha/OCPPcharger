@@ -36,8 +36,8 @@
         app:layout_constraintVertical_bias="0.875">
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="751dp"
-            android:layout_height="300dp"
+            android:layout_width="749dp"
+            android:layout_height="295dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent">
@@ -58,26 +58,15 @@
                 android:id="@+id/charge"
                 android:layout_width="226dp"
                 android:layout_height="141dp"
+                android:layout_marginTop="36dp"
                 android:gravity="bottom|center_vertical"
                 android:text="40.5"
                 android:textAppearance="@style/TextAppearance.AppCompat.Display4"
                 android:textColor="#039BE5"
-                app:layout_constraintBottom_toTopOf="@+id/energy"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.232"
-                app:layout_constraintStart_toEndOf="@+id/tickorcrossIMAGE"
+                app:layout_constraintHorizontal_bias="0.191"
+                app:layout_constraintStart_toEndOf="@+id/tickorcrossimage"
                 app:layout_constraintTop_toTopOf="parent" />
-
-            <TextView
-                android:id="@+id/textView20"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="%"
-                android:textAppearance="@style/TextAppearance.AppCompat.Display2"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintStart_toEndOf="@+id/charge"
-                tools:layout_editor_absoluteY="79dp" />
 
             <TextView
                 android:id="@+id/energy"
@@ -89,9 +78,37 @@
                 android:textColor="#00C1A7"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.19"
-                app:layout_constraintStart_toEndOf="@+id/tickorcrossIMAGE"
-                app:layout_constraintTop_toBottomOf="@+id/charge" />
+                app:layout_constraintHorizontal_bias="0.154"
+                app:layout_constraintStart_toEndOf="@+id/tickorcrossimage"
+                app:layout_constraintTop_toBottomOf="@+id/charge"
+                app:layout_constraintVertical_bias="0.386" />
+
+            <TextView
+                android:id="@+id/batterytype"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/lithium_ion_battery"
+                android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+                app:layout_constraintBottom_toTopOf="@+id/tickorcrossIMAGE"
+                app:layout_constraintEnd_toEndOf="@+id/tickorcrossimage"
+                app:layout_constraintHorizontal_bias="0.375"
+                app:layout_constraintStart_toStartOf="@+id/tickorcrossimage"
+                app:layout_constraintTop_toBottomOf="@+id/tickorcrossIMAGE"
+                app:layout_constraintVertical_bias="0.765" />
+
+            <TextView
+                android:id="@+id/textView20"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="%"
+                android:textAppearance="@style/TextAppearance.AppCompat.Display2"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toEndOf="@+id/charge"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.34" />
 
             <TextView
                 android:id="@+id/textView22"
@@ -105,20 +122,7 @@
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toEndOf="@+id/energy"
                 app:layout_constraintTop_toBottomOf="@+id/charge"
-                app:layout_constraintVertical_bias="0.467" />
-
-            <TextView
-                android:id="@+id/batterytype"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="@string/lithium_ion_battery"
-                android:textAppearance="@style/TextAppearance.AppCompat.Display1"
-                app:layout_constraintBottom_toTopOf="@+id/tickorcrossIMAGE"
-                app:layout_constraintEnd_toStartOf="@+id/tickorcrossIMAGE"
-                app:layout_constraintStart_toEndOf="@+id/tickorcrossIMAGE"
-                app:layout_constraintTop_toBottomOf="@+id/tickorcrossIMAGE"
-                app:layout_constraintVertical_bias="0.834" />
+                app:layout_constraintVertical_bias="0.346" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
 
@@ -210,7 +214,7 @@
         android:id="@+id/cardView"
         android:layout_width="547dp"
         android:layout_height="107dp"
-        app:cardBackgroundColor="#32F8F8"
+        app:cardBackgroundColor="#FFFFFF"
         app:cardCornerRadius="10dp"
         app:contentPadding="15dp"
         app:layout_constraintBottom_toTopOf="@+id/cardView2"
