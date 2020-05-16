@@ -10,6 +10,8 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageButton;
 
+import EnumDataType.MessageStateEnumType;
+
 public class Authentication extends Activity {
 
 
@@ -20,6 +22,9 @@ public class Authentication extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_authentication);
+
+        DisplayMessageState.setMessageState(MessageStateEnumType.Idle);
+
 
     }
     public void OnClickPIN(View view) {

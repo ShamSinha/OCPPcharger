@@ -6,7 +6,7 @@ import org.json.JSONObject;
 import EnumDataType.DisplayMessageStatusEnumType;
 
 public class SetDisplayMessageResponse {
-    public static DisplayMessageStatusEnumType status = DisplayMessageStatusEnumType.Accepted;
+    public static DisplayMessageStatusEnumType status ;
 
     public static void setStatus(DisplayMessageStatusEnumType status) {
         SetDisplayMessageResponse.status = status;

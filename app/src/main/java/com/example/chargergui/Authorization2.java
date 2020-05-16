@@ -28,6 +28,7 @@ import DataType.TransactionType;
 import EnumDataType.AuthorizationStatusEnumType;
 import EnumDataType.ChargingStateEnumType;
 import EnumDataType.IdTokenEnumType;
+import EnumDataType.MessageStateEnumType;
 import EnumDataType.TransactionEventEnumType;
 import EnumDataType.TriggerReasonEnumType;
 import UseCasesOCPP.SendRequestToCSMS;
@@ -40,7 +41,6 @@ public class Authorization2 extends Activity {
     TextView Carddetect;
     TextView AuthStatusRfid ;
     ImageView CableIn ;
-    TextView InstructPlugin ;
     SendRequestToCSMS toCSMS = new SendRequestToCSMS();
     final MainActivity bs = new MainActivity();
     MyClientEndpoint myClientEndpoint ;
@@ -55,9 +55,6 @@ public class Authorization2 extends Activity {
         progressBar = (ProgressBar) findViewById(R.id.pb);
         Carddetect = (TextView) findViewById(R.id.tagstatus);
         AuthStatusRfid = (TextView) findViewById(R.id.authstatusrfid) ;
-        InstructPlugin = (TextView) findViewById(R.id.instructplugintext2) ;
-
-        InstructPlugin.setVisibility(View.GONE);
         AuthStatusRfid.setVisibility(View.GONE);
         Carddetect.setVisibility(View.GONE);
         progressBar.setVisibility(View.GONE);
@@ -67,6 +64,8 @@ public class Authorization2 extends Activity {
         CablePluginStatus.setVisibility(View.GONE);
 
         myClientEndpoint = MyClientEndpoint.getInstance() ;
+
+        DisplayMessageState.setMessageState(MessageStateEnumType.Idle);
 
     }
     @Override
@@ -216,10 +215,6 @@ public class Authorization2 extends Activity {
                                 public void onTick(long millisUntilFinished) {
                                     AuthStatusRfid.setVisibility(View.VISIBLE);
                                     AuthStatusRfid.setText("Authorization\nSuccessful");
-
-                                    if(!ChargingStationStates.isEVSideCablePluggedIn){
-                                        InstructPlugin.setVisibility(View.VISIBLE);
-                                    }
 
                                 }
                                 public void onFinish() {

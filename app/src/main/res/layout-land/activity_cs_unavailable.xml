@@ -38,9 +38,10 @@
 
     <Button
         android:id="@+id/price"
-        android:layout_width="160dp"
-        android:layout_height="85dp"
+        android:layout_width="210dp"
+        android:layout_height="110dp"
         android:text="Price Details"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.228"
@@ -50,11 +51,12 @@
 
     <Button
         android:id="@+id/location"
-        android:layout_width="160dp"
-        android:layout_height="85dp"
+        android:layout_width="210dp"
+        android:layout_height="110dp"
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:text="Location for nearest available charging station "
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.62"

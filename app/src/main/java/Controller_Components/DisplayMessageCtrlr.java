@@ -4,7 +4,7 @@ import EnumDataType.MessageFormatEnumType;
 import EnumDataType.MessagePriorityEnumType;
 
 public class DisplayMessageCtrlr {
-    private static boolean Enabled;
+    private static boolean Enabled ;
     private static boolean Available;
     private static int DisplayMessages ; //Amount of different messages that are currently configured in this Charging Station, via SetDisplayMessageRequest.
     private static int PersonalMessageSize ;

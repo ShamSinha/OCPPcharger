@@ -17,10 +17,9 @@
         android:textColor="#013D40"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.067" />
+        app:layout_constraintVertical_bias="0.147" />
 
     <TextView
         android:id="@+id/textView5"
@@ -77,10 +76,10 @@
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.235"
+        app:layout_constraintHorizontal_bias="0.215"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageButtonrupee"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="0.066" />
 
     <TextView
         android:id="@+id/textView8"
@@ -93,10 +92,10 @@
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.775"
+        app:layout_constraintHorizontal_bias="0.771"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageButtonbattery"
-        app:layout_constraintVertical_bias="0.571" />
+        app:layout_constraintVertical_bias="0.342" />
 
     <Button
         android:id="@+id/startchargingbutton"
@@ -121,10 +120,10 @@
         android:text="@string/rate"
         app:layout_constraintBottom_toTopOf="@+id/imageButtonrupee"
         app:layout_constraintEnd_toStartOf="@+id/soc"
-        app:layout_constraintHorizontal_bias="0.409"
+        app:layout_constraintHorizontal_bias="0.368"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.361" />
+        app:layout_constraintVertical_bias="0.638" />
 
     <TextView
         android:id="@+id/soc"

@@ -7,7 +7,7 @@
     tools:context=".Charging">
 
     <TextView
-        android:id="@+id/textView9"
+        android:id="@+id/textViewshowrfid"
         android:layout_width="285dp"
         android:layout_height="98dp"
         android:text="@string/rfidplace"

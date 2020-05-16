@@ -8,8 +8,8 @@
 
     <EditText
         android:id="@+id/enterpin"
-        android:layout_width="316dp"
-        android:layout_height="62dp"
+        android:layout_width="291dp"
+        android:layout_height="50dp"
         android:autofillHints=""
         android:ems="10"
         android:focusable="true"
@@ -19,12 +19,12 @@
         android:inputType="numberPassword"
         android:maxLength="4"
         android:paddingHorizontal="50dp"
-        android:textSize="25sp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/usepin"
-        app:layout_constraintVertical_bias="0.182" />
+        app:layout_constraintVertical_bias="0.308" />
 
     <TextView
         android:id="@+id/usepin"
@@ -44,16 +44,18 @@
 
     <TextView
         android:id="@+id/date_time"
-        android:layout_width="199dp"
-        android:layout_height="47dp"
+        android:layout_width="172dp"
+        android:layout_height="55dp"
         android:background="#FFFFFF"
-        android:text="@string/textview"
+        android:gravity="center"
+        android:text="2020-05-07T20:24"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.947"
+        app:layout_constraintHorizontal_bias="0.934"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.028" />
+        app:layout_constraintVertical_bias="0.049" />
 
     <Button
         android:id="@+id/authorize"
@@ -90,10 +92,10 @@
         android:src="@drawable/connected"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.091"
+        app:layout_constraintHorizontal_bias="0.094"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.64" />
+        app:layout_constraintVertical_bias="0.697" />
 
     <TextView
         android:id="@+id/textView19"
@@ -106,10 +108,10 @@
         android:textColorHighlight="#D81B60"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.053"
+        app:layout_constraintHorizontal_bias="0.057"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/cableconnectedview"
-        app:layout_constraintVertical_bias="0.181" />
+        app:layout_constraintVertical_bias="0.312" />
 
     <ProgressBar
         android:id="@+id/progressBar1"
@@ -118,36 +120,50 @@
         android:layout_height="79dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.226"
-        app:layout_constraintStart_toEndOf="@+id/textView19"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/authorize"
         app:layout_constraintVertical_bias="0.483" />
 
     <TextView
         android:id="@+id/authtext"
-        android:layout_width="127dp"
-        android:layout_height="60dp"
+        android:layout_width="129dp"
+        android:layout_height="65dp"
         android:gravity="center"
         android:text="Authorization Successful"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/authorize" />
+        app:layout_constraintTop_toBottomOf="@+id/authorize"
+        app:layout_constraintVertical_bias="0.497" />
 
-    <TextView
-        android:id="@+id/instructplugintext"
-        android:layout_width="287dp"
-        android:layout_height="168dp"
+    <EditText
+        android:id="@+id/editText2"
+        android:layout_width="291dp"
+        android:layout_height="50dp"
+        android:ems="10"
         android:gravity="center"
-        android:text="Now Plug in Cable into EV"
-        android:textAppearance="@style/TextAppearance.AppCompat.Display2"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:hint="Enter your Username"
+        android:inputType="textPersonName"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        app:layout_constraintBottom_toTopOf="@+id/enterpin"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.927"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.815" />
+        app:layout_constraintTop_toBottomOf="@+id/usepin"
+        app:layout_constraintVertical_bias="0.684" />
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="321dp"
+        android:layout_height="162dp"
+        tools:layout_editor_absoluteX="687dp"
+        tools:layout_editor_absoluteY="287dp">
+
+        <TextView
+            android:id="@+id/textView26"
+            android:layout_width="302dp"
+            android:layout_height="125dp"
+            android:text="TextView" />
+    </androidx.cardview.widget.CardView>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -27,6 +27,7 @@ import DataType.IdTokenType;
 import DataType.TransactionType;
 import EnumDataType.ChargingStateEnumType;
 import EnumDataType.ConnectorStatusEnumType;
+import EnumDataType.MessageStateEnumType;
 import EnumDataType.ReasonEnumType;
 import EnumDataType.TransactionEventEnumType;
 import EnumDataType.TriggerReasonEnumType;
@@ -50,14 +51,17 @@ public class CablePlugActivity extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_cable_plug);
-        textView = (TextView) findViewById(R.id.timer);
-        set = (TextView) findViewById(R.id.plugin);
+        textView = findViewById(R.id.timer);
+        set = findViewById(R.id.plugin);
         set.setText("Plug In the Cable \n  Within");
-        connected = (ImageView) findViewById(R.id.imageView4);
+        connected = findViewById(R.id.imageView4);
         connected.setVisibility(View.INVISIBLE);
-        plug1 = (ImageView) findViewById(R.id.imageView3);
-        plug2 = (ImageView) findViewById(R.id.imageView2);
+        plug1 = findViewById(R.id.imageView3);
+        plug2 = findViewById(R.id.imageView2);
+
         myClientEndpoint = MyClientEndpoint.getInstance() ;
+
+        DisplayMessageState.setMessageState(MessageStateEnumType.Idle);
 
     }
 

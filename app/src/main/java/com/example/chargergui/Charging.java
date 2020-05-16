@@ -32,6 +32,7 @@ import EnumDataType.AuthorizationStatusEnumType;
 import EnumDataType.ChargingStateEnumType;
 import EnumDataType.ConnectorStatusEnumType;
 import EnumDataType.IdTokenEnumType;
+import EnumDataType.MessageStateEnumType;
 import EnumDataType.ReadingContextEnumType;
 import EnumDataType.ReasonEnumType;
 import EnumDataType.TransactionEventEnumType;
@@ -111,6 +112,9 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
         progressBar.setVisibility(View.GONE);
 
         myClientEndpoint = MyClientEndpoint.getInstance() ;
+
+        DisplayMessageState.setMessageState(MessageStateEnumType.Charging);
+
     }
 
     @Override

@@ -24,10 +24,12 @@ import ChargingStationRequest.TransactionEventRequest;
 import ChargingStationResponse.CostUpdatedResponse;
 import ChargingStationResponse.ResetResponse;
 import ChargingStationResponse.SetDisplayMessageResponse;
+import Controller_Components.DisplayMessageCtrlr;
 import DataType.ChargingStationType;
 import DataType.IdTokenType;
 import DataType.MessageContentType;
 import EnumDataType.AuthorizationStatusEnumType;
+import EnumDataType.DisplayMessageStatusEnumType;
 import EnumDataType.MessageFormatEnumType;
 import EnumDataType.MessagePriorityEnumType;
 import EnumDataType.MessageStateEnumType;
@@ -52,6 +54,7 @@ public class MyClientEndpoint  {
 
     private Session session ;
 
+
     private static MyClientEndpoint instance = new MyClientEndpoint(); // Eagerly Loading of single ton instance
 
     private MyClientEndpoint(){
@@ -62,7 +65,7 @@ public class MyClientEndpoint  {
         return instance;
     }
 
-    public static boolean isCALLarrived = false;
+    private static boolean isCALLarrived = false;
 
     private SendRequestToCSMS toCSMS = new SendRequestToCSMS();
 
@@ -147,31 +150,43 @@ public class MyClientEndpoint  {
         if(msg instanceof CALL){
             isCALLarrived = true ;
             Log.d("TAG","CALL received: " + CALL.getAction());
-            JSONObject responsePayload ;   // responsePayload is JSON payload requested by CSMS.
+            //JSONObject responsePayload = null;   // responsePayload is JSON payload requested by CSMS.
             JSONObject requestPayload = ((CALL) msg).getPayload() ; // get JSON payload from server request
             Log.d("TAG", "requestPayload: " + requestPayload);
             switch (CALL.getAction()) {
                 case "CostUpdated":
                     processCostUpdatedRequest(requestPayload);
-                    responsePayload = CostUpdatedResponse.payload();
+                    //responsePayload = CostUpdatedResponse.payload();
                     break;
                 case "SetDisplayMessage":
                     JSONObject DisplayMessage = requestPayload.getJSONObject("message");
                     processDisplayMessageRequest(DisplayMessage);
-                    responsePayload = SetDisplayMessageResponse.payload();
+                    //responsePayload = SetDisplayMessageResponse.payload();
                     break;
                 case "Reset":
                     AfterResetCommand(ResetEnumType.valueOf(requestPayload.getString("type")));
-                    responsePayload = ResetResponse.payload();
+                    //responsePayload = ResetResponse.payload();
                     break;
+                case "ReserveNow":
+
+                    break;
+                case "RequestStartTransaction":
+
+
+                    break;
+                case "TriggerMessageResponse":
+
+                    break;
+
 
                 default:
                     throw new IllegalStateException("Unexpected value: " + CALL.getAction());
             }
-            CALLRESULT callresult = new CALLRESULT(responsePayload);
-            Log.d("TAG","responsePayload: "+ responsePayload);
-            session.getBasicRemote().sendObject(callresult);
-            Log.d("TAG","Message Sent");
+            //CALLRESULT callresult = new CALLRESULT(responsePayload);
+            //Log.d("TAG","responsePayload: "+ responsePayload);
+            //session.getBasicRemote().sendObject(callresult);
+            //Log.d("TAG","Message Sent");
+            isCALLarrived = false ;
         }
         if (msg instanceof CALLRESULT) {
             Log.d("TAG","CALL received: " + CALL.getAction());
@@ -292,7 +307,9 @@ public class MyClientEndpoint  {
         return costUpdated ;
     }
 
-
+    public boolean getisCALLarrived(){
+        return isCALLarrived;
+    }
 
 
 }

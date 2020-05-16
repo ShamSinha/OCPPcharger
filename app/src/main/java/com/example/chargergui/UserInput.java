@@ -16,6 +16,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import Controller_Components.TariffCostCtrlr;
+import EnumDataType.MessageStateEnumType;
 
 
 public class UserInput extends AppCompatActivity implements AmountDialog.AmountDialogListener , ChargeDialog.ChargeDialogListener  {
@@ -36,11 +37,14 @@ public class UserInput extends AppCompatActivity implements AmountDialog.AmountD
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_user_input);
 
-        amounttext = (TextView) findViewById(R.id.textView7);
-        chargetext = (TextView) findViewById(R.id.textView8);
-        startcharging = (Button) findViewById(R.id.startchargingbutton);
-        Rate = (TextView) findViewById(R.id.rate1);
-        CurrentSOC = (TextView ) findViewById(R.id.soc) ;
+        DisplayMessageState.setMessageState(MessageStateEnumType.Idle);
+
+
+        amounttext = findViewById(R.id.textView7);
+        chargetext = findViewById(R.id.textView8);
+        startcharging = findViewById(R.id.startchargingbutton);
+        Rate = findViewById(R.id.rate1);
+        CurrentSOC = findViewById(R.id.soc);
         Intent i = getIntent();
         str = i.getStringExtra("ch");
         CurrentSOC.setText(String.format("Charge\n %s%%", str));
@@ -50,14 +54,14 @@ public class UserInput extends AppCompatActivity implements AmountDialog.AmountD
         SOCdisplay soCdisplay = new SOCdisplay();
         maximum_cost = String.valueOf(estimatedcost(100,Float.parseFloat(str),soCdisplay.getBatteryCapacity()));
 
-        final ImageButton AMOUNT = (ImageButton) findViewById(R.id.imageButtonrupee);
+        final ImageButton AMOUNT = findViewById(R.id.imageButtonrupee);
         AMOUNT.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 openDialog(maximum_cost);
             }
         });
 
-        final ImageButton CHARGE = (ImageButton) findViewById(R.id.imageButtonbattery);
+        final ImageButton CHARGE = findViewById(R.id.imageButtonbattery);
         CHARGE.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 openDialog2(str);
@@ -72,6 +76,7 @@ public class UserInput extends AppCompatActivity implements AmountDialog.AmountD
                 startActivity(intent);
             }
         });
+
 
 
     }

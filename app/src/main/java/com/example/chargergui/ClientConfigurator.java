@@ -1,10 +1,14 @@
 package com.example.chargergui;
 
 import android.os.Build;
+import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -19,12 +23,23 @@ public class ClientConfigurator extends ClientEndpointConfig.Configurator {
     @Override
     public void beforeRequest(Map<String, List<String>> headers) {
 
-        headers.put("Authorization", asList("Basic " +  Base64.getEncoder().encodeToString("user:password".getBytes()))); // byte array to string
+        headers.put("Authorization", Collections.singletonList("Basic " + Base64.getEncoder().encodeToString("user:password".getBytes()))); // byte array to string
+
+        List<String> WebSocketProtocols = new ArrayList<String>();
+        WebSocketProtocols.add(0,"ocpp2.0.1");
+        WebSocketProtocols.add(1,"ocpp1.6");
+        headers.put("SEC_WEBSOCKET_PROTOCOL", WebSocketProtocols);
+
 
     }
 
     @Override
     public void afterResponse(HandshakeResponse hr) {
+
+        for (String key : hr.getHeaders().keySet()) {
+            Log.d("TAG", key + ": " + hr.getHeaders().get(key));
+        }
+
         super.afterResponse(hr);
     }
 }

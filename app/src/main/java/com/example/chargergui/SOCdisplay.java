@@ -22,6 +22,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import Controller_Components.TariffCostCtrlr;
+import EnumDataType.MessageStateEnumType;
 
 public class SOCdisplay extends Activity {
     TextView Batterytype;
@@ -47,15 +48,18 @@ public class SOCdisplay extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_socdisplay);
-        Batterytype = (TextView) findViewById(R.id.batterytype);
-        Charge = (TextView) findViewById(R.id.charge);
-        EnergyinKWh = (TextView) findViewById(R.id.energy) ;
-        battery = (ImageView) findViewById(R.id.imageView);
+        Batterytype = findViewById(R.id.batterytype);
+        Charge = findViewById(R.id.charge);
+        EnergyinKWh = findViewById(R.id.energy);
+        battery = findViewById(R.id.imageView);
 
-        Recommendation = (TextView) findViewById(R.id.recommend);
-        Standard = (Button) findViewById(R.id.standard);
-        Semi_Fast = (Button) findViewById(R.id.semi);
-        Fast = (Button) findViewById(R.id.fast);
+        Recommendation = findViewById(R.id.recommend);
+        Standard = findViewById(R.id.standard);
+        Semi_Fast = findViewById(R.id.semi);
+        Fast = findViewById(R.id.fast);
+
+        DisplayMessageState.setMessageState(MessageStateEnumType.Idle);
+
 
     }
 
