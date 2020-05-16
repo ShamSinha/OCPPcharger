@@ -170,7 +170,6 @@ public class MainActivity extends Activity {
                                         else if(cableplug.equals("F")){
                                             ChargingStationStates.setCablePluggedIn(false);
                                         }
-
                                     }
                                 });
 

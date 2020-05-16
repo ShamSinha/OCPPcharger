@@ -9,9 +9,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class IdTokenType {
+
     public static String idToken = null;
     public static IdTokenEnumType type = null ;
-
 
     public static void setIdToken(String idToken) {
         IdTokenType.idToken = idToken;
@@ -25,6 +25,9 @@ public class IdTokenType {
 
         jp.put("idToken",IdTokenType.idToken);
         jp.put("type", IdTokenType.type.toString()) ;
-        return jp ;
+        if(IdTokenType.type == IdTokenEnumType.KeyCode) {
+           jp.put("additionalInfo",AdditionalInfoType.getp());
+        }
+        return jp;
     }
 }

@@ -4,38 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#FFFFFF"
     tools:context=".SOCdisplay">
 
-
-    <TextView
-        android:id="@+id/energy"
-        android:layout_width="160dp"
-        android:layout_height="65dp"
-        android:background="#FFFFFF"
-        android:text="10.6"
-        android:textAppearance="@style/TextAppearance.AppCompat.Display3"
-        android:textColor="#00C1A7"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.075"
-        app:layout_constraintStart_toEndOf="@+id/imageView"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.482" />
-
-    <TextView
-        android:id="@+id/batterytype"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="#FFFFFF"
-        android:gravity="center"
-        android:text="@string/lithium_ion_battery"
-        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
-        app:layout_constraintBottom_toTopOf="@+id/imageView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.149"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
 
     <TextView
         android:id="@+id/date_time"
@@ -52,144 +23,223 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.049" />
 
-    <TextView
-        android:id="@+id/charge"
-        android:layout_width="225dp"
-        android:layout_height="121dp"
-        android:background="#FFFFFF"
-        android:gravity="center|center_vertical"
-        android:text="40.5"
-        android:textAppearance="@style/TextAppearance.AppCompat.Display4"
-        android:textColor="#039BE5"
-        app:layout_constraintBottom_toBottomOf="parent"
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardView3"
+        android:layout_width="774dp"
+        android:layout_height="319dp"
+        app:cardElevation="1dp"
+        app:contentPadding="10dp"
+        app:layout_constraintBottom_toTopOf="@+id/cardView"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.053"
-        app:layout_constraintStart_toEndOf="@+id/imageView"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.281" />
-
-    <TextView
-        android:id="@+id/textView6"
-        android:layout_width="285dp"
-        android:layout_height="44dp"
-        android:background="#FFFFFF"
-        android:gravity="center"
-        android:text="@string/charging_mode"
-        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
-        android:textColor="#013D40"
-        app:layout_constraintBottom_toTopOf="@+id/semi"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.502"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.916" />
+        app:layout_constraintVertical_bias="0.875">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="751dp"
+            android:layout_height="300dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <ImageView
+                android:id="@+id/tickorcrossimage"
+                android:layout_width="329dp"
+                android:layout_height="287dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.037"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.538"
+                app:srcCompat="@drawable/drawingbat40" />
+
+            <TextView
+                android:id="@+id/charge"
+                android:layout_width="226dp"
+                android:layout_height="141dp"
+                android:gravity="bottom|center_vertical"
+                android:text="40.5"
+                android:textAppearance="@style/TextAppearance.AppCompat.Display4"
+                android:textColor="#039BE5"
+                app:layout_constraintBottom_toTopOf="@+id/energy"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.232"
+                app:layout_constraintStart_toEndOf="@+id/tickorcrossIMAGE"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/textView20"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="%"
+                android:textAppearance="@style/TextAppearance.AppCompat.Display2"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toEndOf="@+id/charge"
+                tools:layout_editor_absoluteY="79dp" />
+
+            <TextView
+                android:id="@+id/energy"
+                android:layout_width="184dp"
+                android:layout_height="74dp"
+                android:gravity="bottom"
+                android:text="10.6"
+                android:textAppearance="@style/TextAppearance.AppCompat.Display3"
+                android:textColor="#00C1A7"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.19"
+                app:layout_constraintStart_toEndOf="@+id/tickorcrossIMAGE"
+                app:layout_constraintTop_toBottomOf="@+id/charge" />
+
+            <TextView
+                android:id="@+id/textView22"
+                android:layout_width="129dp"
+                android:layout_height="69dp"
+                android:gravity="bottom|center_vertical"
+                android:text="kWh"
+                android:textAppearance="@style/TextAppearance.AppCompat.Display2"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toEndOf="@+id/energy"
+                app:layout_constraintTop_toBottomOf="@+id/charge"
+                app:layout_constraintVertical_bias="0.467" />
+
+            <TextView
+                android:id="@+id/batterytype"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/lithium_ion_battery"
+                android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+                app:layout_constraintBottom_toTopOf="@+id/tickorcrossIMAGE"
+                app:layout_constraintEnd_toStartOf="@+id/tickorcrossIMAGE"
+                app:layout_constraintStart_toEndOf="@+id/tickorcrossIMAGE"
+                app:layout_constraintTop_toBottomOf="@+id/tickorcrossIMAGE"
+                app:layout_constraintVertical_bias="0.834" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardView2"
+        android:layout_width="716dp"
+        android:layout_height="169dp"
+        app:cardBackgroundColor="#32F8F8"
+        app:cardCornerRadius="10dp"
+        app:contentPadding="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.305"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.941">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="700dp"
+            android:layout_height="151dp">
+
+            <TextView
+                android:id="@+id/textView6"
+                android:layout_width="292dp"
+                android:layout_height="56dp"
+                android:gravity="center"
+                android:text="@string/charging_mode"
+                android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+                android:textColor="#013D40"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.0" />
+
+            <Button
+                android:id="@+id/standard"
+                android:layout_width="200dp"
+                android:layout_height="65dp"
+                android:background="#32F8F8"
+                android:ellipsize="marquee"
+                android:onClick="onClickStandard"
+                android:text="@string/standard_charging"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                android:textColor="#000000"
+                android:textStyle="bold|italic"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/semi"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textView6" />
+
+            <Button
+                android:id="@+id/semi"
+                android:layout_width="220dp"
+                android:layout_height="65dp"
+                android:background="#32F8F8"
+                android:onClick="onClickSemi"
+                android:text="@string/semi_fast_charging"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                android:textColor="#000000"
+                android:textStyle="bold|italic"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/fast"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toEndOf="@+id/standard"
+                app:layout_constraintTop_toBottomOf="@+id/textView6" />
+
+            <Button
+                android:id="@+id/fast"
+                android:layout_width="175dp"
+                android:layout_height="65dp"
+                android:background="#32F8F8"
+                android:onClick="onClickFast"
+                android:text="@string/fast_charging"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                android:textColor="#000000"
+                android:textStyle="bold|italic"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toEndOf="@+id/semi"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.825" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardView"
+        android:layout_width="547dp"
+        android:layout_height="107dp"
+        app:cardBackgroundColor="#32F8F8"
+        app:cardCornerRadius="10dp"
+        app:contentPadding="15dp"
+        app:layout_constraintBottom_toTopOf="@+id/cardView2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.262"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.973">
+
+        <TextView
+            android:id="@+id/recommend"
+            android:layout_width="522dp"
+            android:layout_height="78dp"
+            android:layout_marginBottom="116dp"
+            android:text="Personal Message"
+            android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+    </androidx.cardview.widget.CardView>
 
     <Button
-        android:id="@+id/standard"
-        android:layout_width="250dp"
-        android:layout_height="70dp"
-        android:layout_marginStart="64dp"
-        android:layout_marginLeft="64dp"
-        android:background="#7B48E4"
-        android:onClick="onClickStandard"
-        android:text="@string/standard_charging"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large"
-        android:textColor="#FFFFFF"
-        android:textStyle="bold|italic"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/semi"
-        app:layout_constraintHorizontal_bias="0.181"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView"
-        app:layout_constraintVertical_bias="0.74" />
-
-    <Button
-        android:id="@+id/semi"
-        android:layout_width="250dp"
-        android:layout_height="70dp"
-        android:layout_marginEnd="44dp"
-        android:layout_marginRight="44dp"
-        android:background="#1E88E5"
-        android:onClick="onClickSemi"
-        android:text="@string/semi_fast_charging"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large"
-        android:textColor="#FFFFFF"
-        android:textStyle="bold|italic"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/fast"
-        app:layout_constraintHorizontal_bias="0.949"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.893" />
-
-    <Button
-        android:id="@+id/fast"
-        android:layout_width="250dp"
-        android:layout_height="70dp"
-        android:background="#00ACC1"
-        android:onClick="onClickFast"
-        android:text="@string/fast_charging"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large"
-        android:textColor="#FFFFFF"
-        android:textStyle="bold|italic"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.914"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.894" />
-
-    <TextView
-        android:id="@+id/recommend"
-        android:layout_width="490dp"
-        android:layout_height="86dp"
-        android:text="Personal Message"
+        android:id="@+id/button"
+        android:layout_width="126dp"
+        android:layout_height="68dp"
+        android:background="#BCB9B9"
+        android:text="HELP"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.832"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/energy"
-        app:layout_constraintVertical_bias="0.073" />
-
-    <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="343dp"
-        android:layout_height="270dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.121"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.287"
-        app:srcCompat="@drawable/drawingbat40" />
-
-    <TextView
-        android:id="@+id/textView20"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="%"
-        android:textAppearance="@style/TextAppearance.AppCompat.Display2"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/charge"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.343" />
-
-    <TextView
-        android:id="@+id/textView22"
-        android:layout_width="93dp"
-        android:layout_height="50dp"
-        android:layout_marginEnd="132dp"
-        android:layout_marginRight="132dp"
-        android:text="kWh"
-        android:textAppearance="@style/TextAppearance.AppCompat.Display2"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/energy"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.493" />
+        app:layout_constraintStart_toEndOf="@+id/cardView2"
+        app:layout_constraintTop_toBottomOf="@+id/cardView3"
+        app:layout_constraintVertical_bias="0.797" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

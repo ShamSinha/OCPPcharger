@@ -2,7 +2,6 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/showcardView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:clipToPadding="false"
@@ -27,15 +26,16 @@
         android:id="@+id/textView24"
         android:layout_width="342dp"
         android:layout_height="114dp"
-        android:layout_marginTop="84dp"
         android:background="#FFFFFF"
         android:gravity="center"
         android:text="Authorize Using RFID Tag"
         android:textAppearance="@style/TextAppearance.AppCompat.Display2"
         android:textColor="#013D40"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.13" />
 
     <TextView
         android:id="@+id/textView25"
@@ -53,7 +53,7 @@
         app:layout_constraintVertical_bias="0.049" />
 
     <androidx.cardview.widget.CardView
-        android:id="@+id/ShowyourEVcardview"
+        android:id="@+id/cardview1"
         android:layout_width="582dp"
         android:layout_height="162dp"
         android:animateLayoutChanges="false"
@@ -63,10 +63,8 @@
         app:contentPadding="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.834"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView24"
-        app:layout_constraintVertical_bias="0.428">
+        app:layout_constraintTop_toTopOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="544dp"
@@ -76,7 +74,7 @@
             app:layout_constraintStart_toStartOf="parent">
 
             <TextView
-                android:id="@+id/textViewshowrfid"
+                android:id="@+id/TextViewRFID"
                 style="@style/Widget.AppCompat.TextView"
                 android:layout_width="409dp"
                 android:layout_height="122dp"
@@ -84,24 +82,24 @@
                 android:gravity="center|center_vertical"
                 android:selectAllOnFocus="true"
                 android:shadowColor="#158E9C"
-                android:text="Show your EV card below"
-                android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+                android:text="Show your EV card\nbelow"
+                android:textAppearance="@style/TextAppearance.AppCompat.Display2"
                 android:textColor="#000000"
-                app:layout_constraintBottom_toTopOf="@+id/imageView6"
+                app:layout_constraintBottom_toTopOf="@+id/imageViewRFID"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.08"
+                app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="0.0" />
 
             <ImageView
-                android:id="@+id/imageView6"
-                android:layout_width="123dp"
+                android:id="@+id/imageViewRFID"
+                android:layout_width="130dp"
                 android:layout_height="122dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintStart_toEndOf="@+id/textViewshowrfid"
+                app:layout_constraintStart_toEndOf="@+id/TextViewRFID"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/ic_module_icon_66" />
 
@@ -109,7 +107,7 @@
     </androidx.cardview.widget.CardView>
 
     <androidx.cardview.widget.CardView
-        android:id="@+id/CARDdetectedview"
+        android:id="@+id/cardview2"
         android:layout_width="582dp"
         android:layout_height="162dp"
         android:animateLayoutChanges="false"
@@ -119,10 +117,8 @@
         app:contentPadding="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.834"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView24"
-        app:layout_constraintVertical_bias="0.0">
+        app:layout_constraintTop_toTopOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="544dp"
@@ -132,16 +128,16 @@
             app:layout_constraintStart_toStartOf="parent">
 
             <TextView
-                android:id="@+id/carddetectedtextview"
+                android:id="@+id/cardview2TEXT"
                 style="@style/Widget.AppCompat.TextView"
-                android:layout_width="279dp"
-                android:layout_height="125dp"
+                android:layout_width="296dp"
+                android:layout_height="115dp"
                 android:background="#32F8F8"
                 android:gravity="center_vertical"
                 android:selectAllOnFocus="true"
                 android:shadowColor="#158E9C"
-                android:text="Card Detected \nProcessing ...."
-                android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+                android:text="Card Detected \nProcessing "
+                android:textAppearance="@style/TextAppearance.AppCompat.Display2"
                 android:textColor="#000000"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -152,20 +148,46 @@
 
             <ImageView
                 android:id="@+id/imageView7"
-                android:layout_width="145dp"
-                android:layout_height="119dp"
+                android:layout_width="130dp"
+                android:layout_height="122dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintStart_toEndOf="@+id/carddetectedtextview"
+                app:layout_constraintStart_toEndOf="@+id/PINprocessingtextview"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/ic_56839" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
 
+    <ImageView
+        android:id="@+id/cablepluginIMAGE"
+        android:layout_width="224dp"
+        android:layout_height="200dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.07"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.919"
+        app:srcCompat="@drawable/ic_connected" />
+
+    <TextView
+        android:id="@+id/cablepluginTEXT"
+        android:layout_width="224dp"
+        android:layout_height="35dp"
+        android:gravity="center"
+        android:text="Cable Plugged In"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        app:layout_constraintBottom_toBottomOf="@+id/cablepluginIMAGE"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.07"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/cablepluginIMAGE"
+        app:layout_constraintVertical_bias="1.0" />
+
     <androidx.cardview.widget.CardView
-        android:id="@+id/StatusCardView"
+        android:id="@+id/cardview3"
         android:layout_width="582dp"
         android:layout_height="162dp"
         android:animateLayoutChanges="false"
@@ -175,10 +197,8 @@
         app:contentPadding="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.834"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView24"
-        app:layout_constraintVertical_bias="0.889">
+        app:layout_constraintTop_toTopOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="544dp"
@@ -188,9 +208,9 @@
             app:layout_constraintStart_toStartOf="parent">
 
             <TextView
-                android:id="@+id/authorizestatus"
+                android:id="@+id/authorizestatusPIN"
                 style="@style/Widget.AppCompat.TextView"
-                android:layout_width="279dp"
+                android:layout_width="355dp"
                 android:layout_height="125dp"
                 android:background="#32F8F8"
                 android:gravity="center|center_vertical"
@@ -201,25 +221,49 @@
                 android:textColor="#000000"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.279"
+                app:layout_constraintHorizontal_bias="0.084"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="0.0" />
 
             <ImageView
-                android:id="@+id/imageView8"
-                android:layout_width="114dp"
+                android:id="@+id/tickorcrossimage"
+                android:layout_width="98dp"
                 android:layout_height="99dp"
-                android:src="@drawable/ic_png_check_mark_others_cdr_check_mark_area_svg_clipart"
+                android:layout_marginEnd="32dp"
+                android:layout_marginRight="32dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.168"
+                app:layout_constraintHorizontal_bias="0.255"
                 app:layout_constraintStart_toEndOf="@+id/authorizestatus"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.52" />
+                app:layout_constraintVertical_bias="0.52"
+                app:srcCompat="@drawable/ic_png_check_mark_others_cdr_check_mark_area_svg_clipart" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
+
+    <Button
+        android:id="@+id/button6"
+        android:layout_width="153dp"
+        android:layout_height="72dp"
+        android:text="HELP"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.884"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.906" />
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="398dp"
+        android:layout_height="192dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.92" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

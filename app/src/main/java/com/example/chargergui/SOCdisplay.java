@@ -1,9 +1,6 @@
 package com.example.chargergui;
 
-import androidx.appcompat.app.AppCompatActivity;
 
-
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 
@@ -18,8 +15,6 @@ import android.widget.TextView ;
 import android.view.View ;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
 import Controller_Components.TariffCostCtrlr;
 import EnumDataType.MessageStateEnumType;
@@ -51,7 +46,7 @@ public class SOCdisplay extends Activity {
         Batterytype = findViewById(R.id.batterytype);
         Charge = findViewById(R.id.charge);
         EnergyinKWh = findViewById(R.id.energy);
-        battery = findViewById(R.id.imageView);
+        battery = findViewById(R.id.tickorcrossIMAGE);
 
         Recommendation = findViewById(R.id.recommend);
         Standard = findViewById(R.id.standard);

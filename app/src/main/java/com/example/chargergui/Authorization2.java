@@ -16,17 +16,21 @@ import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.cardview.widget.CardView;
+
 import org.json.JSONException;
 
 import java.io.IOException;
 
 import javax.websocket.EncodeException;
 
+import ChargingStationRequest.StatusNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
 import DataType.IdTokenType;
 import DataType.TransactionType;
 import EnumDataType.AuthorizationStatusEnumType;
 import EnumDataType.ChargingStateEnumType;
+import EnumDataType.ConnectorStatusEnumType;
 import EnumDataType.IdTokenEnumType;
 import EnumDataType.MessageStateEnumType;
 import EnumDataType.TransactionEventEnumType;
@@ -34,13 +38,20 @@ import EnumDataType.TriggerReasonEnumType;
 import UseCasesOCPP.SendRequestToCSMS;
 
 public class Authorization2 extends Activity {
-    ProgressBar progressBar ;
     ImageButton imageButton ;
     boolean stopThread = false;
-    TextView CablePluginStatus;
-    TextView Carddetect;
-    TextView AuthStatusRfid ;
-    ImageView CableIn ;
+    boolean stopThread1 = false ;
+    CardView cardView1 ;
+    CardView cardView2 ;
+    CardView cardView3 ;
+    TextView authorizeStatus ;
+    ImageView tickOrCross ;
+    TextView cardProcessing ;
+
+    ImageView CablePlugInImage ;
+    TextView cablepluggedinText;
+
+    int count ;
     SendRequestToCSMS toCSMS = new SendRequestToCSMS();
     final MainActivity bs = new MainActivity();
     MyClientEndpoint myClientEndpoint ;
@@ -51,21 +62,32 @@ public class Authorization2 extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_rfid_auth);
-        imageButton.findViewById(R.id.backbutton2);
-        progressBar = (ProgressBar) findViewById(R.id.pb);
-        Carddetect = (TextView) findViewById(R.id.tagstatus);
-        AuthStatusRfid = (TextView) findViewById(R.id.authstatusrfid) ;
-        AuthStatusRfid.setVisibility(View.GONE);
-        Carddetect.setVisibility(View.GONE);
-        progressBar.setVisibility(View.GONE);
-        CableIn = (ImageView) findViewById(R.id.cableconnectedview) ;
-        CablePluginStatus = (TextView) findViewById(R.id.textView19);
-        CableIn.setVisibility(View.GONE);
-        CablePluginStatus.setVisibility(View.GONE);
+
+        imageButton = findViewById(R.id.backbutton2);
+
+        cardView1 = findViewById(R.id.cardview1) ;
+        cardView2 = findViewById(R.id.cardview2) ;
+        cardView3 = findViewById(R.id.cardview3) ;
+
+        authorizeStatus = findViewById(R.id.authorizestatus);
+        tickOrCross = findViewById(R.id.tickorcrossIMAGE);
+        cardProcessing = findViewById(R.id.cardview2TEXT) ;
+        cardProcessing.setText("Card Detected\nProcessing ");
+
+        cardView2.setVisibility(View.GONE);
+        cardView3.setVisibility(View.GONE);
+
+        CablePlugInImage = findViewById(R.id.cablepluginIMAGE);
+        cablepluggedinText = findViewById(R.id.cablepluginTEXT) ;
+
+        CablePlugInImage.setVisibility(View.GONE);
+        cablepluggedinText.setVisibility(View.GONE);
 
         myClientEndpoint = MyClientEndpoint.getInstance() ;
 
         DisplayMessageState.setMessageState(MessageStateEnumType.Idle);
+
+        GetRFIDthread();
 
     }
     @Override
@@ -78,9 +100,14 @@ public class Authorization2 extends Activity {
             @Override
             public void run() {
                 while (!Thread.currentThread().isInterrupted() && !stopThread) {
-                    Authorization1 a = new Authorization1();
-                    if( a.IsCableConnectedBeforeAuthorized()){
-                    stopThread = true ;
+
+                    if( IsCableConnectedBeforeAuthorized()){
+                        CablePlugInImage.setVisibility(View.VISIBLE);
+                        cablepluggedinText.setVisibility(View.VISIBLE);
+                    }
+                    else {
+                        CablePlugInImage.setVisibility(View.GONE);
+                        cablepluggedinText.setVisibility(View.GONE);
                     }
                 }
             }
@@ -88,11 +115,37 @@ public class Authorization2 extends Activity {
         thread1.start();
 
     }
+    public boolean IsCableConnectedBeforeAuthorized(){
+
+        if(ChargingStationStates.isEVSideCablePluggedIn && !ChargingStationStates.isAuthorized){
+
+            StatusNotificationRequest.setConnectorStatus(ConnectorStatusEnumType.Occupied);
+            try {
+                send(toCSMS.createStatusNotificationRequest());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            TransactionEventRequest.eventType = TransactionEventEnumType.Started;
+            TransactionType.chargingState = ChargingStateEnumType.EVConnected;
+            TransactionEventRequest.triggerReason = TriggerReasonEnumType.CablePluggedIn;
+            try {
+                send(toCSMS.createTransactionEventRequest());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            return true ;
+        }
+        return false ;
+    }
+
 
     public void AfterHavingRFID(String rfid){
 
-        progressBar.setVisibility(View.VISIBLE);
-        Carddetect.setVisibility(View.VISIBLE);
+        cardView1.setVisibility(View.GONE);
+        cardView2.setVisibility(View.VISIBLE);
+        Processing();
 
         IdTokenType.setType(IdTokenEnumType.ISO14443);
         IdTokenType.setIdToken(rfid);
@@ -103,6 +156,44 @@ public class Authorization2 extends Activity {
         }
         getResponse();
     }
+
+    private void Processing(){
+        final Thread t = new Thread(){
+            @Override
+            public void run(){
+                while(!isInterrupted() && !stopThread1){
+                    try {
+                        Thread.sleep(1000);  //1000ms = 1 sec
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                count++ ;
+                                if(count%4 == 1) {
+                                    cardProcessing.setText("Card Detected\nProcessing .");
+                                }
+                                if(count%4 == 2) {
+                                    cardProcessing.setText("Card Detected\nProcessing ..");
+                                }
+                                if(count%4 == 3) {
+                                    cardProcessing.setText("Card Detected\nProcessing ...");
+                                }
+                                if(count%4 == 0) {
+                                    cardProcessing.setText("Card Detected\nProcessing ....");
+                                }
+
+                            }
+                        });
+
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            }
+        };
+        t.start();
+    }
+
 
 
     public void GetRFIDthread(){
@@ -209,13 +300,15 @@ public class Authorization2 extends Activity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        stopThread1 = true ;
+                        cardView2.setVisibility(View.GONE);
                         if (ChargingStationStates.isAuthorized){
-                            progressBar.setVisibility(View.GONE);
+                            cardView3.setVisibility(View.VISIBLE);
+
                             new CountDownTimer(3000, 1000) {
                                 public void onTick(long millisUntilFinished) {
-                                    AuthStatusRfid.setVisibility(View.VISIBLE);
-                                    AuthStatusRfid.setText("Authorization\nSuccessful");
-
+                                    authorizeStatus.setText("Authorize!");
+                                    tickOrCross.setImageResource(R.drawable.ic_png_check_mark_others_cdr_check_mark_area_svg_clipart);
                                 }
                                 public void onFinish() {
                                     if(ChargingStationStates.isEVSideCablePluggedIn) {
@@ -230,9 +323,9 @@ public class Authorization2 extends Activity {
                             }.start();
                         }
                         else {
-                            progressBar.setVisibility(View.GONE);
-                            AuthStatusRfid.setVisibility(View.VISIBLE);
-                            AuthStatusRfid.setText(String.format("%s\nCARD", myClientEndpoint.getIdInfo().getStatus()));
+                            cardView3.setVisibility(View.VISIBLE);
+                            authorizeStatus.setText(String.format("%s\nCARD", myClientEndpoint.getIdInfo().getStatus()));
+                            tickOrCross.setImageResource(R.drawable.ic_cross);
                         }
                     }
                 });

@@ -16,6 +16,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.cardview.widget.CardView;
+
 import org.json.JSONException;
 
 import java.io.IOException;
@@ -24,6 +26,7 @@ import javax.websocket.EncodeException;
 
 import ChargingStationRequest.StatusNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
+import DataType.AdditionalInfoType;
 import DataType.IdTokenType;
 import DataType.TransactionType;
 import EnumDataType.AuthorizationStatusEnumType;
@@ -38,14 +41,23 @@ import UseCasesOCPP.SendRequestToCSMS;
 
 public class Authorization1 extends Activity {
     EditText PIN ;
+    EditText Username ;
     TextView dateTime ;
+
+    CardView cardView1PIN ;
+    CardView cardView2PIN ;
+    CardView cardView3PIN ;
+
     TextView CablePluginStatus;
     TextView AuthStatusText ;
+    TextView PINprocessing ;
     ImageView CableIn ;
     Button button ;
-    ProgressBar progressBar ;
-    boolean stopThread  ;
-    ImageButton imageButton ;
+    ImageView TickorCrossPIN ;
+
+    boolean stopThread = false ;
+    boolean stopThread1 = false ;
+    int count ;
     SendRequestToCSMS toCSMS = new SendRequestToCSMS();
     MyClientEndpoint myClientEndpoint;
     @Override
@@ -55,23 +67,31 @@ public class Authorization1 extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_authorization1);
-        progressBar = (ProgressBar) findViewById(R.id.progressBar1);
-        progressBar.setVisibility(View.INVISIBLE);
+
         PIN = (EditText) findViewById(R.id.enterpin);
+        Username = findViewById(R.id.editUSER);
         dateTime = (TextView) findViewById(R.id.date_time);
         dateTime2 dT = new dateTime2();
         dateTime.setText(dT.dateTime());
         button = (Button) findViewById(R.id.authorize);
-        CableIn = (ImageView) findViewById(R.id.cableconnectedview) ;
-        CablePluginStatus = (TextView) findViewById(R.id.textView19);
-        AuthStatusText = (TextView) findViewById(R.id.authtext);
+        CableIn = (ImageView) findViewById(R.id.cablepluginIMAGE) ;
+        CablePluginStatus = (TextView) findViewById(R.id.cablepluginTEXT);
+        PINprocessing = findViewById(R.id.cardview2PINTEXT);
+        AuthStatusText = findViewById(R.id.authorizestatusPIN);
+
+        cardView1PIN = findViewById(R.id.EnterPINcardview);
+        cardView2PIN = findViewById(R.id.cardview2PIN) ;
+        cardView3PIN = findViewById(R.id.cardview3PIN) ;
+
+        cardView2PIN.setVisibility(View.GONE);
+        cardView3PIN.setVisibility(View.GONE);
 
 
-
-        AuthStatusText.setVisibility(View.GONE);
         CableIn.setVisibility(View.GONE);
         CablePluginStatus.setVisibility(View.GONE);
         stopThread = false ;
+
+        TickorCrossPIN = findViewById(R.id.tickorcrossimage);
 
         myClientEndpoint = MyClientEndpoint.getInstance();
         DisplayMessageState.setMessageState(MessageStateEnumType.Idle);
@@ -92,7 +112,12 @@ public class Authorization1 extends Activity {
 
                 while (!Thread.currentThread().isInterrupted() && !stopThread) {
                     if(IsCableConnectedBeforeAuthorized()){
-                        stopThread = true ;
+                        CablePluginStatus.setVisibility(View.VISIBLE);
+                        CableIn.setVisibility(View.VISIBLE);
+                    }
+                    else {
+                        CablePluginStatus.setVisibility(View.GONE);
+                        CableIn.setVisibility(View.GONE);
                     }
                 }
 
@@ -107,8 +132,6 @@ public class Authorization1 extends Activity {
     public boolean IsCableConnectedBeforeAuthorized(){
 
         if(ChargingStationStates.isEVSideCablePluggedIn && !ChargingStationStates.isAuthorized){
-            CableIn.setVisibility(View.VISIBLE);
-            CablePluginStatus.setVisibility(View.VISIBLE);
 
             StatusNotificationRequest.setConnectorStatus(ConnectorStatusEnumType.Occupied);
             try {
@@ -131,6 +154,44 @@ public class Authorization1 extends Activity {
         return false ;
     }
 
+    private void PINProcessing(){
+        final Thread t = new Thread(){
+            @Override
+            public void run(){
+                while(!isInterrupted() && !stopThread1){
+                    try {
+                        Thread.sleep(1000);  //1000ms = 1 sec
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                count++ ;
+                                if(count%4 == 1) {
+                                    PINprocessing.setText("PIN Processing .");
+                                }
+                                if(count%4 == 2) {
+                                    PINprocessing.setText("PIN Processing ..");
+                                }
+                                if(count%4 == 3) {
+                                    PINprocessing.setText("PIN Processing ...");
+                                }
+                                if(count%4 == 0) {
+                                    PINprocessing.setText("PIN Processing ....");
+                                }
+
+                            }
+                        });
+
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            }
+        };
+        t.start();
+    }
+
+
     public void OnClickBack(View view){
         IdTokenType.setType(null);
         IdTokenType.setIdToken(null);
@@ -140,11 +201,14 @@ public class Authorization1 extends Activity {
     }
 
     public void OnClickAuthorize(View view) throws  JSONException {
-
-        progressBar.setVisibility(View.VISIBLE);
-
+        cardView1PIN.setVisibility(View.GONE);
+        cardView2PIN.setVisibility(View.VISIBLE);
+        PINProcessing();
         IdTokenType.setType(IdTokenEnumType.KeyCode);
         IdTokenType.setIdToken(PIN.getText().toString());
+
+        AdditionalInfoType.setType("username");
+        AdditionalInfoType.setAdditionalIdToken(Username.getText().toString());
         send(toCSMS.createAuthorizeRequest());
 
         getResponse();
@@ -198,12 +262,16 @@ public class Authorization1 extends Activity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        cardView2PIN.setVisibility(View.GONE);
+                        stopThread1 =  true ;
                         if (ChargingStationStates.isAuthorized){
-                            progressBar.setVisibility(View.GONE);
+                            cardView3PIN.setVisibility(View.VISIBLE);
+
                             new CountDownTimer(3000, 1000) {
                                 public void onTick(long millisUntilFinished) {
-                                    AuthStatusText.setVisibility(View.VISIBLE);
-                                    AuthStatusText.setText("Authorization\nSuccessful");
+
+                                    AuthStatusText.setText("Authorized!");
+                                    TickorCrossPIN.setImageResource(R.drawable.ic_png_check_mark_others_cdr_check_mark_area_svg_clipart);
 
                                 }
                                 public void onFinish() {
@@ -220,9 +288,9 @@ public class Authorization1 extends Activity {
                             }.start();
                         }
                         else {
-                            progressBar.setVisibility(View.GONE);
-                            AuthStatusText.setVisibility(View.VISIBLE);
+                            cardView3PIN.setVisibility(View.VISIBLE);
                             AuthStatusText.setText(String.format("%s\nPIN", myClientEndpoint.getIdInfo().getStatus()));
+                            TickorCrossPIN.setImageResource(R.drawable.ic_cross);
                         }
                     }
                 });

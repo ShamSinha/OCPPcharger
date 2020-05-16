@@ -6,26 +6,6 @@
     android:layout_height="match_parent"
     tools:context="Authorization1">
 
-    <EditText
-        android:id="@+id/enterpin"
-        android:layout_width="291dp"
-        android:layout_height="50dp"
-        android:autofillHints=""
-        android:ems="10"
-        android:focusable="true"
-        android:gravity="center"
-        android:hint="@string/enter_your_pin_here"
-        android:includeFontPadding="true"
-        android:inputType="numberPassword"
-        android:maxLength="4"
-        android:paddingHorizontal="50dp"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/usepin"
-        app:layout_constraintVertical_bias="0.308" />
-
     <TextView
         android:id="@+id/usepin"
         android:layout_width="342dp"
@@ -57,19 +37,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.049" />
 
-    <Button
-        android:id="@+id/authorize"
-        android:layout_width="142dp"
-        android:layout_height="61dp"
-        android:onClick="OnClickAuthorize"
-        android:text="@string/authorize"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/enterpin"
-        app:layout_constraintVertical_bias="0.153" />
-
     <ImageButton
         android:id="@+id/backbutton"
         style="@style/Widget.AppCompat.ImageButton"
@@ -85,85 +52,219 @@
         app:layout_constraintVertical_bias="0.115"
         app:srcCompat="@drawable/back" />
 
-    <ImageView
-        android:id="@+id/cableconnectedview"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:src="@drawable/connected"
+    <androidx.cardview.widget.CardView
+        android:id="@+id/EnterPINcardview"
+        android:layout_width="419dp"
+        android:layout_height="334dp"
+        android:layout_marginTop="12dp"
+        app:cardBackgroundColor="#32F8F8"
+        app:cardCornerRadius="10dp"
+        app:contentPadding="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.094"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.697" />
-
-    <TextView
-        android:id="@+id/textView19"
-        style="@style/Widget.AppCompat.TextView.SpinnerItem"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Cable Plugged In"
-        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
-        android:textColor="#00BD08"
-        android:textColorHighlight="#D81B60"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.057"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cableconnectedview"
-        app:layout_constraintVertical_bias="0.312" />
-
-    <ProgressBar
-        android:id="@+id/progressBar1"
-        style="@style/Widget.AppCompat.ProgressBar"
-        android:layout_width="100dp"
-        android:layout_height="79dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/authorize"
-        app:layout_constraintVertical_bias="0.483" />
-
-    <TextView
-        android:id="@+id/authtext"
-        android:layout_width="129dp"
-        android:layout_height="65dp"
-        android:gravity="center"
-        android:text="Authorization Successful"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/authorize"
-        app:layout_constraintVertical_bias="0.497" />
-
-    <EditText
-        android:id="@+id/editText2"
-        android:layout_width="291dp"
-        android:layout_height="50dp"
-        android:ems="10"
-        android:gravity="center"
-        android:hint="Enter your Username"
-        android:inputType="textPersonName"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large"
-        app:layout_constraintBottom_toTopOf="@+id/enterpin"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/usepin"
-        app:layout_constraintVertical_bias="0.684" />
+        app:layout_constraintVertical_bias="0.060000002">
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="398dp"
+            android:layout_height="306dp">
+
+            <EditText
+                android:id="@+id/editUSER"
+                android:layout_width="290dp"
+                android:layout_height="60dp"
+                android:ems="10"
+                android:gravity="center"
+                android:hint="Enter your Username"
+                android:inputType="textPersonName"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                app:layout_constraintBottom_toTopOf="@+id/enterpin"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <EditText
+                android:id="@+id/enterpin"
+                android:layout_width="290dp"
+                android:layout_height="60dp"
+                android:autofillHints=""
+                android:ems="10"
+                android:focusable="true"
+                android:gravity="center"
+                android:hint="@string/enter_your_pin_here"
+                android:includeFontPadding="true"
+                android:inputType="numberPassword"
+                android:maxLength="4"
+                android:paddingHorizontal="50dp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                app:layout_constraintBottom_toTopOf="@+id/authorize"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/editUSER" />
+
+            <Button
+                android:id="@+id/authorize"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="142dp"
+                android:layout_height="61dp"
+                android:background="#C5C7C8"
+                android:onClick="OnClickAuthorize"
+                android:text="@string/authorize"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.934" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
 
     <androidx.cardview.widget.CardView
-        android:layout_width="321dp"
+        android:id="@+id/cardview3PIN"
+        android:layout_width="582dp"
         android:layout_height="162dp"
-        tools:layout_editor_absoluteX="687dp"
-        tools:layout_editor_absoluteY="287dp">
+        android:animateLayoutChanges="false"
+        app:cardBackgroundColor="#32F8F8"
+        app:cardCornerRadius="15dp"
+        app:cardElevation="2dp"
+        app:contentPadding="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.628"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.882">
 
-        <TextView
-            android:id="@+id/textView26"
-            android:layout_width="302dp"
-            android:layout_height="125dp"
-            android:text="TextView" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="544dp"
+            android:layout_height="124dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <TextView
+                android:id="@+id/authorizestatusPIN"
+                style="@style/Widget.AppCompat.TextView"
+                android:layout_width="349dp"
+                android:layout_height="123dp"
+                android:background="#32F8F8"
+                android:gravity="center|center_vertical"
+                android:selectAllOnFocus="true"
+                android:shadowColor="#158E9C"
+                android:text="Authorized!"
+                android:textAppearance="@style/TextAppearance.AppCompat.Display2"
+                android:textColor="#000000"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.205"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="1.0" />
+
+            <ImageView
+                android:id="@+id/tickorcrossimage"
+                android:layout_width="114dp"
+                android:layout_height="99dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginRight="16dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.168"
+                app:layout_constraintStart_toEndOf="@+id/authorizestatus"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.64"
+                app:srcCompat="@drawable/ic_png_check_mark_others_cdr_check_mark_area_svg_clipart" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardview2PIN"
+        android:layout_width="582dp"
+        android:layout_height="162dp"
+        android:animateLayoutChanges="false"
+        app:cardBackgroundColor="#32F8F8"
+        app:cardCornerRadius="15dp"
+        app:cardElevation="2dp"
+        app:contentPadding="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.929"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.191">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="544dp"
+            android:layout_height="124dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <TextView
+                android:id="@+id/cardview2PINTEXT"
+                style="@style/Widget.AppCompat.TextView"
+                android:layout_width="434dp"
+                android:layout_height="122dp"
+                android:background="#32F8F8"
+                android:gravity="center|center_vertical"
+                android:selectAllOnFocus="true"
+                android:shadowColor="#158E9C"
+                android:text="PIN Processing ...."
+                android:textAppearance="@style/TextAppearance.AppCompat.Display2"
+                android:textColor="#000000"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.158"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.0" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+
+    <Button
+        android:id="@+id/button5"
+        android:layout_width="120dp"
+        android:layout_height="71dp"
+        android:text="HELP"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.866"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.898" />
+
+    <ImageView
+        android:id="@+id/cablepluginIMAGE"
+        android:layout_width="224dp"
+        android:layout_height="200dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.076"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.891"
+        app:srcCompat="@drawable/ic_connected" />
+
+    <TextView
+        android:id="@+id/cablepluginTEXT"
+        android:layout_width="224dp"
+        android:layout_height="35dp"
+        android:gravity="center"
+        android:text="Cable Plugged In"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        app:layout_constraintBottom_toBottomOf="@+id/cablepluginIMAGE"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.078"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/cablepluginIMAGE"
+        app:layout_constraintVertical_bias="1.0" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

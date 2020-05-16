@@ -263,7 +263,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
                                 int minutes = (TransactionType.timeSpentCharging % 3600) / 60;
                                 int seconds = TransactionType.timeSpentCharging % 60;
                                 TimeSpent.setText(getString(R.string.timespent,hours, minutes, seconds));
-                                if(getString(R.string.timespent,hours, minutes, seconds)== myClientEndpoint.getIdInfo().getCacheExpiryDateTime() ){
+                                if(getString(R.string.timespent, hours, minutes, seconds).equals(myClientEndpoint.getIdInfo().getCacheExpiryDateTime())){
                                     AfterChargingComplete();
                                 }
                             }
