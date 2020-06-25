@@ -2,9 +2,9 @@ package com.example.chargergui;
 
 import android.widget.ImageView;
 
-class ImageSetBattery {
+public class ImageSetBattery {
 
-    ImageSetBattery(double soc, ImageView imageView){
+    public ImageSetBattery(float soc, ImageView imageView){
         int SOC = roundto10(soc) ;
         if(SOC==0) {
             imageView.setImageResource(R.drawable.drawingbat0);
@@ -43,7 +43,7 @@ class ImageSetBattery {
 
     }
 
-    private int roundto10(double soc)
+    private int roundto10(float soc)
     {
         // Smaller multiple
         int n = (int) Math.round(soc);

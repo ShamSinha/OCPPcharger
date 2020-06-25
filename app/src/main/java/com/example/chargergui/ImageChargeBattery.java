@@ -3,9 +3,9 @@ package com.example.chargergui;
 import android.graphics.drawable.TransitionDrawable;
 import android.widget.ImageView;
 
-class ImageChargeBattery {
+public class ImageChargeBattery {
 
-    ImageChargeBattery(double soc, ImageView imageView){
+    public ImageChargeBattery(double soc, ImageView imageView){
         int SOC = roundto10(soc) ;
         if(SOC==0) {
             imageView.setImageResource(R.drawable.charge0);

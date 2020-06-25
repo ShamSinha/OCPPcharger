@@ -1,12 +1,9 @@
-package DataType;
+package AuthorizationRelated;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import EnumDataType.IdTokenEnumType;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 public class IdTokenType {
 
@@ -26,7 +23,7 @@ public class IdTokenType {
         jp.put("idToken",IdTokenType.idToken);
         jp.put("type", IdTokenType.type.toString()) ;
         if(IdTokenType.type == IdTokenEnumType.KeyCode) {
-           jp.put("additionalInfo",AdditionalInfoType.getp());
+           jp.put("additionalInfo", AdditionalInfoType.getp());
         }
         return jp;
     }

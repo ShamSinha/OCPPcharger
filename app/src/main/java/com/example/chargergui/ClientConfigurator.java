@@ -23,7 +23,8 @@ public class ClientConfigurator extends ClientEndpointConfig.Configurator {
     @Override
     public void beforeRequest(Map<String, List<String>> headers) {
 
-        headers.put("Authorization", Collections.singletonList("Basic " + Base64.getEncoder().encodeToString("user:password".getBytes()))); // byte array to string
+        //String chargingStationIdentity = "CS01";
+        //headers.put("AUTHORIZATION", Collections.singletonList("Basic " + Base64.getEncoder().encodeToString((chargingStationIdentity+":password").getBytes()))); // byte array to string
 
         List<String> WebSocketProtocols = new ArrayList<String>();
         WebSocketProtocols.add(0,"ocpp2.0.1");

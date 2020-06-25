@@ -21,10 +21,9 @@ import java.io.IOException;
 import javax.websocket.EncodeException;
 
 import ChargingStationRequest.TransactionEventRequest;
-import UseCasesOCPP.IdTokenInfoType;
-import DataType.IdTokenType;
+import AuthorizationRelated.IdTokenType;
 import DataType.TransactionType;
-import EnumDataType.AuthorizationStatusEnumType;
+import AuthorizationRelated.AuthorizationStatusEnumType;
 import EnumDataType.ChargingStateEnumType;
 import EnumDataType.IdTokenEnumType;
 import EnumDataType.TransactionEventEnumType;

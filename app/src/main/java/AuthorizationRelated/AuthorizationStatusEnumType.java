@@ -1,4 +1,4 @@
-package EnumDataType;
+package AuthorizationRelated;
 
 public enum AuthorizationStatusEnumType {
     Accepted ,//Identifier is allowed for charging.

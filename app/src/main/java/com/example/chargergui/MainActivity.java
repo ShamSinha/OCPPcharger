@@ -18,9 +18,7 @@ import java.io.OutputStream;
 import java.util.Set;
 import java.util.UUID;
 
-import Controller_Components.OCPPCommCtrlr;
 import EnumDataType.RegistrationStatusEnumType;
-import UseCasesOCPP.BootNotificationResponse;
 
 
 public class MainActivity extends Activity {
@@ -32,7 +30,7 @@ public class MainActivity extends Activity {
     private BluetoothSocket socket;
     public OutputStream outputStream;
     public InputStream inputStream;
-    boolean deviceConnected = false;
+    public boolean deviceConnected = false;
     TextView Boot;
     String DEVICE_ADDRESS = "98:D3:32:71:14:A8";
     MyClientEndpoint myClientEndpoint ;
@@ -53,7 +51,6 @@ public class MainActivity extends Activity {
         super.onStart();
 
         if(BTinit()){
-
             Boot.append("\nConnection to Meter Established.\n");
             if (BTconnect()){
                 Boot.append("\n InputStream and OutputStream Established");

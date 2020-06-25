@@ -1,7 +1,6 @@
-package com.example.chargergui;
+package socdisplay_viewmodel;
 
 
-import android.app.Activity;
 import android.content.Intent;
 
 import android.os.Bundle;
@@ -14,12 +13,22 @@ import android.widget.ImageView;
 import android.widget.TextView ;
 import android.view.View ;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+
+import com.example.chargergui.DisplayMessageState;
+import com.example.chargergui.ImageSetBattery;
+import com.example.chargergui.MainActivity;
+import com.example.chargergui.R;
+import com.example.chargergui.UserInput;
+
 import java.io.IOException;
+import java.util.List;
 
-import Controller_Components.TariffCostCtrlr;
-import EnumDataType.MessageStateEnumType;
+import DisplayMessagesRelated.MessageStateEnumType;
 
-public class SOCdisplay extends Activity {
+public class SOCdisplay extends AppCompatActivity {
     TextView Batterytype;
     TextView Charge ;
     TextView EnergyinKWh ;
@@ -34,7 +43,7 @@ public class SOCdisplay extends Activity {
     public float semifastrate = 5;
     public float fastrate = 8;
 
-    
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +64,19 @@ public class SOCdisplay extends Activity {
 
         DisplayMessageState.setMessageState(MessageStateEnumType.Idle);
 
+
+        SocViewModel socViewModel = new ViewModelProvider(this).get(SocViewModel.class) ;
+
+        socViewModel.getAllSoc().observe(this, new Observer<List<SocEntities>>() {
+            @Override
+            public void onChanged(List<SocEntities> socEntities) {
+                Charge.setText(String.valueOf(socEntities.get(0).getInitialSOC())) ;
+                float energy = (socEntities.get(0).getBatteryCapacity()*socEntities.get(0).getInitialSOC())/100 ;
+                EnergyinKWh.setText(String.valueOf(energy));
+                Batterytype.setText(socEntities.get(0).getBatteryType());
+                new ImageSetBattery(socEntities.get(0).getInitialSOC(), battery);
+            }
+        });
 
     }
 
@@ -93,16 +115,6 @@ public class SOCdisplay extends Activity {
     }
 
 
-
-    public int getBatteryCapacity(){
-        return 60000; //Wh
-    }
-
-    public String getEnergy(float soc , int BatteryCapacity){
-        float Energy = (soc*BatteryCapacity)/100 ;
-        return String.valueOf(Energy) ;
-    }
-
     public void BluetoothThread() {
         final MainActivity bs = new MainActivity();
 
@@ -129,15 +141,13 @@ public class SOCdisplay extends Activity {
                                     handler.post(new Runnable() {
                                         public void run() {
                                             if( Float.parseFloat(ch) <= 100 && Float.parseFloat(ch) >= 0) {
-                                                chargeValue = ch;
 
-                                                ImageSetBattery imagesetBattery = new ImageSetBattery(Double.parseDouble(chargeValue), battery);
+                                                //chargeValue = ch;
+                                                SocViewModel socViewModel = new ViewModelProvider(SOCdisplay.this).get(SocViewModel.class);
 
-                                                String e = getEnergy(Float.parseFloat(chargeValue), getBatteryCapacity());
-
-                                                EnergyinKWh.setText(e);
-
-                                                Charge.setText(chargeValue);
+                                                SocEntities socEntities = new SocEntities(Float.parseFloat(ch),);
+                                                socViewModel.deleteAll();
+                                                socViewModel.insert(socEntities);
 
                                                 Thread.currentThread().interrupt();
                                             }

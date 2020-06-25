@@ -1,4 +1,4 @@
-package EnumDataType;
+package DisplayMessagesRelated;
 
 public enum MessagePriorityEnumType {
     AlwaysFront , //Show this message always in front. Highest priority, don’t cycle with other messages. When a newer

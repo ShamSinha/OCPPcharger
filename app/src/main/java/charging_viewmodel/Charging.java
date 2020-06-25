@@ -1,4 +1,4 @@
-package com.example.chargergui;
+package charging_viewmodel;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,6 +14,17 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.chargergui.CALL;
+import com.example.chargergui.ChargingStationStates;
+import com.example.chargergui.DisplayMessageState;
+import com.example.chargergui.ImageChargeBattery;
+import com.example.chargergui.ImageSetBattery;
+import com.example.chargergui.MainActivity;
+import com.example.chargergui.MyClientEndpoint;
+import com.example.chargergui.PINauthorizeDialog;
+import com.example.chargergui.R;
+import com.example.chargergui.Target;
+
 import org.json.JSONException;
 
 import java.io.IOException;
@@ -23,16 +34,14 @@ import javax.websocket.EncodeException;
 import ChargingStationRequest.StatusNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
 import Controller_Components.SampledDataCtrlr;
-import Controller_Components.TariffCostCtrlr;
-import Controller_Components.TxCtlr;
-import DataType.IdTokenType;
+import AuthorizationRelated.IdTokenType;
 import DataType.SampledValueType;
 import DataType.TransactionType;
-import EnumDataType.AuthorizationStatusEnumType;
+import AuthorizationRelated.AuthorizationStatusEnumType;
 import EnumDataType.ChargingStateEnumType;
 import EnumDataType.ConnectorStatusEnumType;
 import EnumDataType.IdTokenEnumType;
-import EnumDataType.MessageStateEnumType;
+import DisplayMessagesRelated.MessageStateEnumType;
 import EnumDataType.ReadingContextEnumType;
 import EnumDataType.ReasonEnumType;
 import EnumDataType.TransactionEventEnumType;
@@ -63,7 +72,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
     float Current = 0;
     float Energy = 0 ;
     String currentsoc ;
-    int counter = TxCtlr.getEVConnectionTimeOut() ;
+    int counter = TxCtrlr.getEVConnectionTimeOut() ;
     int count = 0 ;
     boolean stopThread =false;
     boolean stopThread1 = false ;
@@ -79,26 +88,26 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_charging);
 
-        Payment = (Button) findViewById(R.id.paybutton);
-        BatteryCharge = (ImageView) findViewById(R.id.imageViewcharge);
-        voltage = (TextView) findViewById(R.id.voltage);
-        current = (TextView) findViewById(R.id.current);
-        Charge = (TextView) findViewById(R.id.charge);
-        Miles = (TextView) findViewById(R.id.miles);
-        updatedCost = (TextView) findViewById(R.id.costupdated) ;
-        stopCharging = (Button) findViewById(R.id.stopbutton);
-        WantToChargeMore = (Button) findViewById(R.id.button4);
-        ChargingText = (TextView) findViewById(R.id.chargingtext);
-        AfterSuspend = (TextView) findViewById(R.id.aftersuspend);
-        SuspendTimer = (TextView) findViewById(R.id.suspendtimer);
-        TimeSpent = (TextView) findViewById(R.id.spent);
-        AfterStopButton = (TextView) findViewById(R.id.textView14) ;
-        progressBar = (ProgressBar) findViewById(R.id.progressBar1);
+        Payment =  findViewById(R.id.paybutton);
+        BatteryCharge = findViewById(R.id.imageViewcharge);
+        voltage =  findViewById(R.id.voltage);
+        current = findViewById(R.id.current);
+        Charge =  findViewById(R.id.charge);
+        Miles =  findViewById(R.id.miles);
+        updatedCost =  findViewById(R.id.costupdated) ;
+        stopCharging =  findViewById(R.id.stopbutton);
+        WantToChargeMore =  findViewById(R.id.button4);
+        ChargingText =  findViewById(R.id.chargingtext);
+        AfterSuspend =  findViewById(R.id.aftersuspend);
+        SuspendTimer =  findViewById(R.id.suspendtimer);
+        TimeSpent =  findViewById(R.id.spent);
+        AfterStopButton =  findViewById(R.id.textView14) ;
+        progressBar = findViewById(R.id.progressBar1);
 
         Intent intent = getIntent();
         currentsoc = intent.getStringExtra("currentsoc");
         SOC = Float.parseFloat(currentsoc);
-        ImageChargeBattery imageChargeBattery = new ImageChargeBattery(SOC, BatteryCharge);
+        new ImageChargeBattery(SOC, BatteryCharge);
 
         voltage.setText(R.string.initialzero); // 0.00
         current.setText(R.string.initialzero); // 0.00
@@ -188,7 +197,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
     private void UpdateUiAfterSuspend(){
 
         ChargingText.setText(" CHARGING\nSuspended!");
-        ImageSetBattery imageSetBattery = new ImageSetBattery(SOC,BatteryCharge);
+        new ImageSetBattery(SOC,BatteryCharge);
         AfterSuspend.setVisibility(View.VISIBLE);
 
     }
@@ -441,7 +450,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
         StopSendingMeterValues();
         stopThread = true ;
 
-        if(!TxCtlr.isStopTxOnEVSideDisconnect()){ // Suspend Transaction After CableUnplug at EV side
+        if(!TxCtrlr.isStopTxOnEVSideDisconnect()){ // Suspend Transaction After CableUnplug at EV side
 
             UpdateUiAfterSuspend();
 
@@ -452,7 +461,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
 
             if(CSPhysicalProperties.isCableIsPermanentAttached) {
 
-                new CountDownTimer(TxCtlr.getEVConnectionTimeOut() * 1000, 1000) {
+                new CountDownTimer(TxCtrlr.getEVConnectionTimeOut() * 1000, 1000) {
                     public void onTick(long millisUntilFinished) {
                         int minutes = counter / 60;
                         int seconds = counter % 60;
@@ -492,7 +501,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
 
         }
 
-        if(TxCtlr.isStopTxOnEVSideDisconnect()){   // Stop Transaction After CableUnplug at EV side
+        if(TxCtrlr.isStopTxOnEVSideDisconnect()){   // Stop Transaction After CableUnplug at EV side
             TransactionEventRequest.eventType = TransactionEventEnumType.Ended;
             TransactionEventRequest.triggerReason = TriggerReasonEnumType.EVCommunicationLost;
             TransactionType.stoppedReason = ReasonEnumType.EVDisconnected ;

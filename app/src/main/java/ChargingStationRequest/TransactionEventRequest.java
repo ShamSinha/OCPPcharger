@@ -7,7 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import DataType.EVSEType;
-import DataType.IdTokenType;
+import AuthorizationRelated.IdTokenType;
 import DataType.MeterValueType;
 import DataType.TransactionType;
 import EnumDataType.ChargingStateEnumType;
@@ -15,6 +15,7 @@ import EnumDataType.TriggerReasonEnumType;
 import EnumDataType.TransactionEventEnumType;
 
 public class TransactionEventRequest {
+
     public static TransactionEventEnumType eventType = TransactionEventEnumType.Started  ;
     public static String timestamp ;
     public static TriggerReasonEnumType triggerReason ;
@@ -36,8 +37,6 @@ public class TransactionEventRequest {
             SeqNo = 0 ;
         }
     }
-
-
 
     public static JSONObject payload() throws JSONException {
         JSONObject jo  = new JSONObject();

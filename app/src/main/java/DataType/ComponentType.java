@@ -9,15 +9,15 @@ import java.util.Map;
 import DataType.EVSEType;
 
 public class ComponentType {
-    public static String name ;
+    private String name ;
 
-    public static void setName(String name) {
-        ComponentType.name = name;
+    public ComponentType(String name) {
+        this.name = name;
     }
 
-    public static JSONObject getp() throws JSONException {
+    public JSONObject getp() throws JSONException {
         JSONObject jp  = new JSONObject();
-        jp.put("name",ComponentType.name ) ;
+        jp.put("name",this.name ) ;
         return jp;
     }
 }

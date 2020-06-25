@@ -10,11 +10,9 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 
 import android.os.Bundle;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.cardview.widget.CardView;
 
@@ -26,13 +24,13 @@ import javax.websocket.EncodeException;
 
 import ChargingStationRequest.StatusNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
-import DataType.IdTokenType;
+import AuthorizationRelated.IdTokenType;
 import DataType.TransactionType;
-import EnumDataType.AuthorizationStatusEnumType;
+import AuthorizationRelated.AuthorizationStatusEnumType;
 import EnumDataType.ChargingStateEnumType;
 import EnumDataType.ConnectorStatusEnumType;
 import EnumDataType.IdTokenEnumType;
-import EnumDataType.MessageStateEnumType;
+import DisplayMessagesRelated.MessageStateEnumType;
 import EnumDataType.TransactionEventEnumType;
 import EnumDataType.TriggerReasonEnumType;
 import UseCasesOCPP.SendRequestToCSMS;

@@ -1,8 +1,13 @@
 package com.example.chargergui;
 
+import android.content.Context;
 import android.util.Log;
 import android.widget.TextView;
 
+import org.glassfish.tyrus.client.ClientManager;
+import org.glassfish.tyrus.client.ClientProperties;
+import org.glassfish.tyrus.client.auth.Credentials;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -11,36 +16,33 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import javax.websocket.ClientEndpoint;
-import javax.websocket.ContainerProvider;
 import javax.websocket.DeploymentException;
 import javax.websocket.EncodeException;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
-import javax.websocket.WebSocketContainer;
 
 import ChargingStationRequest.BootNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
-import ChargingStationResponse.CostUpdatedResponse;
 import ChargingStationResponse.ResetResponse;
 import ChargingStationResponse.SetDisplayMessageResponse;
-import Controller_Components.DisplayMessageCtrlr;
 import DataType.ChargingStationType;
-import DataType.IdTokenType;
-import DataType.MessageContentType;
-import EnumDataType.AuthorizationStatusEnumType;
-import EnumDataType.DisplayMessageStatusEnumType;
-import EnumDataType.MessageFormatEnumType;
-import EnumDataType.MessagePriorityEnumType;
-import EnumDataType.MessageStateEnumType;
+import AuthorizationRelated.IdTokenType;
+import DisplayMessagesRelated.DisplayMessageStatusEnumType;
+import DisplayMessagesRelated.MessageInfoRepo;
+import EnumDataType.AttributeEnumType;
+import AuthorizationRelated.AuthorizationStatusEnumType;
+import DisplayMessagesRelated.MessageFormatEnumType;
+import DisplayMessagesRelated.MessagePriorityEnumType;
+import DisplayMessagesRelated.MessageStateEnumType;
 import EnumDataType.RegistrationStatusEnumType;
 import EnumDataType.ResetEnumType;
 import EnumDataType.ResetStatusEnumType;
 import EnumDataType.TransactionEventEnumType;
 import UseCasesOCPP.BootNotificationResponse;
 import UseCasesOCPP.CostUpdatedRequest;
-import UseCasesOCPP.IdTokenInfoType;
-import UseCasesOCPP.MessageInfoType;
+import AuthorizationRelated.IdTokenInfoType;
+import DisplayMessagesRelated.MessageInfoType;
 import UseCasesOCPP.SendRequestToCSMS;
 
 @ClientEndpoint(
@@ -53,7 +55,7 @@ import UseCasesOCPP.SendRequestToCSMS;
 public class MyClientEndpoint  {
 
     private Session session ;
-
+    private Context context ;
 
     private static MyClientEndpoint instance = new MyClientEndpoint(); // Eagerly Loading of single ton instance
 
@@ -95,37 +97,61 @@ public class MyClientEndpoint  {
         thread.start();
     }
 
-    private void connectToWebSocket(TextView text) {
-        WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+    private void connectToWebSocket(TextView text)  {
+        //WebSocketContainer container = ContainerProvider.getWebSocketContainer();
 
         URI uri = URI.create("ws://0f53e667.ngrok.io/mavenjavafxserver/chat");
-        try {
-            session = container.connectToServer(this, uri);
 
-            if(session != null){
-                text.append("Connection with CSMS Established");
-                text.append("\nConnected to Session :"+ session.getId() + "\n" );
-                text.append("\nBoot Reason: "+ BootNotificationRequest.getReason()+"\n");
-                text.append("\nCharging Station\n");
-                text.append("\nserialNumber: "+ChargingStationType.serialNumber+"\n");
-                text.append("\nmodel: "+ChargingStationType.model+"\n");
-                text.append("\nvendorName: "+ChargingStationType.vendorName+"\n");
-                text.append("\nfirmwareVersion: "+ChargingStationType.firmwareVersion+"\n");
-                text.append("\nmodem: "+ChargingStationType.modem+"\n");
-                text.append("\nSending BootNotificationRequest to CSMS\n");
-                session.getBasicRemote().sendObject(toCSMS.createBootNotificationRequest());
-                text.append("\nBoot status: "+ bootNotificationResponse.getBootStatus() + "\n");
-            }
+        ClientManager client = ClientManager.createClient();
+
+        client.getProperties().put(ClientProperties.CREDENTIALS, new Credentials("ws_user", "password")); // Basic Authentication for Charging Station
+        client.getProperties().put(ClientProperties.LOG_HTTP_UPGRADE, true);
+
+
+        try {
+            client.connectToServer(this,uri) ;
         } catch (DeploymentException e) {
             e.printStackTrace();
             text.append("\nDeployment Exception"+ R.string.conncsmsnot + "\n");
         } catch (IOException e) {
             e.printStackTrace();
             text.append("\nIO Exception" + R.string.conncsmsnot+"\n");
-        } catch (JSONException e) {
+        }
+
+
+
+
+        /*try {
+            session = container.connectToServer(this, uri);
+
+        } catch (DeploymentException e) {
             e.printStackTrace();
-        } catch (EncodeException e) {
+            text.append("\nDeployment Exception"+ R.string.conncsmsnot + "\n");
+        } catch (IOException e) {
             e.printStackTrace();
+            text.append("\nIO Exception" + R.string.conncsmsnot+"\n");
+        }*/
+        if(session != null){
+            text.append("Connection with CSMS Established");
+            text.append("\nConnected to Session :"+ session.getId() + "\n" );
+            text.append("\nBoot Reason: "+ BootNotificationRequest.getReason()+"\n");
+            text.append("\nCharging Station\n");
+            text.append("\nserialNumber: "+ChargingStationType.serialNumber+"\n");
+            text.append("\nmodel: "+ChargingStationType.model+"\n");
+            text.append("\nvendorName: "+ChargingStationType.vendorName+"\n");
+            text.append("\nfirmwareVersion: "+ChargingStationType.firmwareVersion+"\n");
+            text.append("\nmodem: "+ChargingStationType.modem+"\n");
+            text.append("\nSending BootNotificationRequest to CSMS\n");
+            try {
+                session.getBasicRemote().sendObject(toCSMS.createBootNotificationRequest());
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (EncodeException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            text.append("\nBoot status: "+ bootNotificationResponse.getBootStatus() + "\n");
         }
     }
 
@@ -150,7 +176,7 @@ public class MyClientEndpoint  {
         if(msg instanceof CALL){
             isCALLarrived = true ;
             Log.d("TAG","CALL received: " + CALL.getAction());
-            //JSONObject responsePayload = null;   // responsePayload is JSON payload requested by CSMS.
+            JSONObject responsePayload = null;   // responsePayload is JSON payload requested by CSMS.
             JSONObject requestPayload = ((CALL) msg).getPayload() ; // get JSON payload from server request
             Log.d("TAG", "requestPayload: " + requestPayload);
             switch (CALL.getAction()) {
@@ -158,11 +184,17 @@ public class MyClientEndpoint  {
                     processCostUpdatedRequest(requestPayload);
                     //responsePayload = CostUpdatedResponse.payload();
                     break;
-                case "SetDisplayMessage":
+                case "SetDisplayMessages":
                     JSONObject DisplayMessage = requestPayload.getJSONObject("message");
-                    processDisplayMessageRequest(DisplayMessage);
-                    //responsePayload = SetDisplayMessageResponse.payload();
+                    DisplayMessageStatusEnumType status = processDisplayMessageRequest(DisplayMessage);
+                    SetDisplayMessageResponse.setStatus(status);
+                    responsePayload = SetDisplayMessageResponse.payload() ;
                     break;
+
+                case "GetDisplayMessages":
+
+
+
                 case "Reset":
                     AfterResetCommand(ResetEnumType.valueOf(requestPayload.getString("type")));
                     //responsePayload = ResetResponse.payload();
@@ -174,7 +206,24 @@ public class MyClientEndpoint  {
 
 
                     break;
-                case "TriggerMessageResponse":
+                case "TriggerMessage":
+
+                    break;
+                case "SetVariables":
+                    JSONArray setvariableData = requestPayload.getJSONArray("setvariableData");
+
+                    for(int i = 0 ; i < setvariableData.length() ; i++){
+                        JSONObject item = setvariableData.getJSONObject(i);
+                        String component = item.getString("component");
+                        String variable =  item.getString("variable");
+                        String attributeValue = item.getString("attributeValue");
+                        AttributeEnumType attributeEnumType = AttributeEnumType.valueOf(item.getString("attributeEnumType"));
+
+                    }
+
+
+                    break;
+                case "GetVariables":
 
                     break;
 
@@ -248,29 +297,45 @@ public class MyClientEndpoint  {
 
         }
     }
-    private void processDisplayMessageRequest(JSONObject j) throws JSONException {
+    private DisplayMessageStatusEnumType processDisplayMessageRequest(JSONObject j) throws JSONException {
 
-        messageInfo.setId(j.getInt("id"));
-        messageInfo.setPriority(MessagePriorityEnumType.valueOf(j.getString("priority")));
-        messageInfo.setState(MessageStateEnumType.valueOf(j.getString("state")));
-        messageInfo.setStartDateTime(j.getString("startDateTime"));
-        messageInfo.setEndDataTime(j.getString("endDataTime"));
-        messageInfo.setTransactionId(j.getString("transactionId"));
+        MessageInfoRepo messageInfoRepo = new MessageInfoRepo(context);
 
-        MessageContentType messageContent = new MessageContentType();
-        JSONObject displaymessage = j.getJSONObject("message");
-        messageContent.setContent(displaymessage.getString("content"));
-        messageContent.setFormat(MessageFormatEnumType.valueOf(displaymessage.getString("format")));
-        messageContent.setLanguage(displaymessage.getString("language"));
+        String priority = j.getString("priority");
+        for (MessagePriorityEnumType s : MessagePriorityEnumType.values()) {
+                if(!priority.equals(s.name())) {
+                    return DisplayMessageStatusEnumType.NotSupportedPriority ;
+                }
+        }
+        String state = j.getString("state") ;
+        for (MessageStateEnumType s : MessageStateEnumType.values()){
+            if(!state.equals(s.name())){
+                return DisplayMessageStatusEnumType.NotSupportedState ;
+            }
+        }
+        String startDateTime = j.getString("startDateTime");
+        String endDateTime = j.getString("endDataTime");
+        String transactionId = j.getString("transactionId");
 
-        messageInfo.setMessage(messageContent);
+        MessageInfoType.MessageContent messageContent = new MessageInfoType.MessageContent();
+        JSONObject displayMessage = j.getJSONObject("message");
+        messageContent.content = displayMessage.getString("content");
+        messageContent.format = displayMessage.getString("format");
+        messageContent.language = displayMessage.getString("language");
+
+        MessageInfoType.MessageInfo message = new MessageInfoType.MessageInfo(priority,state,startDateTime,endDateTime,transactionId,messageContent) ;
+        message.setId(j.getInt("id"));
+        messageInfoRepo.insert(message);
+
+        return DisplayMessageStatusEnumType.Accepted ;
     }
 
     private void processAuthResponse(JSONObject j2) throws JSONException {
+
         idInfo.setStatus(AuthorizationStatusEnumType.valueOf(j2.getString("status")));
         idInfo.setCacheExpiryDateTime(j2.getString("cacheExpiryDateTime"));
         idInfo.setChargingPriority(j2.getInt("chargingPriority"));
-        MessageContentType personalMessage = new MessageContentType();
+        MessageContent personalMessage = new MessageContent();
         JSONObject j3 = j2.getJSONObject("personalMessage");
         personalMessage.setContent(j3.getString("content"));
         personalMessage.setLanguage(j3.getString("language"));

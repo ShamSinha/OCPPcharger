@@ -1,4 +1,4 @@
-package EnumDataType;
+package DisplayMessagesRelated;
 
 public enum MessageStateEnumType {
     Charging , // Message only to be shown while the Charging Station is charging.

@@ -1,7 +1,5 @@
 package com.example.chargergui;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -17,11 +15,9 @@ import java.io.IOException;
 import javax.websocket.EncodeException;
 
 import ChargingStationResponse.SetDisplayMessageResponse;
-import Controller_Components.AuthCtrlr;
-import EnumDataType.DisplayMessageStatusEnumType;
-import EnumDataType.MessageStateEnumType;
-import UseCasesOCPP.IdTokenInfoType;
-import UseCasesOCPP.MessageInfoType;
+import DisplayMessagesRelated.DisplayMessageStatusEnumType;
+import DisplayMessagesRelated.MessageStateEnumType;
+import DisplayMessagesRelated.MessageInfoType;
 
 public class WelcomeAndStart extends Activity {
     MyClientEndpoint myClientEndpoint;

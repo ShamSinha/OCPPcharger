@@ -2,7 +2,9 @@ package UseCasesOCPP;
 
 import EnumDataType.RegistrationStatusEnumType;
 
+
 public class BootNotificationResponse {
+
     private RegistrationStatusEnumType bootStatus;
     private int bootInterval;
 

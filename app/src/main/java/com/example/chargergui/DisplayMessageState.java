@@ -1,6 +1,6 @@
 package com.example.chargergui;
 
-import EnumDataType.MessageStateEnumType;
+import DisplayMessagesRelated.MessageStateEnumType;
 
 public class DisplayMessageState {
 

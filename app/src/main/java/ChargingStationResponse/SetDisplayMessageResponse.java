@@ -3,9 +3,10 @@ package ChargingStationResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import EnumDataType.DisplayMessageStatusEnumType;
+import DisplayMessagesRelated.DisplayMessageStatusEnumType;
 
 public class SetDisplayMessageResponse {
+
     public static DisplayMessageStatusEnumType status ;
 
     public static void setStatus(DisplayMessageStatusEnumType status) {

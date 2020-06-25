@@ -22,16 +22,16 @@ import javax.websocket.EncodeException;
 
 import ChargingStationRequest.StatusNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
-import Controller_Components.TxCtlr;
-import DataType.IdTokenType;
+import AuthorizationRelated.IdTokenType;
 import DataType.TransactionType;
 import EnumDataType.ChargingStateEnumType;
 import EnumDataType.ConnectorStatusEnumType;
-import EnumDataType.MessageStateEnumType;
+import DisplayMessagesRelated.MessageStateEnumType;
 import EnumDataType.ReasonEnumType;
 import EnumDataType.TransactionEventEnumType;
 import EnumDataType.TriggerReasonEnumType;
 import UseCasesOCPP.SendRequestToCSMS;
+import socdisplay_viewmodel.SOCdisplay;
 
 public class CablePlugActivity extends AppCompatActivity {
 
@@ -113,7 +113,7 @@ public class CablePlugActivity extends AppCompatActivity {
 
 
     public void setCountdowntimer(){
-        new CountDownTimer(TxCtlr.getEVConnectionTimeOut()*1000, 1000){
+        new CountDownTimer(TxCtrlr.getEVConnectionTimeOut()*1000, 1000){
             public void onTick(long millisUntilFinished){
                 textView.setText(String.valueOf(counter));
                 counter++;

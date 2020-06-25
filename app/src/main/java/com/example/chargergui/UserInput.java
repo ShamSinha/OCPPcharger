@@ -3,7 +3,6 @@ package com.example.chargergui;
 import androidx.appcompat.app.AppCompatActivity;
 
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -15,8 +14,9 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import Controller_Components.TariffCostCtrlr;
-import EnumDataType.MessageStateEnumType;
+import DisplayMessagesRelated.MessageStateEnumType;
+import charging_viewmodel.Charging;
+import socdisplay_viewmodel.SOCdisplay;
 
 
 public class UserInput extends AppCompatActivity implements AmountDialog.AmountDialogListener , ChargeDialog.ChargeDialogListener  {
@@ -71,7 +71,7 @@ public class UserInput extends AppCompatActivity implements AmountDialog.AmountD
         startcharging.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(UserInput.this ,Charging.class);
+                Intent intent = new Intent(UserInput.this , Charging.class);
                 intent.putExtra("currentsoc",str);
                 startActivity(intent);
             }

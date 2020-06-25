@@ -1,7 +1,7 @@
 package EnumDataType;
 
 public enum DataEnumType {
-    STRING , // This variable is of the type string.
+    string , // This variable is of the type string.
     decimal , //  This variable is of the type decimal.
     integer , // This variable is of the type integer.
     dateTime, // DateTime following the [RFC3339] specification.

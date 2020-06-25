@@ -11,28 +11,27 @@ import EnumDataType.AttributeEnumType;
 import EnumDataType.GetVariableStatusEnumType;
 
 public class GetVariableResultType {
-    public static GetVariableStatusEnumType attributeStatus;
-    public static AttributeEnumType attributeType = AttributeEnumType.Actual ;
-    public static String attributeValue = null;
+    private GetVariableStatusEnumType attributeStatus;
+    private AttributeEnumType attributeType;
+    private String attributeValue = null;
+    private ComponentType component ;
+    private VariableType variable ;
 
-    public static void setAttributeStatus(GetVariableStatusEnumType attributeStatus) {
-        GetVariableResultType.attributeStatus = attributeStatus;
+    public GetVariableResultType(GetVariableStatusEnumType attributeStatus, AttributeEnumType attributeType, String attributeValue,ComponentType component, VariableType variable) {
+        this.attributeStatus = attributeStatus;
+        this.attributeType = attributeType;
+        this.attributeValue = attributeValue;
+        this.component = component;
+        this.variable = variable;
     }
 
-    public static void setAttributeType(AttributeEnumType attributeType) {
-        GetVariableResultType.attributeType = attributeType;
-    }
-
-    public static void setAttributeValue(String attributeValue) {
-        GetVariableResultType.attributeValue = attributeValue;
-    }
-    public static JSONObject getp() throws JSONException {
+    public JSONObject getp() throws JSONException {
         JSONObject jp  = new JSONObject();
-        jp.put("attributeStatus", GetVariableResultType.attributeStatus.toString());
-        jp.put("attributeType",GetVariableResultType.attributeType.toString());
-        jp.put("attributeValue", GetVariableResultType.attributeValue);
-        jp.put("component", ComponentType.name) ;
-        jp.put("variable",VariableType.name);
+        jp.put("attributeStatus", this.attributeStatus.toString());
+        jp.put("attributeType",this.attributeType.toString());
+        jp.put("attributeValue", this.attributeValue);
+        jp.put("component", this.component) ;
+        jp.put("variable", this.variable);
         return jp;
     }
 }

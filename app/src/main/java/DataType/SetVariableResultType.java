@@ -1,5 +1,6 @@
 package DataType;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -11,22 +12,26 @@ import EnumDataType.AttributeEnumType;
 import EnumDataType.SetVariableStatusEnumType;
 
 public class SetVariableResultType {
-    public static AttributeEnumType attributeType ;
-    public static SetVariableStatusEnumType attributeStatus ;
 
-    public static void setAttributeType(AttributeEnumType attributeType) {
-        SetVariableResultType.attributeType = attributeType;
+    private AttributeEnumType attributeType ;
+    private SetVariableStatusEnumType attributeStatus ;
+    private ComponentType component ;
+    private VariableType variable ;
+
+    public SetVariableResultType(AttributeEnumType attributeType, SetVariableStatusEnumType attributeStatus, ComponentType component, VariableType variable) {
+        this.attributeType = attributeType;
+        this.attributeStatus = attributeStatus;
+        this.component = component;
+        this.variable = variable;
     }
 
-    public static void setAttributeStatus(SetVariableStatusEnumType attributeStatus) {
-        SetVariableResultType.attributeStatus = attributeStatus;
-    }
-    public static JSONObject getp() throws JSONException {
+    public JSONObject getp() throws JSONException {
         JSONObject jp  = new JSONObject();
-        jp.put("attributeType",SetVariableResultType.attributeType.toString());
-        jp.put("attributeStatus", SetVariableResultType.attributeStatus.toString());
-        jp.put("component", ComponentType.name) ;
-        jp.put("variable",VariableType.name);
+        jp.put("attributeType",this.attributeType.toString());
+        jp.put("attributeStatus", this.attributeStatus.toString());
+        jp.put("component", this.component) ;
+        jp.put("variable",this.variable);
+
         return jp;
     }
 }

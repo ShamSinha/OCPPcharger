@@ -8,17 +8,16 @@ import java.util.Map;
 
 public class VariableType {
 
-    public static String name ;
+    public String name ;
 
-    public static void setName(String name) {
-        VariableType.name = name;
+    public VariableType(String name) {
+        this.name = name;
     }
 
-    public static JSONObject getp() throws JSONException {
+    public JSONObject getp() throws JSONException {
         JSONObject jp  = new JSONObject();
 
-        jp.put("name",VariableType.name ) ;
-
+        jp.put("name",this.name ) ;
         return jp;
     }
 }

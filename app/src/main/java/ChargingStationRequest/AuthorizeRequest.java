@@ -1,6 +1,6 @@
 package ChargingStationRequest;
 
-import DataType.IdTokenType;
+import AuthorizationRelated.IdTokenType;
 
 import org.json.JSONException;
 import org.json.JSONObject ;

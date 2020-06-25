@@ -23,14 +23,14 @@ import javax.websocket.EncodeException;
 
 import ChargingStationRequest.StatusNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
-import DataType.AdditionalInfoType;
-import DataType.IdTokenType;
+import AuthorizationRelated.AdditionalInfoType;
+import AuthorizationRelated.IdTokenType;
 import DataType.TransactionType;
-import EnumDataType.AuthorizationStatusEnumType;
+import AuthorizationRelated.AuthorizationStatusEnumType;
 import EnumDataType.ChargingStateEnumType;
 import EnumDataType.ConnectorStatusEnumType;
 import EnumDataType.IdTokenEnumType;
-import EnumDataType.MessageStateEnumType;
+import DisplayMessagesRelated.MessageStateEnumType;
 import EnumDataType.TransactionEventEnumType;
 import EnumDataType.TriggerReasonEnumType;
 import UseCasesOCPP.SendRequestToCSMS;

@@ -1,5 +1,6 @@
 package Controller_Components;
 
+
 public class SampledDataCtrlr {
 
     private static boolean Enabled ;

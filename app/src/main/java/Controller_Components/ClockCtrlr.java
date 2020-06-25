@@ -3,6 +3,7 @@ package Controller_Components;
 import com.example.chargergui.dateTime;
 
 //Provides a means to configure management of time tracking by Charging Station.
+
 public class ClockCtrlr {
     dateTime DateTime ;// Contains the current date and time.
     String TimeOffset ; //string Configured local time offset in the format: "+01:00", "-02:00" etc.
