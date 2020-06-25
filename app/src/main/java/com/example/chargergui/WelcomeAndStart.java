@@ -14,7 +14,8 @@ import java.io.IOException;
 
 import javax.websocket.EncodeException;
 
-import ChargingStationResponse.SetDisplayMessageResponse;
+import ChargingStationResponse.SetDisplayMessagesResponse;
+import Controller_Components.ControllerRepo;
 import DisplayMessagesRelated.DisplayMessageStatusEnumType;
 import DisplayMessagesRelated.MessageStateEnumType;
 import DisplayMessagesRelated.MessageInfoEntity;
@@ -22,6 +23,7 @@ import DisplayMessagesRelated.MessageInfoEntity;
 public class WelcomeAndStart extends Activity {
     MyClientEndpoint myClientEndpoint;
     MessageInfoEntity messageInfoType ;
+    ControllerRepo controllerRepo = new ControllerRepo(WelcomeAndStart.this) ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,12 +35,10 @@ public class WelcomeAndStart extends Activity {
         myClientEndpoint = MyClientEndpoint.getInstance();
         messageInfoType = new MessageInfoEntity();
 
-        DisplayMessageState.setMessageState(MessageStateEnumType.Idle);
-
     }
 
     public void onClickStart(View view){
-        if(AuthCtrlr.isEnabled()) {
+        if(controllerRepo.getController("AuthCtrlr", "Enabled").getvalue().equals("true")) {
             Intent i = new Intent(WelcomeAndStart.this, Authentication.class);
             startActivity(i);
         }
@@ -48,41 +48,4 @@ public class WelcomeAndStart extends Activity {
         }
     }
 
-    public void getRequest(){
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while(true){
-                    if(myClientEndpoint.getisCALLarrived()){
-                        if(CALL.getAction().equals("SetDisplayMessage")){
-                            messageInfoType = myClientEndpoint.getMessageInfo();
-                            if(messageInfoType.getState() != MessageStateEnumType.Idle) {
-                                SetDisplayMessageResponse.setStatus(DisplayMessageStatusEnumType.NotSupportedState);
-                            }
-                            else{
-                                SetDisplayMessageResponse.setStatus(DisplayMessageStatusEnumType.Accepted);
-                                JSONObject responsePayload = new JSONObject();
-                                try {
-                                    responsePayload = SetDisplayMessageResponse.payload() ;
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                                CALLRESULT callresult = new CALLRESULT(responsePayload);
-                                try {
-                                    myClientEndpoint.getOpenSession().getBasicRemote().sendObject(callresult);
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                } catch (EncodeException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-
-                        }
-                    }
-                }
-            }
-        });
-        thread.start();
-
-    }
 }

@@ -21,6 +21,7 @@ import java.io.IOException;
 
 import javax.websocket.EncodeException;
 
+import AuthorizationRelated.IdTokenInfoRepo;
 import ChargingStationRequest.StatusNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
 import AuthorizationRelated.AdditionalInfoType;
@@ -65,14 +66,14 @@ public class Authorization1 extends Activity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_authorization1);
 
-        PIN = (EditText) findViewById(R.id.enterpin);
+        PIN =  findViewById(R.id.enterpin);
         Username = findViewById(R.id.editUSER);
-        dateTime = (TextView) findViewById(R.id.date_time);
+        dateTime = findViewById(R.id.date_time);
         dateTime2 dT = new dateTime2();
         dateTime.setText(dT.dateTime());
-        button = (Button) findViewById(R.id.authorize);
-        CableIn = (ImageView) findViewById(R.id.cablepluginIMAGE) ;
-        CablePluginStatus = (TextView) findViewById(R.id.cablepluginTEXT);
+        button = findViewById(R.id.authorize);
+        CableIn =  findViewById(R.id.cablepluginIMAGE) ;
+        CablePluginStatus = findViewById(R.id.cablepluginTEXT);
         PINprocessing = findViewById(R.id.cardview2PINTEXT);
         AuthStatusText = findViewById(R.id.authorizestatusPIN);
 
@@ -92,6 +93,8 @@ public class Authorization1 extends Activity {
 
         myClientEndpoint = MyClientEndpoint.getInstance();
         DisplayMessageState.setMessageState(MessageStateEnumType.Idle);
+
+        IdTokenInfoRepo idTokenInfoRepo = new IdTokenInfoRepo(Authorization1.this) ;
 
     }
 
@@ -132,7 +135,7 @@ public class Authorization1 extends Activity {
 
             StatusNotificationRequest.setConnectorStatus(ConnectorStatusEnumType.Occupied);
             try {
-                send(toCSMS.createStatusNotificationRequest());
+                sendRequest(toCSMS.createStatusNotificationRequest());
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -141,7 +144,7 @@ public class Authorization1 extends Activity {
             TransactionType.chargingState = ChargingStateEnumType.EVConnected;
             TransactionEventRequest.triggerReason = TriggerReasonEnumType.CablePluggedIn;
             try {
-                send(toCSMS.createTransactionEventRequest());
+                sendRequest(toCSMS.createTransactionEventRequest());
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -206,11 +209,10 @@ public class Authorization1 extends Activity {
 
         AdditionalInfoType.setType("username");
         AdditionalInfoType.setAdditionalIdToken(Username.getText().toString());
-        send(toCSMS.createAuthorizeRequest());
-
+        sendRequest(toCSMS.createAuthorizeRequest());
         getResponse();
     }
-    private void send(final CALL call) {
+    private void sendRequest(final CALL call) {
         Thread thread1 = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -228,6 +230,7 @@ public class Authorization1 extends Activity {
     }
 
     private void getResponse(){
+        final IdTokenInfoRepo idTokenInfoRepo = new IdTokenInfoRepo(Authorization1.this) ;
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -237,7 +240,7 @@ public class Authorization1 extends Activity {
                     e.printStackTrace();
                 }
 
-                if(myClientEndpoint.getIdInfo().getStatus() == AuthorizationStatusEnumType.Accepted){
+                if(AuthorizationStatusEnumType.valueOf(idTokenInfoRepo.getIdTokenInfo().getStatus()) == AuthorizationStatusEnumType.Accepted){
 
                     ChargingStationStates.setAuthorized(true);
 
@@ -251,7 +254,7 @@ public class Authorization1 extends Activity {
                         TransactionType.chargingState =ChargingStateEnumType.Idle ;
                     }
                     try {
-                        send(toCSMS.createTransactionEventRequest());
+                        sendRequest(toCSMS.createTransactionEventRequest());
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -286,7 +289,7 @@ public class Authorization1 extends Activity {
                         }
                         else {
                             cardView3PIN.setVisibility(View.VISIBLE);
-                            AuthStatusText.setText(String.format("%s\nPIN", myClientEndpoint.getIdInfo().getStatus()));
+                            AuthStatusText.setText(String.format("%s\nPIN", idTokenInfoRepo.getIdTokenInfo().getStatus()));
                             TickorCrossPIN.setImageResource(R.drawable.ic_cross);
                         }
                     }

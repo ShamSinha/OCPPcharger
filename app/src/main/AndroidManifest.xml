@@ -18,7 +18,7 @@
         <activity android:name=".CablePlugActivity" />
         <activity android:name=".Authentication" />
         <activity android:name=".Authorization2" />
-        <activity android:name="charging_viewmodel.Charging" />
+        <activity android:name="charging_viewmodel.ChargingDisplay" />
         <activity android:name=".UserInput" />
         <activity android:name=".Authorization1" />
         <activity android:name=".cs_unavailable" />

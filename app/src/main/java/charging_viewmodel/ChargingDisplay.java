@@ -33,6 +33,7 @@ import javax.websocket.EncodeException;
 
 import ChargingStationRequest.StatusNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
+import Controller_Components.ControllerRepo;
 import Controller_Components.SampledDataCtrlr;
 import AuthorizationRelated.IdTokenType;
 import DataType.SampledValueType;
@@ -51,7 +52,7 @@ import UseCasesOCPP.SendRequestToCSMS;
 
 import static java.lang.String.format;
 
-public class Charging extends AppCompatActivity implements PINauthorizeDialog.PINauthorizeDialogListener {
+public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDialog.PINauthorizeDialogListener {
     ImageView BatteryCharge ;
     Button stopCharging;
     TextView voltage;
@@ -112,7 +113,8 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
         voltage.setText(R.string.initialzero); // 0.00
         current.setText(R.string.initialzero); // 0.00
         Charge.setText(currentsoc);
-        updatedCost.setText(format("%s 0.00", TariffCostCtrlr.getCurrency()));
+        ControllerRepo controllerRepo = new ControllerRepo(ChargingDisplay.this) ;
+        updatedCost.setText(format("%s 0.00", controllerRepo.getController("TariffCostCtrlr","Currency").getvalue() ));
 
         SuspendTimer.setVisibility(View.GONE);
         AfterSuspend.setVisibility(View.GONE);
@@ -488,7 +490,7 @@ public class Charging extends AppCompatActivity implements PINauthorizeDialog.PI
                                 e.printStackTrace();
                             }
 
-                            Intent i = new Intent(Charging.this, MainActivity.class);
+                            Intent i = new Intent(ChargingDisplay.this, MainActivity.class);
                             startActivity(i);
 
                         }

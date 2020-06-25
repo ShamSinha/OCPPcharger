@@ -11,7 +11,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 
 
 
-@Database(entities = {IdTokenInfoType.IdTokenInfo.class} , version = 1)
+@Database(entities = {IdTokenInfoEntity.IdTokenInfo.class} , version = 1)
 public abstract class IdTokenInfoDatabase extends RoomDatabase {
 
     private static AuthorizationRelated.IdTokenInfoDatabase instance;

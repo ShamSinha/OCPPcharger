@@ -7,13 +7,13 @@ import androidx.room.Update;
 public interface IdTokenInfoDao {
 
     @Insert
-    public void insert(IdTokenInfoType.IdTokenInfo idTokenInfo);
+    public void insert(IdTokenInfoEntity.IdTokenInfo idTokenInfo);
 
     @Update
-    public void update(IdTokenInfoType.IdTokenInfo idTokenInfo);
+    public void update(IdTokenInfoEntity.IdTokenInfo idTokenInfo);
 
     @Query("SELECT * FROM IdTokenInfoType.IdTokenInfo ")
-    IdTokenInfoType.IdTokenInfo getIdTokenInfo();
+    IdTokenInfoEntity.IdTokenInfo getIdTokenInfo();
 
 
 }

@@ -45,7 +45,7 @@ public abstract class ControllerDatabase extends RoomDatabase {
         }
         @Override
         protected Void doInBackground(Void... voids) {
-            controllerDao.insert(new Controller("AuthCtrlr","Enabled", MutabilityEnumType.ReadWrite.toString(),"", DataEnumType.Boolean.toString(),"True"));
+            controllerDao.insert(new Controller("AuthCtrlr","Enabled", MutabilityEnumType.ReadWrite.toString(),"", DataEnumType.Boolean.toString(),"true"));
             controllerDao.insert(new Controller("AuthCtrlr","OfflineTxForUnknownIdEnabled", MutabilityEnumType.ReadWrite.toString(),"", DataEnumType.Boolean.toString(),""));
             controllerDao.insert(new Controller("AuthCtrlr","AuthorizeRemoteStart", MutabilityEnumType.ReadWrite.toString(),"", DataEnumType.Boolean.toString(),""));
             controllerDao.insert(new Controller("AuthCtrlr","LocalAuthorizeOffline", MutabilityEnumType.ReadWrite.toString(),"", DataEnumType.Boolean.toString(),""));

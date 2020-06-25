@@ -15,7 +15,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import DisplayMessagesRelated.MessageStateEnumType;
-import charging_viewmodel.Charging;
+import charging_viewmodel.ChargingDisplay;
 import socdisplay_viewmodel.SOCdisplay;
 
 
@@ -71,7 +71,7 @@ public class UserInput extends AppCompatActivity implements AmountDialog.AmountD
         startcharging.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(UserInput.this , Charging.class);
+                Intent intent = new Intent(UserInput.this , ChargingDisplay.class);
                 intent.putExtra("currentsoc",str);
                 startActivity(intent);
             }

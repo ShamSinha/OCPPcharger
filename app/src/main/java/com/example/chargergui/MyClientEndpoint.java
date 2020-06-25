@@ -29,7 +29,7 @@ import ChargingStationRequest.BootNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
 import ChargingStationResponse.GetDisplayMessagesResponse;
 import ChargingStationResponse.ResetResponse;
-import ChargingStationResponse.SetDisplayMessageResponse;
+import ChargingStationResponse.SetDisplayMessagesResponse;
 import DataType.ChargingStationType;
 import AuthorizationRelated.IdTokenType;
 import DisplayMessagesRelated.DisplayMessageStatusEnumType;
@@ -48,7 +48,7 @@ import EnumDataType.ResetStatusEnumType;
 import EnumDataType.TransactionEventEnumType;
 import UseCasesOCPP.BootNotificationResponse;
 import UseCasesOCPP.CostUpdatedRequest;
-import AuthorizationRelated.IdTokenInfoType;
+import AuthorizationRelated.IdTokenInfoEntity;
 import DisplayMessagesRelated.MessageInfoEntity;
 import UseCasesOCPP.SendRequestToCSMS;
 
@@ -82,7 +82,7 @@ public class MyClientEndpoint  {
     private BootNotificationResponse bootNotificationResponse = new BootNotificationResponse();
 
     //AuthorizeResponse
-    private IdTokenInfoType idInfo = new IdTokenInfoType();
+    private IdTokenInfoEntity idInfo = new IdTokenInfoEntity();
 
     //SetDisplayMessageRequest
     private MessageInfoEntity messageInfo = new MessageInfoEntity();
@@ -181,6 +181,7 @@ public class MyClientEndpoint  {
     public void onMessage(WebsocketMessage msg) throws JSONException {
         Log.d("TAG","Websocket Message Received");
         if(msg instanceof CALL){
+            isCALLarrived = true ;
             Log.d("TAG","CALL received: " + CALL.getAction());
             JSONObject responsePayload = null;   // responsePayload is JSON payload requested by CSMS.
             JSONObject requestPayload = ((CALL) msg).getPayload() ; // get JSON payload from server request
@@ -193,20 +194,23 @@ public class MyClientEndpoint  {
                 case "SetDisplayMessages":
                     JSONObject setDisplayMessage = requestPayload.getJSONObject("message");
                     DisplayMessageStatusEnumType status = processSetDisplayMessageRequest(setDisplayMessage);
-                    SetDisplayMessageResponse.setStatus(status);
-                    responsePayload = SetDisplayMessageResponse.payload() ;
+                    SetDisplayMessagesResponse.setStatus(status);
+                    responsePayload = SetDisplayMessagesResponse.payload() ;
                     break;
 
                 case "GetDisplayMessages":
 
                     int requestId = requestPayload.getInt("requestId");
+                    List<JSONObject> notifyDisplayMessage = new ArrayList<>();
+                    List<MessageInfoEntity.MessageInfo> messageInfoEntityList = new ArrayList<>(); ;
 
                     MessageInfoRepo messageInfoRepo = new MessageInfoRepo(context);
                     if(requestPayload.has("id")){
                         int id = requestPayload.getInt("id") ;
                         if(messageInfoRepo.getMessageInfoById(id) != null){
                             GetDisplayMessagesResponse.setStatus(GetDisplayMessagesStatusEnumType.Accepted);
-                            NotifyDisplayMessagesRequest.setRequestId(requestId);
+                            messageInfoEntityList.add(messageInfoRepo.getMessageInfoById(id))  ;
+                            notifyDisplayMessage = processGetDisplayMessages(messageInfoEntityList);
                         }
                         else{
                             GetDisplayMessagesResponse.setStatus(GetDisplayMessagesStatusEnumType.Unknown);
@@ -217,28 +221,8 @@ public class MyClientEndpoint  {
                         String priority = requestPayload.getString("priority") ;
                         if(messageInfoRepo.getMessageInfoByPriority(priority) != null){
                             GetDisplayMessagesResponse.setStatus(GetDisplayMessagesStatusEnumType.Accepted);
-                            NotifyDisplayMessagesRequest.setRequestId(requestId);
-                            List<MessageInfoEntity.MessageInfo> messageInfoEntityList = messageInfoRepo.getMessageInfoByPriority(priority);
-                            List<JSONObject> notify = new ArrayList<>();
-
-                            for(int i = 0 ;i<messageInfoEntityList.size() ; i++ ){
-
-                                MessageInfoEntity.MessageInfo m = messageInfoEntityList.get(i);
-                                MessageInfoType.setId(m.getId());
-                                MessageInfoType.setPriority(m.getPriority());
-                                MessageInfoType.setState(m.getState());
-                                MessageInfoType.setStartDateTime(m.getStartDateTime());
-                                MessageInfoType.setEndDataTime(m.getEndDataTime());
-                                MessageInfoType.setTransactionId(m.getTransactionId());
-                                MessageContentType.setFormat(MessageFormatEnumType.valueOf(m.getMessage().format));
-                                MessageContentType.setLanguage(m.getMessage().language);
-                                MessageContentType.setContent(m.getMessage().content);
-
-                                
-                            }
-
-
-
+                            messageInfoEntityList = messageInfoRepo.getMessageInfoByPriority(priority);
+                            notifyDisplayMessage = processGetDisplayMessages(messageInfoEntityList);
                         }
                         else{
                             GetDisplayMessagesResponse.setStatus(GetDisplayMessagesStatusEnumType.Unknown);
@@ -248,18 +232,27 @@ public class MyClientEndpoint  {
                         String state  = requestPayload.getString("state") ;
                         if(messageInfoRepo.getMessageInfoByState(state) != null){
                             GetDisplayMessagesResponse.setStatus(GetDisplayMessagesStatusEnumType.Accepted);
-                            NotifyDisplayMessagesRequest.setRequestId(requestId);
+                            messageInfoEntityList = messageInfoRepo.getMessageInfoByState(state);
+                            notifyDisplayMessage = processGetDisplayMessages(messageInfoEntityList);
                         }
                         else {
                             GetDisplayMessagesResponse.setStatus(GetDisplayMessagesStatusEnumType.Unknown);
                         }
                     }
-                    send(new CALLRESULT(GetDisplayMessagesResponse.payload()));
+                    sendResponse(new CALLRESULT(GetDisplayMessagesResponse.payload()));
 
                     if(GetDisplayMessagesResponse.getStatus().equals(GetDisplayMessagesStatusEnumType.Accepted)){
-
+                        NotifyDisplayMessagesRequest.setRequestId(requestId);
+                        for(int k = 0 ; k < notifyDisplayMessage.size() ; k++) {
+                            if(k == notifyDisplayMessage.size()-1){
+                                NotifyDisplayMessagesRequest.setTbc(false);
+                            }
+                            else {
+                                NotifyDisplayMessagesRequest.setTbc(true);
+                            }
+                            sendRequest(new CALL("NotifyDisplayMessages",NotifyDisplayMessagesRequest.payload(notifyDisplayMessage.get(k))));
+                        }
                     }
-
 
                 case "Reset":
                     AfterResetCommand(ResetEnumType.valueOf(requestPayload.getString("type")));
@@ -295,6 +288,7 @@ public class MyClientEndpoint  {
                 default:
                     throw new IllegalStateException("Unexpected value: " + CALL.getAction());
             }
+            isCALLarrived = false ;
 
         }
         if (msg instanceof CALLRESULT) {
@@ -347,8 +341,7 @@ public class MyClientEndpoint  {
 
     public void AfterResetCommand(ResetEnumType type) {
         if(type == ResetEnumType.Immediate && ResetResponse.status == ResetStatusEnumType.Accepted) {
-            IdTokenType.setIdToken(null);
-            IdTokenType.setType(null);
+
             TransactionEventRequest.eventType =TransactionEventEnumType.Started ;
         }
 
@@ -398,13 +391,13 @@ public class MyClientEndpoint  {
         int chargingPriority = j2.getInt("chargingPriority");
         int evseId = j2.getInt("evseId") ;
 
-        IdTokenInfoType.MessageContent personalMessage = new IdTokenInfoType.MessageContent();
+        IdTokenInfoEntity.MessageContent personalMessage = new IdTokenInfoEntity.MessageContent();
         JSONObject j3 = j2.getJSONObject("personalMessage");
         personalMessage.content = j3.getString("content");
         personalMessage.language = j3.getString("language");
         personalMessage.format = j3.getString("format") ;
 
-        idTokenInfoRepo.insert(new IdTokenInfoType.IdTokenInfo(status,cacheExpiryDateTime,chargingPriority,personalMessage,evseId));
+        idTokenInfoRepo.insert(new IdTokenInfoEntity.IdTokenInfo(status,cacheExpiryDateTime,chargingPriority,personalMessage,evseId));
     }
 
     private void processBootResponse(JSONObject jsonObject) throws JSONException {
@@ -435,7 +428,7 @@ public class MyClientEndpoint  {
         return isCALLarrived;
     }
 
-    private void send(final CALLRESULT callresult) {
+    private void sendResponse(final CALLRESULT callresult) {
         Thread thread1 = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -451,6 +444,45 @@ public class MyClientEndpoint  {
         });
         thread1.start();
     }
+    private void sendRequest(final CALL call) {
+        Thread thread1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    MyClientEndpoint.getInstance().getOpenSession().getBasicRemote().sendObject(call);
+                    Log.d("TAG", "Message Sent: " + CALL.getAction() + call.getPayload());
+
+                } catch (IOException | EncodeException e) {
+                    Log.e("ERROR", "IOException in BasicRemote");
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread1.start();
+    }
+
+    public List<JSONObject> processGetDisplayMessages(List<MessageInfoEntity.MessageInfo> messageInfoEntityList) throws JSONException {
+
+        List<JSONObject> notify = new ArrayList<>();
+        for(int i = 0 ; i <messageInfoEntityList.size() ; i++ ){
+
+            MessageInfoEntity.MessageInfo m = messageInfoEntityList.get(i);
+            MessageInfoType.setId(m.getId());
+            MessageInfoType.setPriority(m.getPriority());
+            MessageInfoType.setState(m.getState());
+            MessageInfoType.setStartDateTime(m.getStartDateTime());
+            MessageInfoType.setEndDataTime(m.getEndDataTime());
+            MessageInfoType.setTransactionId(m.getTransactionId());
+            MessageContentType.setFormat(MessageFormatEnumType.valueOf(m.getMessage().format));
+            MessageContentType.setLanguage(m.getMessage().language);
+            MessageContentType.setContent(m.getMessage().content);
+
+            notify.add(i, MessageInfoType.getp()) ;
+        }
+        return notify ;
+    }
+
+
 
 
 }

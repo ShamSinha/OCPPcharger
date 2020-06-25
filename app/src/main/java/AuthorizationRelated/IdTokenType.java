@@ -7,8 +7,8 @@ import EnumDataType.IdTokenEnumType;
 
 public class IdTokenType {
 
-    public static String idToken = null;
-    public static IdTokenEnumType type = null ;
+    public static String idToken ;
+    public static IdTokenEnumType type ;
 
     public static void setIdToken(String idToken) {
         IdTokenType.idToken = idToken;

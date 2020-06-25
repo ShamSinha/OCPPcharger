@@ -7,7 +7,6 @@ public class NotifyDisplayMessagesRequest {
 
     private static int requestId ;
     private static boolean tbc ;
-    private static MessageInfoType messageInfo ;
 
     public static int getRequestId() {
         return requestId;
@@ -25,19 +24,12 @@ public class NotifyDisplayMessagesRequest {
         NotifyDisplayMessagesRequest.tbc = tbc;
     }
 
-    public static MessageInfoType getMessageInfo() {
-        return messageInfo;
-    }
 
-    public static void setMessageInfo(MessageInfoType messageInfo) {
-        NotifyDisplayMessagesRequest.messageInfo = messageInfo;
-    }
-
-    public static JSONObject payload() throws JSONException {
+    public static JSONObject payload(JSONObject messageInfo) throws JSONException {
         JSONObject j = new JSONObject();
         j.put("requestId" , getRequestId()) ;
         j.put("tbc" , isTbc());
-        j.put("messageInfo", getMessageInfo());
+        j.put("messageInfo", messageInfo);
 
         return j;
     }

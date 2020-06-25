@@ -4,7 +4,7 @@ import androidx.room.Embedded;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-public class IdTokenInfoType {
+public class IdTokenInfoEntity {
 
     public static class MessageContent {
 
