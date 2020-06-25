@@ -12,36 +12,51 @@ public class MessageInfoType {
     private static String endDataTime;
     private static String transactionId;
 
-    public MessageInfoType(int id , String priority, String state, String startDateTime, String endDataTime, String transactionId) {
-        MessageInfoType.id = id ;
-        MessageInfoType.priority = priority ;
-        MessageInfoType.state = state ;
-        MessageInfoType.startDateTime = startDateTime ;
-        MessageInfoType.endDataTime = endDataTime ;
-        MessageInfoType.transactionId  = transactionId ;
+    public static void setId(int id) {
+        MessageInfoType.id = id;
     }
 
-    public static int getId() {
+    public static void setPriority(String priority) {
+        MessageInfoType.priority = priority;
+    }
+
+    public static void setState(String state) {
+        MessageInfoType.state = state;
+    }
+
+    public static void setStartDateTime(String startDateTime) {
+        MessageInfoType.startDateTime = startDateTime;
+    }
+
+    public static void setEndDataTime(String endDataTime) {
+        MessageInfoType.endDataTime = endDataTime;
+    }
+
+    public static void setTransactionId(String transactionId) {
+        MessageInfoType.transactionId = transactionId;
+    }
+
+    private static int getId() {
         return id;
     }
 
-    public static String getPriority() {
+    private static String getPriority() {
         return priority;
     }
 
-    public static String getState() {
+    private static String getState() {
         return state;
     }
 
-    public static String getStartDateTime() {
+    private static String getStartDateTime() {
         return startDateTime;
     }
 
-    public static String getEndDataTime() {
+    private static String getEndDataTime() {
         return endDataTime;
     }
 
-    public static String getTransactionId() {
+    private static String getTransactionId() {
         return transactionId;
     }
 

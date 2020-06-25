@@ -14,6 +14,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.websocket.ClientEndpoint;
@@ -33,7 +34,10 @@ import DataType.ChargingStationType;
 import AuthorizationRelated.IdTokenType;
 import DisplayMessagesRelated.DisplayMessageStatusEnumType;
 import DisplayMessagesRelated.GetDisplayMessagesStatusEnumType;
+import DisplayMessagesRelated.MessageContentType;
+import DisplayMessagesRelated.MessageFormatEnumType;
 import DisplayMessagesRelated.MessageInfoRepo;
+import DisplayMessagesRelated.MessageInfoType;
 import DisplayMessagesRelated.NotifyDisplayMessagesRequest;
 import EnumDataType.AttributeEnumType;
 import DisplayMessagesRelated.MessagePriorityEnumType;
@@ -214,7 +218,25 @@ public class MyClientEndpoint  {
                         if(messageInfoRepo.getMessageInfoByPriority(priority) != null){
                             GetDisplayMessagesResponse.setStatus(GetDisplayMessagesStatusEnumType.Accepted);
                             NotifyDisplayMessagesRequest.setRequestId(requestId);
-                            List<MessageInfoEntity.MessageInfo> messageInfoEntityList = messageInfoRepo.getMessageInfoByPriority(priority) ;
+                            List<MessageInfoEntity.MessageInfo> messageInfoEntityList = messageInfoRepo.getMessageInfoByPriority(priority);
+                            List<JSONObject> notify = new ArrayList<>();
+
+                            for(int i = 0 ;i<messageInfoEntityList.size() ; i++ ){
+
+                                MessageInfoEntity.MessageInfo m = messageInfoEntityList.get(i);
+                                MessageInfoType.setId(m.getId());
+                                MessageInfoType.setPriority(m.getPriority());
+                                MessageInfoType.setState(m.getState());
+                                MessageInfoType.setStartDateTime(m.getStartDateTime());
+                                MessageInfoType.setEndDataTime(m.getEndDataTime());
+                                MessageInfoType.setTransactionId(m.getTransactionId());
+                                MessageContentType.setFormat(MessageFormatEnumType.valueOf(m.getMessage().format));
+                                MessageContentType.setLanguage(m.getMessage().language);
+                                MessageContentType.setContent(m.getMessage().content);
+
+                                
+                            }
+
 
 
                         }
@@ -237,12 +259,6 @@ public class MyClientEndpoint  {
                     if(GetDisplayMessagesResponse.getStatus().equals(GetDisplayMessagesStatusEnumType.Accepted)){
 
                     }
-
-
-
-
-
-
 
 
                 case "Reset":
