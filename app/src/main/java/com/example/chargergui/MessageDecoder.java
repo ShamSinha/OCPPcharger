@@ -67,7 +67,7 @@ public class MessageDecoder implements Decoder.Text<WebsocketMessage> {
 
     @Override
     public boolean willDecode(String s) {
-        StringTokenizer st = new StringTokenizer(s,",");
+        StringTokenizer st = new StringTokenizer(s,"#");
         int messagetypeId = Integer.parseInt(st.nextToken());
         return messagetypeId == 2 || messagetypeId == 3 || messagetypeId == 4;
     }

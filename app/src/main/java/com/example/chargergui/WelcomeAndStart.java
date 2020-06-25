@@ -17,11 +17,11 @@ import javax.websocket.EncodeException;
 import ChargingStationResponse.SetDisplayMessageResponse;
 import DisplayMessagesRelated.DisplayMessageStatusEnumType;
 import DisplayMessagesRelated.MessageStateEnumType;
-import DisplayMessagesRelated.MessageInfoType;
+import DisplayMessagesRelated.MessageInfoEntity;
 
 public class WelcomeAndStart extends Activity {
     MyClientEndpoint myClientEndpoint;
-    MessageInfoType messageInfoType ;
+    MessageInfoEntity messageInfoType ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,7 +31,7 @@ public class WelcomeAndStart extends Activity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_welcome_and_start);
         myClientEndpoint = MyClientEndpoint.getInstance();
-        messageInfoType = new MessageInfoType();
+        messageInfoType = new MessageInfoEntity();
 
         DisplayMessageState.setMessageState(MessageStateEnumType.Idle);
 

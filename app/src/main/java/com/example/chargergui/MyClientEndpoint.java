@@ -14,6 +14,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 
 import javax.websocket.ClientEndpoint;
 import javax.websocket.DeploymentException;
@@ -22,17 +23,19 @@ import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
 
+import AuthorizationRelated.IdTokenInfoRepo;
 import ChargingStationRequest.BootNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
+import ChargingStationResponse.GetDisplayMessagesResponse;
 import ChargingStationResponse.ResetResponse;
 import ChargingStationResponse.SetDisplayMessageResponse;
 import DataType.ChargingStationType;
 import AuthorizationRelated.IdTokenType;
 import DisplayMessagesRelated.DisplayMessageStatusEnumType;
+import DisplayMessagesRelated.GetDisplayMessagesStatusEnumType;
 import DisplayMessagesRelated.MessageInfoRepo;
+import DisplayMessagesRelated.NotifyDisplayMessagesRequest;
 import EnumDataType.AttributeEnumType;
-import AuthorizationRelated.AuthorizationStatusEnumType;
-import DisplayMessagesRelated.MessageFormatEnumType;
 import DisplayMessagesRelated.MessagePriorityEnumType;
 import DisplayMessagesRelated.MessageStateEnumType;
 import EnumDataType.RegistrationStatusEnumType;
@@ -42,7 +45,7 @@ import EnumDataType.TransactionEventEnumType;
 import UseCasesOCPP.BootNotificationResponse;
 import UseCasesOCPP.CostUpdatedRequest;
 import AuthorizationRelated.IdTokenInfoType;
-import DisplayMessagesRelated.MessageInfoType;
+import DisplayMessagesRelated.MessageInfoEntity;
 import UseCasesOCPP.SendRequestToCSMS;
 
 @ClientEndpoint(
@@ -78,7 +81,7 @@ public class MyClientEndpoint  {
     private IdTokenInfoType idInfo = new IdTokenInfoType();
 
     //SetDisplayMessageRequest
-    private MessageInfoType messageInfo = new MessageInfoType();
+    private MessageInfoEntity messageInfo = new MessageInfoEntity();
 
     //CostUpdatedRequest
     private CostUpdatedRequest costUpdated = new CostUpdatedRequest();
@@ -171,10 +174,9 @@ public class MyClientEndpoint  {
 
 
     @OnMessage
-    public void onMessage(WebsocketMessage msg) throws JSONException, IOException, EncodeException {
+    public void onMessage(WebsocketMessage msg) throws JSONException {
         Log.d("TAG","Websocket Message Received");
         if(msg instanceof CALL){
-            isCALLarrived = true ;
             Log.d("TAG","CALL received: " + CALL.getAction());
             JSONObject responsePayload = null;   // responsePayload is JSON payload requested by CSMS.
             JSONObject requestPayload = ((CALL) msg).getPayload() ; // get JSON payload from server request
@@ -185,13 +187,61 @@ public class MyClientEndpoint  {
                     //responsePayload = CostUpdatedResponse.payload();
                     break;
                 case "SetDisplayMessages":
-                    JSONObject DisplayMessage = requestPayload.getJSONObject("message");
-                    DisplayMessageStatusEnumType status = processDisplayMessageRequest(DisplayMessage);
+                    JSONObject setDisplayMessage = requestPayload.getJSONObject("message");
+                    DisplayMessageStatusEnumType status = processSetDisplayMessageRequest(setDisplayMessage);
                     SetDisplayMessageResponse.setStatus(status);
                     responsePayload = SetDisplayMessageResponse.payload() ;
                     break;
 
                 case "GetDisplayMessages":
+
+                    int requestId = requestPayload.getInt("requestId");
+
+                    MessageInfoRepo messageInfoRepo = new MessageInfoRepo(context);
+                    if(requestPayload.has("id")){
+                        int id = requestPayload.getInt("id") ;
+                        if(messageInfoRepo.getMessageInfoById(id) != null){
+                            GetDisplayMessagesResponse.setStatus(GetDisplayMessagesStatusEnumType.Accepted);
+                            NotifyDisplayMessagesRequest.setRequestId(requestId);
+                        }
+                        else{
+                            GetDisplayMessagesResponse.setStatus(GetDisplayMessagesStatusEnumType.Unknown);
+                        }
+                    }
+
+                    else if(requestPayload.has("priority")){
+                        String priority = requestPayload.getString("priority") ;
+                        if(messageInfoRepo.getMessageInfoByPriority(priority) != null){
+                            GetDisplayMessagesResponse.setStatus(GetDisplayMessagesStatusEnumType.Accepted);
+                            NotifyDisplayMessagesRequest.setRequestId(requestId);
+                            List<MessageInfoEntity.MessageInfo> messageInfoEntityList = messageInfoRepo.getMessageInfoByPriority(priority) ;
+
+
+                        }
+                        else{
+                            GetDisplayMessagesResponse.setStatus(GetDisplayMessagesStatusEnumType.Unknown);
+                        }
+                    }
+                    else if(requestPayload.has("state")){
+                        String state  = requestPayload.getString("state") ;
+                        if(messageInfoRepo.getMessageInfoByState(state) != null){
+                            GetDisplayMessagesResponse.setStatus(GetDisplayMessagesStatusEnumType.Accepted);
+                            NotifyDisplayMessagesRequest.setRequestId(requestId);
+                        }
+                        else {
+                            GetDisplayMessagesResponse.setStatus(GetDisplayMessagesStatusEnumType.Unknown);
+                        }
+                    }
+                    send(new CALLRESULT(GetDisplayMessagesResponse.payload()));
+
+                    if(GetDisplayMessagesResponse.getStatus().equals(GetDisplayMessagesStatusEnumType.Accepted)){
+
+                    }
+
+
+
+
+
 
 
 
@@ -218,9 +268,7 @@ public class MyClientEndpoint  {
                         String variable =  item.getString("variable");
                         String attributeValue = item.getString("attributeValue");
                         AttributeEnumType attributeEnumType = AttributeEnumType.valueOf(item.getString("attributeEnumType"));
-
                     }
-
 
                     break;
                 case "GetVariables":
@@ -231,11 +279,7 @@ public class MyClientEndpoint  {
                 default:
                     throw new IllegalStateException("Unexpected value: " + CALL.getAction());
             }
-            //CALLRESULT callresult = new CALLRESULT(responsePayload);
-            //Log.d("TAG","responsePayload: "+ responsePayload);
-            //session.getBasicRemote().sendObject(callresult);
-            //Log.d("TAG","Message Sent");
-            isCALLarrived = false ;
+
         }
         if (msg instanceof CALLRESULT) {
             Log.d("TAG","CALL received: " + CALL.getAction());
@@ -283,7 +327,6 @@ public class MyClientEndpoint  {
 
         }
 
-
     }
 
     public void AfterResetCommand(ResetEnumType type) {
@@ -297,7 +340,7 @@ public class MyClientEndpoint  {
 
         }
     }
-    private DisplayMessageStatusEnumType processDisplayMessageRequest(JSONObject j) throws JSONException {
+    private DisplayMessageStatusEnumType processSetDisplayMessageRequest(JSONObject j) throws JSONException {
 
         MessageInfoRepo messageInfoRepo = new MessageInfoRepo(context);
 
@@ -317,13 +360,13 @@ public class MyClientEndpoint  {
         String endDateTime = j.getString("endDataTime");
         String transactionId = j.getString("transactionId");
 
-        MessageInfoType.MessageContent messageContent = new MessageInfoType.MessageContent();
+        MessageInfoEntity.MessageContent messageContent = new MessageInfoEntity.MessageContent();
         JSONObject displayMessage = j.getJSONObject("message");
         messageContent.content = displayMessage.getString("content");
         messageContent.format = displayMessage.getString("format");
         messageContent.language = displayMessage.getString("language");
 
-        MessageInfoType.MessageInfo message = new MessageInfoType.MessageInfo(priority,state,startDateTime,endDateTime,transactionId,messageContent) ;
+        MessageInfoEntity.MessageInfo message = new MessageInfoEntity.MessageInfo(priority,state,startDateTime,endDateTime,transactionId,messageContent) ;
         message.setId(j.getInt("id"));
         messageInfoRepo.insert(message);
 
@@ -332,15 +375,20 @@ public class MyClientEndpoint  {
 
     private void processAuthResponse(JSONObject j2) throws JSONException {
 
-        idInfo.setStatus(AuthorizationStatusEnumType.valueOf(j2.getString("status")));
-        idInfo.setCacheExpiryDateTime(j2.getString("cacheExpiryDateTime"));
-        idInfo.setChargingPriority(j2.getInt("chargingPriority"));
-        MessageContent personalMessage = new MessageContent();
+        IdTokenInfoRepo idTokenInfoRepo = new IdTokenInfoRepo(context);
+
+        String status = j2.getString("status");
+        String cacheExpiryDateTime =  j2.getString("cacheExpiryDateTime");
+        int chargingPriority = j2.getInt("chargingPriority");
+        int evseId = j2.getInt("evseId") ;
+
+        IdTokenInfoType.MessageContent personalMessage = new IdTokenInfoType.MessageContent();
         JSONObject j3 = j2.getJSONObject("personalMessage");
-        personalMessage.setContent(j3.getString("content"));
-        personalMessage.setLanguage(j3.getString("language"));
-        personalMessage.setFormat(MessageFormatEnumType.valueOf(j3.getString("format")));
-        idInfo.setPersonalMessage(personalMessage);
+        personalMessage.content = j3.getString("content");
+        personalMessage.language = j3.getString("language");
+        personalMessage.format = j3.getString("format") ;
+
+        idTokenInfoRepo.insert(new IdTokenInfoType.IdTokenInfo(status,cacheExpiryDateTime,chargingPriority,personalMessage,evseId));
     }
 
     private void processBootResponse(JSONObject jsonObject) throws JSONException {
@@ -359,12 +407,7 @@ public class MyClientEndpoint  {
         return bootNotificationResponse;
     }
 
-    //AUTHORIZE
-    public IdTokenInfoType getIdInfo() {
-        return idInfo;
-    }
-
-    public MessageInfoType getMessageInfo(){
+    public MessageInfoEntity getMessageInfo(){
         return messageInfo ;
     }
 
@@ -374,6 +417,23 @@ public class MyClientEndpoint  {
 
     public boolean getisCALLarrived(){
         return isCALLarrived;
+    }
+
+    private void send(final CALLRESULT callresult) {
+        Thread thread1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    MyClientEndpoint.getInstance().getOpenSession().getBasicRemote().sendObject(callresult);
+                    Log.d("TAG", "Message Sent: " + CALL.getAction() + callresult.getPayload());
+
+                } catch (IOException | EncodeException e) {
+                    Log.e("ERROR", "IOException in BasicRemote");
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread1.start();
     }
 
 

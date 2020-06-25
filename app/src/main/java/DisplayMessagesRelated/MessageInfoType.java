@@ -1,71 +1,61 @@
 package DisplayMessagesRelated;
 
-import androidx.room.Embedded;
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
-
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class MessageInfoType {
 
-    public static class MessageContent {
+    private static int id;
+    private static String priority;
+    private static String state;
+    private static String startDateTime;
+    private static String endDataTime;
+    private static String transactionId;
 
-        public String format;
-        public String language;
-        public String content;
+    public MessageInfoType(int id , String priority, String state, String startDateTime, String endDataTime, String transactionId) {
+        MessageInfoType.id = id ;
+        MessageInfoType.priority = priority ;
+        MessageInfoType.state = state ;
+        MessageInfoType.startDateTime = startDateTime ;
+        MessageInfoType.endDataTime = endDataTime ;
+        MessageInfoType.transactionId  = transactionId ;
     }
 
-    @Entity
-    public static class MessageInfo {
-        @PrimaryKey
-        public int id;
-
-        public String priority;
-        public String state;
-        public String startDateTime;
-        public String endDataTime;
-        public String transactionId;
-        @Embedded public MessageContent message;
-
-        public MessageInfo(String priority, String state, String startDateTime, String endDataTime, String transactionId, MessageContent message) {
-            this.priority = priority;
-            this.state = state;
-            this.startDateTime = startDateTime;
-            this.endDataTime = endDataTime;
-            this.transactionId = transactionId;
-            this.message = message;
-        }
-
-        public void setId(int id) {
-            this.id = id;
-        }
-
-        public int getId() {
-            return id;
-        }
-
-        public String getPriority() {
-            return priority;
-        }
-
-        public String getState() {
-            return state;
-        }
-
-        public String getStartDateTime() {
-            return startDateTime;
-        }
-
-        public String getEndDataTime() {
-            return endDataTime;
-        }
-
-        public String getTransactionId() {
-            return transactionId;
-        }
-
-        public MessageContent getMessage() {
-            return message;
-        }
+    public static int getId() {
+        return id;
     }
 
+    public static String getPriority() {
+        return priority;
+    }
+
+    public static String getState() {
+        return state;
+    }
+
+    public static String getStartDateTime() {
+        return startDateTime;
+    }
+
+    public static String getEndDataTime() {
+        return endDataTime;
+    }
+
+    public static String getTransactionId() {
+        return transactionId;
+    }
+
+
+    public static JSONObject getp() throws JSONException {
+        JSONObject jo  = new JSONObject();
+        jo.put("id", getId() ) ;
+        jo.put("priority", getPriority());
+        jo.put("state",getState() ) ;
+        jo.put("startDateTime",getStartDateTime() );
+        jo.put("endDateTime", getEndDataTime()) ;
+        jo.put("transactionId", getTransactionId());
+        jo.put("message",MessageContentType.getp());
+
+        return jo;
+    }
 }

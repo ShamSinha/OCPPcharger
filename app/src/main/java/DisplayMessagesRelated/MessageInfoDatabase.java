@@ -10,7 +10,7 @@ import androidx.room.RoomDatabase;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
 
-@Database(entities = {MessageInfoType.MessageInfo.class} , version = 1)
+@Database(entities = {MessageInfoEntity.MessageInfo.class} , version = 1)
 public abstract class MessageInfoDatabase extends RoomDatabase {
 
     private static MessageInfoDatabase instance;

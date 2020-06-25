@@ -4,9 +4,6 @@ import androidx.room.Embedded;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-import AuthorizationRelated.AuthorizationStatusEnumType;
-
-
 public class IdTokenInfoType {
 
     public static class MessageContent {
@@ -16,19 +13,19 @@ public class IdTokenInfoType {
         public String content;
     }
     @Entity
-    public class IdToken {
+    public static class IdTokenInfo {
 
         @PrimaryKey(autoGenerate = true)
         public int id;
 
-        public AuthorizationStatusEnumType status;
+        public String status;
         public String cacheExpiryDateTime;
         public int chargingPriority;
         @Embedded
         public MessageContent personalMessage;
         public int evseId;
 
-        public IdToken(AuthorizationStatusEnumType status, String cacheExpiryDateTime, int chargingPriority, MessageContent personalMessage, int evseId) {
+        public IdTokenInfo(String status, String cacheExpiryDateTime, int chargingPriority, MessageContent personalMessage, int evseId) {
             this.status = status;
             this.cacheExpiryDateTime = cacheExpiryDateTime;
             this.chargingPriority = chargingPriority;
@@ -44,7 +41,7 @@ public class IdTokenInfoType {
             return id;
         }
 
-        public AuthorizationStatusEnumType getStatus() {
+        public String getStatus() {
             return status;
         }
 

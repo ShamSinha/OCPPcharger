@@ -7,7 +7,6 @@ import java.util.UUID;
 
 public class CALL extends WebsocketMessage{
 
-
     private static String Action ;
     private final JSONObject Payload ;
     private static String MessageId ;
@@ -31,10 +30,6 @@ public class CALL extends WebsocketMessage{
 
     public static String getAction() {
         return Action;
-    }
-
-    public static void setAction(String action) {
-        Action = action;
     }
 
     public JSONObject getPayload() { return this.Payload ;}
