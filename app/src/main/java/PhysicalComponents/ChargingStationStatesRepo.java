@@ -1,7 +1,11 @@
 package PhysicalComponents;
 
 import android.content.Context;
-import android.os.AsyncTask;
+
+import androidx.lifecycle.LiveData;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ChargingStationStatesRepo {
     private ChargingStationStatesDao chargingStationStatesDao ;
@@ -11,42 +15,85 @@ public class ChargingStationStatesRepo {
         chargingStationStatesDao = database.chargingStationStatesDao() ;
     }
 
-    public void insert(ChargingStationStates chargingStationStates){
-        new InsertChargingStationStatesAsyncTask(chargingStationStatesDao).execute(chargingStationStates);
+    public LiveData<Boolean> isEVSideCablePluggedIn(String transactionId){
+        return chargingStationStatesDao.isEVSideCablePluggedIn(transactionId);
     }
 
-    public void updateEVSideCablePluggedIn(String transactionId , boolean state){
-
+    public LiveData<Boolean> isAuthorized(String transactionId){
+        return chargingStationStatesDao.isAuthorized(transactionId) ;
+    }
+    public LiveData<Boolean> isDataSigned(String transactionId){
+        return chargingStationStatesDao.isDataSigned(transactionId) ;
+    }
+    public LiveData<Boolean> isPowerPathClosed(String transactionId){
+        return chargingStationStatesDao.isPowerPathClosed(transactionId);
+    }
+    public LiveData<Boolean> isEnergyTransfer(String transactionId){
+        return chargingStationStatesDao.isEnergyTransfer(transactionId);
     }
 
-    public void updateAuthorized(String transactionId , boolean state){
+    public void insert(final ChargingStationStates chargingStationStates){
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
 
+        executorService.execute(new Runnable() {
+            public void run() {
+                chargingStationStatesDao.insert(chargingStationStates);
+            }
+        });
+        executorService.shutdown();
     }
 
-    public void updateDataSigned(String transactionId , boolean state){
+    public void updateEVSideCablePluggedIn(final String transactionId , final boolean state){
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
 
+        executorService.execute(new Runnable() {
+            public void run() {
+               chargingStationStatesDao.updateEVSideCablePluggedIn(transactionId,state);
+            }
+        });
+        executorService.shutdown();
     }
 
-    public void updatePowerPathClosed(String transactionId , boolean state){
+    public void updateAuthorized(final String transactionId , final boolean state){
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-    }
-    public void updateEnergyTransfer(String transactionId , boolean state){
-
-    }
-
-    private static class InsertChargingStationStatesAsyncTask extends AsyncTask<ChargingStationStates,Void,Void> {
-        private ChargingStationStatesDao chargingStationStatesDao ;
-
-        private InsertChargingStationStatesAsyncTask(ChargingStationStatesDao chargingStationStatesDao){
-            this.chargingStationStatesDao = chargingStationStatesDao ;
-        }
-        @Override
-        protected Void doInBackground(ChargingStationStates... chargingStationStates) {
-            chargingStationStatesDao.insert(chargingStationStates[0]);
-            return null;
-        }
+        executorService.execute(new Runnable() {
+            public void run() {
+                chargingStationStatesDao.updateAuthorized(transactionId,state);
+            }
+        });
+        executorService.shutdown();
     }
 
-    
+    public void updateDataSigned(final String transactionId , final boolean state){
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
 
+        executorService.execute(new Runnable() {
+            public void run() {
+                chargingStationStatesDao.updateDataSigned(transactionId,state);
+            }
+        });
+        executorService.shutdown();
+    }
+
+    public void updatePowerPathClosed(final String transactionId , final boolean state){
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+        executorService.execute(new Runnable() {
+            public void run() {
+                chargingStationStatesDao.updatePowerPathClosed(transactionId,state);
+            }
+        });
+        executorService.shutdown();
+    }
+    public void updateEnergyTransfer(final String transactionId , final boolean state){
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+        executorService.execute(new Runnable() {
+            public void run() {
+                chargingStationStatesDao.updateEnergyTransfer(transactionId,state);
+            }
+        });
+        executorService.shutdown();
+    }
 }
