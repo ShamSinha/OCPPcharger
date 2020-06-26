@@ -13,7 +13,7 @@ import ChargingStationRequest.HeartBeatRequest;
 import ChargingStationRequest.StatusNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
 import DataType.TransactionType;
-import EnumDataType.TransactionEventEnumType;
+import TransactionRelated.TransactionEventEnumType;
 
 
 public class SendRequestToCSMS {

@@ -1,4 +1,4 @@
-package EnumDataType;
+package TransactionRelated;
 
 public enum TriggerReasonEnumType {
     Authorized , //Charging is authorized, by any means. Might be an RFID, or other authorization means.

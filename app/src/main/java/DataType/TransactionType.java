@@ -1,18 +1,12 @@
 package DataType;
 
-import com.example.chargergui.ChargingStationStates;
+import PhysicalComponents.ChargingStationStates;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import ChargingStationRequest.TransactionEventRequest;
 import EnumDataType.ChargingStateEnumType;
 import EnumDataType.ReasonEnumType;
-import EnumDataType.TransactionEventEnumType;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.UUID;
 
 public class TransactionType {
     public static String transactionId = null  ;

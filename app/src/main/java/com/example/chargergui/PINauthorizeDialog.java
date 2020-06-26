@@ -26,8 +26,8 @@ import DataType.TransactionType;
 import AuthorizationRelated.AuthorizationStatusEnumType;
 import EnumDataType.ChargingStateEnumType;
 import EnumDataType.IdTokenEnumType;
-import EnumDataType.TransactionEventEnumType;
-import EnumDataType.TriggerReasonEnumType;
+import TransactionRelated.TransactionEventEnumType;
+import TransactionRelated.TriggerReasonEnumType;
 import UseCasesOCPP.SendRequestToCSMS;
 
 public class PINauthorizeDialog extends AppCompatDialogFragment {

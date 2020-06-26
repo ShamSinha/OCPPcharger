@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import EnumDataType.RegistrationStatusEnumType;
+import PhysicalComponents.ChargingStationStates;
 
 
 public class MainActivity extends Activity {

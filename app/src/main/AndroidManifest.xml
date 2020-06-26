@@ -18,11 +18,11 @@
         <activity android:name=".CablePlugActivity" />
         <activity android:name=".Authentication" />
         <activity android:name=".Authorization2" />
-        <activity android:name="charging_viewmodel.ChargingDisplay" />
+        <activity android:name="ChargingRelated.ChargingDisplay" />
         <activity android:name=".UserInput" />
         <activity android:name=".Authorization1" />
         <activity android:name=".cs_unavailable" />
-        <activity android:name="socdisplay_viewmodel.SOCdisplay" />
+        <activity android:name="SOCDisplayRelated.SOCdisplay" />
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"

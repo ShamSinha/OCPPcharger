@@ -1,4 +1,4 @@
-package socdisplay_viewmodel;
+package SOCDisplayRelated;
 
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
@@ -7,8 +7,6 @@ import androidx.room.Query;
 import androidx.room.Update;
 
 import java.util.List;
-
-import Controller_Components.Controller;
 
 @Dao
 public interface SocDao {

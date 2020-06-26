@@ -11,8 +11,8 @@ import AuthorizationRelated.IdTokenType;
 import DataType.MeterValueType;
 import DataType.TransactionType;
 import EnumDataType.ChargingStateEnumType;
-import EnumDataType.TriggerReasonEnumType;
-import EnumDataType.TransactionEventEnumType;
+import TransactionRelated.TriggerReasonEnumType;
+import TransactionRelated.TransactionEventEnumType;
 
 public class TransactionEventRequest {
 
@@ -22,7 +22,6 @@ public class TransactionEventRequest {
     public static int SeqNo = 0 ;
     public static Boolean offline = false;
     public static float cableMaxCurrent = 16;  //in Ampere
-
 
     public static void setTimestamp() {
         dateTime2 d = new dateTime2();
@@ -59,6 +58,5 @@ public class TransactionEventRequest {
         }
         return jo ;
     }
-
 
 }

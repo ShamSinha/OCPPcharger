@@ -1,4 +1,4 @@
-package charging_viewmodel;
+package ChargingRelated;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -15,7 +15,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.chargergui.CALL;
-import com.example.chargergui.ChargingStationStates;
+import PhysicalComponents.ChargingStationStates;
 import com.example.chargergui.DisplayMessageState;
 import com.example.chargergui.ImageChargeBattery;
 import com.example.chargergui.ImageSetBattery;
@@ -23,7 +23,6 @@ import com.example.chargergui.MainActivity;
 import com.example.chargergui.MyClientEndpoint;
 import com.example.chargergui.PINauthorizeDialog;
 import com.example.chargergui.R;
-import com.example.chargergui.Target;
 
 import org.json.JSONException;
 
@@ -45,8 +44,8 @@ import EnumDataType.IdTokenEnumType;
 import DisplayMessagesRelated.MessageStateEnumType;
 import EnumDataType.ReadingContextEnumType;
 import EnumDataType.ReasonEnumType;
-import EnumDataType.TransactionEventEnumType;
-import EnumDataType.TriggerReasonEnumType;
+import TransactionRelated.TransactionEventEnumType;
+import TransactionRelated.TriggerReasonEnumType;
 import PhysicalComponents.CSPhysicalProperties;
 import UseCasesOCPP.SendRequestToCSMS;
 
@@ -283,7 +282,6 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-
                 }
             }
         };
@@ -291,7 +289,6 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
     }
 
     private void BluetoothThreadMeter() {
-
         if (bs.BTinit()) {
             if (bs.BTconnect()) {
                 bs.deviceConnected = true;

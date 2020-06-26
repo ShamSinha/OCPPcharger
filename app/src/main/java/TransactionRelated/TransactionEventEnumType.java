@@ -1,4 +1,4 @@
-package EnumDataType;
+package TransactionRelated;
 
 public enum TransactionEventEnumType {
     Ended, // Last event of a transaction

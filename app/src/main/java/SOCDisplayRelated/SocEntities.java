@@ -1,4 +1,4 @@
-package socdisplay_viewmodel;
+package SOCDisplayRelated;
 
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;

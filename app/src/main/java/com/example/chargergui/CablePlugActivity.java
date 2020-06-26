@@ -28,10 +28,11 @@ import EnumDataType.ChargingStateEnumType;
 import EnumDataType.ConnectorStatusEnumType;
 import DisplayMessagesRelated.MessageStateEnumType;
 import EnumDataType.ReasonEnumType;
-import EnumDataType.TransactionEventEnumType;
-import EnumDataType.TriggerReasonEnumType;
+import PhysicalComponents.ChargingStationStates;
+import TransactionRelated.TransactionEventEnumType;
+import TransactionRelated.TriggerReasonEnumType;
 import UseCasesOCPP.SendRequestToCSMS;
-import socdisplay_viewmodel.SOCdisplay;
+import SOCDisplayRelated.SOCdisplay;
 
 public class CablePlugActivity extends AppCompatActivity {
 

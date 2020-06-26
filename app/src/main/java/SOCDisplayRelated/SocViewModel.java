@@ -1,4 +1,4 @@
-package socdisplay_viewmodel;
+package SOCDisplayRelated;
 
 import android.app.Application;
 

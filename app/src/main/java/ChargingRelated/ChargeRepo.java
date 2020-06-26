@@ -1,4 +1,4 @@
-package charging_viewmodel;
+package ChargingRelated;
 
 import android.content.Context;
 import android.os.AsyncTask;

@@ -15,8 +15,8 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import DisplayMessagesRelated.MessageStateEnumType;
-import charging_viewmodel.ChargingDisplay;
-import socdisplay_viewmodel.SOCdisplay;
+import ChargingRelated.ChargingDisplay;
+import SOCDisplayRelated.SOCdisplay;
 
 
 public class UserInput extends AppCompatActivity implements AmountDialog.AmountDialogListener , ChargeDialog.ChargeDialogListener  {
