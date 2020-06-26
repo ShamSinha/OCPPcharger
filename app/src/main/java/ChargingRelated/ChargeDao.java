@@ -1,5 +1,6 @@
 package ChargingRelated;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Update;
@@ -15,7 +16,7 @@ public interface ChargeDao {
     public void updateCharge(ChargeEntity.Charging charging);
 
     @Query("SELECT * FROM ChargeType.Charging WHERE transactionId = :transactionId")
-    ChargeEntity.Charging getCharge(String transactionId);
+    LiveData<ChargeEntity.Charging> getCharge(String transactionId);
 
     @Insert
     public void insertCost(ChargeEntity.Cost cost) ;
@@ -24,7 +25,7 @@ public interface ChargeDao {
     public void updateCost(ChargeEntity.Cost cost) ;
 
     @Query("SELECT * FROM ChargeType.Cost WHERE transactionId = :transactionId")
-    ChargeEntity.Cost getCost(String transactionId);
+    LiveData<ChargeEntity.Cost> getCost(String transactionId);
 
 
 

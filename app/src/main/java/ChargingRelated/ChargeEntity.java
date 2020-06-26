@@ -7,29 +7,22 @@ import androidx.room.PrimaryKey;
 public class ChargeEntity {
 
     @Entity
-    public class Charging {
-        @PrimaryKey(autoGenerate = true)
-        private int id;
+    public static class Charging {
+        @PrimaryKey
+        public String transactionId;
 
         public float Voltage;
         public float Current;
         public float SOC;
-        public String transactionId;
 
-
-        public Charging(float voltage, float current, float soc, String transactionId) {
+        public Charging(float voltage, float current, float soc) {
             Voltage = voltage;
             Current = current;
             this.SOC = soc;
-            this.transactionId = transactionId ;
         }
 
-        public void setId(int id) {
-            this.id = id;
-        }
-
-        public int getId() {
-            return id;
+        public void setTransactionId(String transactionId) {
+            this.transactionId = transactionId;
         }
 
         public float getVoltage() {
@@ -51,25 +44,19 @@ public class ChargeEntity {
 
 
     @Entity
-    public class Cost{
+    public static class Cost{
 
-        @PrimaryKey(autoGenerate = true)
-        private int id;
-
-        public float Cost ;
+        @PrimaryKey
         public String transactionId ;
 
-        public Cost(float cost, String transactionId) {
+        public float Cost ;
+
+        public Cost(float cost) {
             Cost = cost;
+        }
+
+        public void setTransactionId(String transactionId) {
             this.transactionId = transactionId;
-        }
-
-        public void setId(int id) {
-            this.id = id;
-        }
-
-        public int getId() {
-            return id;
         }
 
         public float getCost() {

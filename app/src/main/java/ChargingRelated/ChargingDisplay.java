@@ -52,6 +52,8 @@ import UseCasesOCPP.SendRequestToCSMS;
 import static java.lang.String.format;
 
 public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDialog.PINauthorizeDialogListener {
+
+    private ChargeViewModel chargeViewModel ;
     ImageView BatteryCharge ;
     Button stopCharging;
     TextView voltage;

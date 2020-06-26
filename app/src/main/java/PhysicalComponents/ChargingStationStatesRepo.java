@@ -18,7 +18,6 @@ public class ChargingStationStatesRepo {
     public LiveData<Boolean> isEVSideCablePluggedIn(String transactionId){
         return chargingStationStatesDao.isEVSideCablePluggedIn(transactionId);
     }
-
     public LiveData<Boolean> isAuthorized(String transactionId){
         return chargingStationStatesDao.isAuthorized(transactionId) ;
     }
