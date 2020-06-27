@@ -29,8 +29,8 @@ public class SetVariableResultType {
         JSONObject jp  = new JSONObject();
         jp.put("attributeType",this.attributeType.toString());
         jp.put("attributeStatus", this.attributeStatus.toString());
-        jp.put("component", this.component) ;
-        jp.put("variable",this.variable);
+        jp.put("component", this.component.getp()) ;
+        jp.put("variable",this.variable.getp());
 
         return jp;
     }

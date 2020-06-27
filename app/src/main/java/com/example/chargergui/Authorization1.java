@@ -33,6 +33,7 @@ import EnumDataType.ConnectorStatusEnumType;
 import EnumDataType.IdTokenEnumType;
 import DisplayMessagesRelated.MessageStateEnumType;
 import PhysicalComponents.ChargingStationStates;
+import PhysicalComponents.ChargingStationStatesRepo;
 import TransactionRelated.TransactionEventEnumType;
 import TransactionRelated.TriggerReasonEnumType;
 import UseCasesOCPP.SendRequestToCSMS;
@@ -232,6 +233,7 @@ public class Authorization1 extends Activity {
 
     private void getResponse(){
         final IdTokenInfoRepo idTokenInfoRepo = new IdTokenInfoRepo(Authorization1.this) ;
+        ChargingStationStatesRepo chargingStationStatesRepo = new ChargingStationStatesRepo(Authorization1.this) ;
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {

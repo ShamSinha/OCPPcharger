@@ -8,7 +8,7 @@ import java.util.Map;
 
 public class VariableType {
 
-    public String name ;
+    private String name ;
 
     public VariableType(String name) {
         this.name = name;

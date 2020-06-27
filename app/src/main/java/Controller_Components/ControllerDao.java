@@ -24,4 +24,14 @@ public interface ControllerDao {
 
     @Query("SELECT * FROM Controller WHERE variableName = :variable AND componentName = :component ")
     Controller getController(String component , String variable);
+
+    @Query("SELECT EXISTS(SELECT 1 FROM Controller WHERE componentName = :component)")
+    int isComponent(String component);
+
+    @Query("SELECT EXISTS(SELECT 1 FROM Controller WHERE componentName = :component AND variableName = :variable)")
+    int isVariable(String component , String variable);
+
+    @Query("UPDATE Controller SET attributeType = :attributeType AND attributeValue = :attributeValue  WHERE componentName = :component AND variableName = :variable AND mutability <> 'ReadOnly'")
+    public int updateController(String component , String variable, String attributeValue , String attributeType);
+
 }

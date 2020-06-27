@@ -17,15 +17,17 @@ public class Controller {
     public String mutability ;
     public String unit ;
     public String dataType ;
-    public String value ;
+    public String attributeType ;
+    public String attributeValue ;
 
-    public Controller(String componentName, String variableName, String mutability, String unit, String dataType, String value) {
+    public Controller(String componentName, String variableName, String mutability, String unit, String dataType, String attributeType, String attributeValue) {
         this.componentName = componentName;
         this.variableName = variableName;
         this.mutability = mutability;
         this.unit = unit;
         this.dataType = dataType;
-        this.value = value;
+        this.attributeType = attributeType;
+        this.attributeValue = attributeValue;
     }
 
     public void setId(int id) {
@@ -57,6 +59,6 @@ public class Controller {
     }
 
     public String getvalue() {
-        return value;
+        return attributeValue;
     }
 }

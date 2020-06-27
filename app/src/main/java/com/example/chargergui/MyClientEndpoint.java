@@ -16,6 +16,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.websocket.ClientEndpoint;
 import javax.websocket.DeploymentException;
@@ -30,7 +32,11 @@ import ChargingStationRequest.TransactionEventRequest;
 import ChargingStationResponse.GetDisplayMessagesResponse;
 import ChargingStationResponse.ResetResponse;
 import ChargingStationResponse.SetDisplayMessagesResponse;
+import Controller_Components.ControllerRepo;
 import DataType.ChargingStationType;
+import DataType.ComponentType;
+import DataType.SetVariableResultType;
+import DataType.VariableType;
 import DisplayMessagesRelated.DisplayMessageStatusEnumType;
 import DisplayMessagesRelated.GetDisplayMessagesStatusEnumType;
 import DisplayMessagesRelated.MessageContentType;
@@ -41,9 +47,11 @@ import DisplayMessagesRelated.NotifyDisplayMessagesRequest;
 import EnumDataType.AttributeEnumType;
 import DisplayMessagesRelated.MessagePriorityEnumType;
 import DisplayMessagesRelated.MessageStateEnumType;
+import EnumDataType.MutabilityEnumType;
 import EnumDataType.RegistrationStatusEnumType;
 import EnumDataType.ResetEnumType;
 import EnumDataType.ResetStatusEnumType;
+import EnumDataType.SetVariableStatusEnumType;
 import TransactionRelated.TransactionEventEnumType;
 import UseCasesOCPP.BootNotificationResponse;
 import UseCasesOCPP.CostUpdatedRequest;
@@ -82,9 +90,6 @@ public class MyClientEndpoint  {
 
     //AuthorizeResponse
     private IdTokenInfoEntity idInfo = new IdTokenInfoEntity();
-
-    //SetDisplayMessageRequest
-    private MessageInfoEntity messageInfo = new MessageInfoEntity();
 
     //CostUpdatedRequest
     private CostUpdatedRequest costUpdated = new CostUpdatedRequest();
@@ -182,7 +187,7 @@ public class MyClientEndpoint  {
         if(msg instanceof CALL){
             isCALLarrived = true ;
             Log.d("TAG","CALL received: " + CALL.getAction());
-            JSONObject responsePayload = null;   // responsePayload is JSON payload requested by CSMS.
+            JSONObject responsePayload = new JSONObject();   // responsePayload is JSON payload requested by CSMS.
             JSONObject requestPayload = ((CALL) msg).getPayload() ; // get JSON payload from server request
             Log.d("TAG", "requestPayload: " + requestPayload);
             switch (CALL.getAction()) {
@@ -268,15 +273,42 @@ public class MyClientEndpoint  {
 
                     break;
                 case "SetVariables":
-                    JSONArray setvariableData = requestPayload.getJSONArray("setvariableData");
+                    JSONArray setVariableData = requestPayload.getJSONArray("setVariableData");
 
-                    for(int i = 0 ; i < setvariableData.length() ; i++){
-                        JSONObject item = setvariableData.getJSONObject(i);
+                    JSONArray setVariableResult = new JSONArray();
+
+                    for(int i = 0 ; i < setVariableData.length() ; i++){
+                        JSONObject item = setVariableData.getJSONObject(i);
                         String component = item.getString("component");
                         String variable =  item.getString("variable");
                         String attributeValue = item.getString("attributeValue");
                         AttributeEnumType attributeEnumType = AttributeEnumType.valueOf(item.getString("attributeEnumType"));
+                        ControllerRepo controllerRepo = new ControllerRepo(context) ;
+
+                        ComponentType componentType = new ComponentType(component);
+                        VariableType variableType = new VariableType(variable) ;
+
+                        if(!controllerRepo.isComponent(component)) {
+                            SetVariableResultType result = new SetVariableResultType(attributeEnumType, SetVariableStatusEnumType.UnknownComponent,componentType,variableType) ;
+                            setVariableResult.put(i,result.getp());
+                            continue;
+                        }
+                        if(!controllerRepo.isVariable(component,variable)) {
+                            SetVariableResultType result = new SetVariableResultType(attributeEnumType, SetVariableStatusEnumType.UnknownVariable,componentType,variableType) ;
+                            setVariableResult.put(i, result.getp());
+                            continue;
+                        }
+                        if(controllerRepo.getController(component, variable).getMutability().equals(MutabilityEnumType.ReadOnly.name())){
+                            SetVariableResultType result = new SetVariableResultType(attributeEnumType, SetVariableStatusEnumType.Rejected,componentType,variableType) ;
+                            setVariableResult.put(i, result.getp());
+                            continue;
+                        }
+                        if(controllerRepo.updateController(component,variable,attributeValue,attributeEnumType.name())){
+                            SetVariableResultType result = new SetVariableResultType(attributeEnumType, SetVariableStatusEnumType.Accepted,componentType,variableType) ;
+                            setVariableResult.put(i, result.getp());
+                        }
                     }
+                    responsePayload.put("setVariableResult",setVariableResult) ;
 
                     break;
                 case "GetVariables":
@@ -327,9 +359,7 @@ public class MyClientEndpoint  {
                     case "ChangeAvailability":
 
                         break;
-
                 }
-
             }
         }
         if (msg instanceof CALLERROR){
@@ -415,10 +445,6 @@ public class MyClientEndpoint  {
         return bootNotificationResponse;
     }
 
-    public MessageInfoEntity getMessageInfo(){
-        return messageInfo ;
-    }
-
     public CostUpdatedRequest getCostUpdated(){
         return costUpdated ;
     }
@@ -428,7 +454,7 @@ public class MyClientEndpoint  {
     }
 
     private void sendResponse(final CALLRESULT callresult) {
-        Thread thread1 = new Thread(new Runnable() {
+        /*Thread thread1 = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -441,7 +467,21 @@ public class MyClientEndpoint  {
                 }
             }
         });
-        thread1.start();
+        thread1.start();*/
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        executorService.execute(new Runnable() {
+            public void run() {
+                try {
+                    MyClientEndpoint.getInstance().getOpenSession().getBasicRemote().sendObject(callresult);
+                    Log.d("TAG", "Message Sent: " + CALL.getAction() + callresult.getPayload());
+
+                } catch (IOException | EncodeException e) {
+                    Log.e("ERROR", "IOException in BasicRemote");
+                    e.printStackTrace();
+                }
+            }
+        });
+        executorService.shutdown();
     }
     private void sendRequest(final CALL call) {
         Thread thread1 = new Thread(new Runnable() {
