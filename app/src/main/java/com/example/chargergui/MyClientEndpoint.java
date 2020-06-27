@@ -30,11 +30,14 @@ import AuthorizationRelated.IdTokenInfoRepo;
 import ChargingStationRequest.BootNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
 import ChargingStationResponse.GetDisplayMessagesResponse;
+import ChargingStationResponse.GetVariablesResponse;
 import ChargingStationResponse.ResetResponse;
 import ChargingStationResponse.SetDisplayMessagesResponse;
+import ChargingStationResponse.SetVariablesResponse;
 import Controller_Components.ControllerRepo;
 import DataType.ChargingStationType;
 import DataType.ComponentType;
+import DataType.GetVariableResultType;
 import DataType.SetVariableResultType;
 import DataType.VariableType;
 import DisplayMessagesRelated.DisplayMessageStatusEnumType;
@@ -47,6 +50,7 @@ import DisplayMessagesRelated.NotifyDisplayMessagesRequest;
 import EnumDataType.AttributeEnumType;
 import DisplayMessagesRelated.MessagePriorityEnumType;
 import DisplayMessagesRelated.MessageStateEnumType;
+import EnumDataType.GetVariableStatusEnumType;
 import EnumDataType.MutabilityEnumType;
 import EnumDataType.RegistrationStatusEnumType;
 import EnumDataType.ResetEnumType;
@@ -183,12 +187,12 @@ public class MyClientEndpoint  {
 
     @OnMessage
     public void onMessage(WebsocketMessage msg) throws JSONException {
-        Log.d("TAG","Websocket Message Received");
-        if(msg instanceof CALL){
-            isCALLarrived = true ;
-            Log.d("TAG","CALL received: " + CALL.getAction());
+        Log.d("TAG", "Websocket Message Received");
+        if (msg instanceof CALL) {
+            isCALLarrived = true;
+            Log.d("TAG", "CALL received: " + CALL.getAction());
             JSONObject responsePayload = new JSONObject();   // responsePayload is JSON payload requested by CSMS.
-            JSONObject requestPayload = ((CALL) msg).getPayload() ; // get JSON payload from server request
+            JSONObject requestPayload = ((CALL) msg).getPayload(); // get JSON payload from server request
             Log.d("TAG", "requestPayload: " + requestPayload);
             switch (CALL.getAction()) {
                 case "CostUpdated":
@@ -199,62 +203,56 @@ public class MyClientEndpoint  {
                     JSONObject setDisplayMessage = requestPayload.getJSONObject("message");
                     DisplayMessageStatusEnumType status = processSetDisplayMessageRequest(setDisplayMessage);
                     SetDisplayMessagesResponse.setStatus(status);
-                    responsePayload = SetDisplayMessagesResponse.payload() ;
+                    responsePayload = SetDisplayMessagesResponse.payload();
                     break;
 
                 case "GetDisplayMessages":
 
                     int requestId = requestPayload.getInt("requestId");
                     List<JSONObject> notifyDisplayMessage = new ArrayList<>();
-                    List<MessageInfoEntity.MessageInfo> messageInfoEntityList = new ArrayList<>(); ;
+                    List<MessageInfoEntity.MessageInfo> messageInfoEntityList = new ArrayList<>();
+                    ;
 
                     MessageInfoRepo messageInfoRepo = new MessageInfoRepo(context);
-                    if(requestPayload.has("id")){
-                        int id = requestPayload.getInt("id") ;
-                        if(messageInfoRepo.getMessageInfoById(id) != null){
+                    if (requestPayload.has("id")) {
+                        int id = requestPayload.getInt("id");
+                        if (messageInfoRepo.getMessageInfoById(id) != null) {
                             GetDisplayMessagesResponse.setStatus(GetDisplayMessagesStatusEnumType.Accepted);
-                            messageInfoEntityList.add(messageInfoRepo.getMessageInfoById(id))  ;
+                            messageInfoEntityList.add(messageInfoRepo.getMessageInfoById(id));
                             notifyDisplayMessage = processGetDisplayMessages(messageInfoEntityList);
-                        }
-                        else{
+                        } else {
                             GetDisplayMessagesResponse.setStatus(GetDisplayMessagesStatusEnumType.Unknown);
                         }
-                    }
-
-                    else if(requestPayload.has("priority")){
-                        String priority = requestPayload.getString("priority") ;
-                        if(messageInfoRepo.getMessageInfoByPriority(priority) != null){
+                    } else if (requestPayload.has("priority")) {
+                        String priority = requestPayload.getString("priority");
+                        if (messageInfoRepo.getMessageInfoByPriority(priority) != null) {
                             GetDisplayMessagesResponse.setStatus(GetDisplayMessagesStatusEnumType.Accepted);
                             messageInfoEntityList = messageInfoRepo.getMessageInfoByPriority(priority);
                             notifyDisplayMessage = processGetDisplayMessages(messageInfoEntityList);
-                        }
-                        else{
+                        } else {
                             GetDisplayMessagesResponse.setStatus(GetDisplayMessagesStatusEnumType.Unknown);
                         }
-                    }
-                    else if(requestPayload.has("state")){
-                        String state  = requestPayload.getString("state") ;
-                        if(messageInfoRepo.getMessageInfoByState(state) != null){
+                    } else if (requestPayload.has("state")) {
+                        String state = requestPayload.getString("state");
+                        if (messageInfoRepo.getMessageInfoByState(state) != null) {
                             GetDisplayMessagesResponse.setStatus(GetDisplayMessagesStatusEnumType.Accepted);
                             messageInfoEntityList = messageInfoRepo.getMessageInfoByState(state);
                             notifyDisplayMessage = processGetDisplayMessages(messageInfoEntityList);
-                        }
-                        else {
+                        } else {
                             GetDisplayMessagesResponse.setStatus(GetDisplayMessagesStatusEnumType.Unknown);
                         }
                     }
                     sendResponse(new CALLRESULT(GetDisplayMessagesResponse.payload()));
 
-                    if(GetDisplayMessagesResponse.getStatus().equals(GetDisplayMessagesStatusEnumType.Accepted)){
+                    if (GetDisplayMessagesResponse.getStatus().equals(GetDisplayMessagesStatusEnumType.Accepted)) {
                         NotifyDisplayMessagesRequest.setRequestId(requestId);
-                        for(int k = 0 ; k < notifyDisplayMessage.size() ; k++) {
-                            if(k == notifyDisplayMessage.size()-1){
+                        for (int k = 0; k < notifyDisplayMessage.size(); k++) {
+                            if (k == notifyDisplayMessage.size() - 1) {
                                 NotifyDisplayMessagesRequest.setTbc(false);
-                            }
-                            else {
+                            } else {
                                 NotifyDisplayMessagesRequest.setTbc(true);
                             }
-                            sendRequest(new CALL("NotifyDisplayMessages",NotifyDisplayMessagesRequest.payload(notifyDisplayMessage.get(k))));
+                            sendRequest(new CALL("NotifyDisplayMessages", NotifyDisplayMessagesRequest.payload(notifyDisplayMessage.get(k))));
                         }
                     }
 
@@ -267,7 +265,6 @@ public class MyClientEndpoint  {
                     break;
                 case "RequestStartTransaction":
 
-
                     break;
                 case "TriggerMessage":
 
@@ -277,94 +274,130 @@ public class MyClientEndpoint  {
 
                     JSONArray setVariableResult = new JSONArray();
 
-                    for(int i = 0 ; i < setVariableData.length() ; i++){
+                    for (int i = 0; i < setVariableData.length(); i++) {
                         JSONObject item = setVariableData.getJSONObject(i);
                         String component = item.getString("component");
-                        String variable =  item.getString("variable");
+                        String variable = item.getString("variable");
                         String attributeValue = item.getString("attributeValue");
                         AttributeEnumType attributeEnumType = AttributeEnumType.valueOf(item.getString("attributeEnumType"));
-                        ControllerRepo controllerRepo = new ControllerRepo(context) ;
+                        ControllerRepo controllerRepo = new ControllerRepo(context);
 
                         ComponentType componentType = new ComponentType(component);
-                        VariableType variableType = new VariableType(variable) ;
+                        VariableType variableType = new VariableType(variable);
 
-                        if(!controllerRepo.isComponent(component)) {
-                            SetVariableResultType result = new SetVariableResultType(attributeEnumType, SetVariableStatusEnumType.UnknownComponent,componentType,variableType) ;
-                            setVariableResult.put(i,result.getp());
-                            continue;
-                        }
-                        if(!controllerRepo.isVariable(component,variable)) {
-                            SetVariableResultType result = new SetVariableResultType(attributeEnumType, SetVariableStatusEnumType.UnknownVariable,componentType,variableType) ;
+                        if (!controllerRepo.isComponent(component)) {
+                            SetVariableResultType result = new SetVariableResultType(attributeEnumType, SetVariableStatusEnumType.UnknownComponent, componentType, variableType);
                             setVariableResult.put(i, result.getp());
                             continue;
                         }
-                        if(controllerRepo.getController(component, variable).getMutability().equals(MutabilityEnumType.ReadOnly.name())){
-                            SetVariableResultType result = new SetVariableResultType(attributeEnumType, SetVariableStatusEnumType.Rejected,componentType,variableType) ;
+                        if (!controllerRepo.isVariable(component, variable)) {
+                            SetVariableResultType result = new SetVariableResultType(attributeEnumType, SetVariableStatusEnumType.UnknownVariable, componentType, variableType);
                             setVariableResult.put(i, result.getp());
                             continue;
                         }
-                        if(controllerRepo.updateController(component,variable,attributeValue,attributeEnumType.name())){
-                            SetVariableResultType result = new SetVariableResultType(attributeEnumType, SetVariableStatusEnumType.Accepted,componentType,variableType) ;
+
+                        if (controllerRepo.updateController(component, variable, attributeValue, attributeEnumType.name())) {
+                            SetVariableResultType result = new SetVariableResultType(attributeEnumType, SetVariableStatusEnumType.Accepted, componentType, variableType);
+                            setVariableResult.put(i, result.getp());
+                        } else {
+                            SetVariableResultType result = new SetVariableResultType(attributeEnumType, SetVariableStatusEnumType.Rejected, componentType, variableType);
                             setVariableResult.put(i, result.getp());
                         }
                     }
-                    responsePayload.put("setVariableResult",setVariableResult) ;
+                    responsePayload = SetVariablesResponse.payload(setVariableResult);
 
                     break;
                 case "GetVariables":
+                    JSONArray getVariableData = requestPayload.getJSONArray("getVariableData");
+                    JSONArray getVariableResult = new JSONArray();
 
-                    break;
+                    for (int i = 0; i < getVariableData.length(); i++) {
+                        JSONObject item = getVariableData.getJSONObject(i);
+                        String component = item.getString("component");
+                        String variable = item.getString("variable");
+                        AttributeEnumType attributeEnumType = AttributeEnumType.valueOf(item.getString("attributeEnumType"));
+
+                        ControllerRepo controllerRepo = new ControllerRepo(context);
+
+                        ComponentType componentType = new ComponentType(component);
+                        VariableType variableType = new VariableType(variable);
+
+                        if (!controllerRepo.isComponent(component)) {
+                            GetVariableResultType result = new GetVariableResultType(GetVariableStatusEnumType.UnknownComponent, attributeEnumType, "", componentType, variableType);
+                            getVariableResult.put(i, result.getp());
+                            continue;
+                        }
+                        if (!controllerRepo.isVariable(component, variable)) {
+                            GetVariableResultType result = new GetVariableResultType(GetVariableStatusEnumType.UnknownVariable, attributeEnumType, "", componentType, variableType);
+                            getVariableResult.put(i, result.getp());
+                            continue;
+                        }
+
+                        if (!controllerRepo.getController(component, variable).getMutability().equals(MutabilityEnumType.WriteOnly.name())) {
+                            String attributeValue = controllerRepo.getController(component, variable).getvalue() ;
+                            GetVariableResultType result = new GetVariableResultType(GetVariableStatusEnumType.Accepted, attributeEnumType, attributeValue, componentType, variableType);
+                            getVariableResult.put(i, result.getp());
+                        } else {
+                            GetVariableResultType result = new GetVariableResultType(GetVariableStatusEnumType.Rejected, attributeEnumType, "", componentType, variableType);
+                            getVariableResult.put(i, result.getp());
+                        }
+                    }
+                    responsePayload = GetVariablesResponse.payload(getVariableResult);
 
 
-                default:
-                    throw new IllegalStateException("Unexpected value: " + CALL.getAction());
+                        break;
+
+
+                        default:
+                            throw new IllegalStateException("Unexpected value: " + CALL.getAction());
+                    }
+                    isCALLarrived = false;
+
             }
-            isCALLarrived = false ;
+            if (msg instanceof CALLRESULT) {
+                Log.d("TAG", "CALL received: " + CALL.getAction());
+                JSONObject respondedPayload;  // respondedPayload is a CALL message Response from CSMS
 
-        }
-        if (msg instanceof CALLRESULT) {
-            Log.d("TAG","CALL received: " + CALL.getAction());
-            JSONObject respondedPayload ;  // respondedPayload is a CALL message Response from CSMS
+                if (CALLRESULT.getMessageId().equals(CALL.getMessageId())) {
+                    Log.d("TAG", "CALLRESULT received: " + CALL.getAction());
+                    respondedPayload = ((CALLRESULT) msg).getPayload();
+                    Log.d("TAG", "respondedPayload: " + respondedPayload);
+                    switch (CALL.getAction()) {
 
-            if (CALLRESULT.getMessageId().equals(CALL.getMessageId())) {
-                Log.d("TAG","CALLRESULT received: " + CALL.getAction());
-                respondedPayload = ((CALLRESULT) msg).getPayload();
-                Log.d("TAG","respondedPayload: " + respondedPayload);
-                switch (CALL.getAction()) {
+                        case "BootNotification":
 
-                    case "BootNotification":
+                            processBootResponse(respondedPayload);
+                            break;
 
-                        processBootResponse(respondedPayload);
-                        break;
+                        case "Authorize":
 
-                    case "Authorize":
+                            JSONObject authResponse = respondedPayload.getJSONObject("idTokenInfo");
+                            processAuthResponse(authResponse);
+                            break;
 
-                        JSONObject authResponse = respondedPayload.getJSONObject("idTokenInfo");
-                        processAuthResponse(authResponse);
-                        break;
+                        case "HeartBeat":
+                            String currentTime = respondedPayload.getString("currentTime");
 
-                    case "HeartBeat":
-                        String currentTime = respondedPayload.getString("currentTime");
+                            break;
+                        case "StatusNotification":
 
-                        break;
-                    case "StatusNotification":
+                            break;
 
-                        break;
+                        case "TransactionEvent":
 
-                    case "TransactionEvent":
+                            double totalCost = respondedPayload.getDouble("totalCost");
 
-                        double totalCost = respondedPayload.getDouble("totalCost");
+                            break;
+                        case "ChangeAvailability":
 
-                        break;
-                    case "ChangeAvailability":
-
-                        break;
+                            break;
+                    }
                 }
             }
-        }
-        if (msg instanceof CALLERROR){
+            if (msg instanceof CALLERROR) {
 
-        }
+            }
+
 
     }
 
@@ -454,20 +487,6 @@ public class MyClientEndpoint  {
     }
 
     private void sendResponse(final CALLRESULT callresult) {
-        /*Thread thread1 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    MyClientEndpoint.getInstance().getOpenSession().getBasicRemote().sendObject(callresult);
-                    Log.d("TAG", "Message Sent: " + CALL.getAction() + callresult.getPayload());
-
-                } catch (IOException | EncodeException e) {
-                    Log.e("ERROR", "IOException in BasicRemote");
-                    e.printStackTrace();
-                }
-            }
-        });
-        thread1.start();*/
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         executorService.execute(new Runnable() {
             public void run() {
@@ -483,8 +502,10 @@ public class MyClientEndpoint  {
         });
         executorService.shutdown();
     }
+
     private void sendRequest(final CALL call) {
-        Thread thread1 = new Thread(new Runnable() {
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        executorService.execute(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -497,7 +518,7 @@ public class MyClientEndpoint  {
                 }
             }
         });
-        thread1.start();
+        executorService.shutdown();
     }
 
     public List<JSONObject> processGetDisplayMessages(List<MessageInfoEntity.MessageInfo> messageInfoEntityList) throws JSONException {

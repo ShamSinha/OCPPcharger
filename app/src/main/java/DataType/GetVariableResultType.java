@@ -13,7 +13,7 @@ import EnumDataType.GetVariableStatusEnumType;
 public class GetVariableResultType {
     private GetVariableStatusEnumType attributeStatus;
     private AttributeEnumType attributeType;
-    private String attributeValue = null;
+    private String attributeValue ;
     private ComponentType component ;
     private VariableType variable ;
 

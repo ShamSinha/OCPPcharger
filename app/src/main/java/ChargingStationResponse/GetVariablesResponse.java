@@ -8,7 +8,7 @@ import DataType.GetVariableResultType;
 
 public class GetVariablesResponse {
 
-    public JSONObject payload(JSONArray list) throws JSONException {
+    public static JSONObject payload(JSONArray list) throws JSONException {
         JSONObject jo = new JSONObject();
 
         jo.put("getVariableResult", list);

@@ -22,7 +22,7 @@ public interface ControllerDao {
     @Query("SELECT * FROM Controller")
     List<Controller> getAllController();
 
-    @Query("SELECT * FROM Controller WHERE variableName = :variable AND componentName = :component ")
+    @Query("SELECT * FROM Controller WHERE variableName = :variable AND componentName = :component AND mutability <> 'WriteOnly'")
     Controller getController(String component , String variable);
 
     @Query("SELECT EXISTS(SELECT 1 FROM Controller WHERE componentName = :component)")
