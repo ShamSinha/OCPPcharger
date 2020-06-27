@@ -344,14 +344,12 @@ public class MyClientEndpoint  {
                     }
                     responsePayload = GetVariablesResponse.payload(getVariableResult);
 
-
-                        break;
-
-
-                        default:
-                            throw new IllegalStateException("Unexpected value: " + CALL.getAction());
-                    }
-                    isCALLarrived = false;
+                    break;
+                    
+                default:
+                    throw new IllegalStateException("Unexpected value: " + CALL.getAction());
+                }
+                isCALLarrived = false;
 
             }
             if (msg instanceof CALLRESULT) {
