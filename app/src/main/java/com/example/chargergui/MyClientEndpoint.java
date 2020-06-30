@@ -26,9 +26,11 @@ import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
 
-import AuthorizationRelated.IdTokenInfoRepo;
+import AuthorizationRelated.IdTokenRepo;
+import ChargingRelated.ChargeRepo;
 import ChargingStationRequest.BootNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
+import ChargingStationResponse.CostUpdatedResponse;
 import ChargingStationResponse.GetDisplayMessagesResponse;
 import ChargingStationResponse.GetVariablesResponse;
 import ChargingStationResponse.ResetResponse;
@@ -58,8 +60,7 @@ import EnumDataType.ResetStatusEnumType;
 import EnumDataType.SetVariableStatusEnumType;
 import TransactionRelated.TransactionEventEnumType;
 import UseCasesOCPP.BootNotificationResponse;
-import UseCasesOCPP.CostUpdatedRequest;
-import AuthorizationRelated.IdTokenInfoEntity;
+import AuthorizationRelated.IdTokenEntities;
 import DisplayMessagesRelated.MessageInfoEntity;
 import UseCasesOCPP.SendRequestToCSMS;
 
@@ -81,6 +82,10 @@ public class MyClientEndpoint  {
         // private to prevent anyone else from instantiating
     }
 
+    public void init(Context context1){
+        context = context1 ;
+    }
+
     public static MyClientEndpoint getInstance(){
         return instance;
     }
@@ -93,10 +98,8 @@ public class MyClientEndpoint  {
     private BootNotificationResponse bootNotificationResponse = new BootNotificationResponse();
 
     //AuthorizeResponse
-    private IdTokenInfoEntity idInfo = new IdTokenInfoEntity();
+    private IdTokenEntities idInfo = new IdTokenEntities();
 
-    //CostUpdatedRequest
-    private CostUpdatedRequest costUpdated = new CostUpdatedRequest();
 
     public Session getOpenSession() {
         return session;
@@ -132,9 +135,6 @@ public class MyClientEndpoint  {
             e.printStackTrace();
             text.append("\nIO Exception" + R.string.conncsmsnot+"\n");
         }
-
-
-
 
         /*try {
             session = container.connectToServer(this, uri);
@@ -196,8 +196,9 @@ public class MyClientEndpoint  {
             Log.d("TAG", "requestPayload: " + requestPayload);
             switch (CALL.getAction()) {
                 case "CostUpdated":
-                    processCostUpdatedRequest(requestPayload);
-                    //responsePayload = CostUpdatedResponse.payload();
+
+                    responsePayload = processCostUpdatedRequest(requestPayload);
+
                     break;
                 case "SetDisplayMessages":
                     JSONObject setDisplayMessage = requestPayload.getJSONObject("message");
@@ -211,7 +212,6 @@ public class MyClientEndpoint  {
                     int requestId = requestPayload.getInt("requestId");
                     List<JSONObject> notifyDisplayMessage = new ArrayList<>();
                     List<MessageInfoEntity.MessageInfo> messageInfoEntityList = new ArrayList<>();
-                    ;
 
                     MessageInfoRepo messageInfoRepo = new MessageInfoRepo(context);
                     if (requestPayload.has("id")) {
@@ -272,80 +272,16 @@ public class MyClientEndpoint  {
                 case "SetVariables":
                     JSONArray setVariableData = requestPayload.getJSONArray("setVariableData");
 
-                    JSONArray setVariableResult = new JSONArray();
-
-                    for (int i = 0; i < setVariableData.length(); i++) {
-                        JSONObject item = setVariableData.getJSONObject(i);
-                        String component = item.getString("component");
-                        String variable = item.getString("variable");
-                        String attributeValue = item.getString("attributeValue");
-                        AttributeEnumType attributeEnumType = AttributeEnumType.valueOf(item.getString("attributeEnumType"));
-                        ControllerRepo controllerRepo = new ControllerRepo(context);
-
-                        ComponentType componentType = new ComponentType(component);
-                        VariableType variableType = new VariableType(variable);
-
-                        if (!controllerRepo.isComponent(component)) {
-                            SetVariableResultType result = new SetVariableResultType(attributeEnumType, SetVariableStatusEnumType.UnknownComponent, componentType, variableType);
-                            setVariableResult.put(i, result.getp());
-                            continue;
-                        }
-                        if (!controllerRepo.isVariable(component, variable)) {
-                            SetVariableResultType result = new SetVariableResultType(attributeEnumType, SetVariableStatusEnumType.UnknownVariable, componentType, variableType);
-                            setVariableResult.put(i, result.getp());
-                            continue;
-                        }
-
-                        if (controllerRepo.updateController(component, variable, attributeValue, attributeEnumType.name())) {
-                            SetVariableResultType result = new SetVariableResultType(attributeEnumType, SetVariableStatusEnumType.Accepted, componentType, variableType);
-                            setVariableResult.put(i, result.getp());
-                        } else {
-                            SetVariableResultType result = new SetVariableResultType(attributeEnumType, SetVariableStatusEnumType.Rejected, componentType, variableType);
-                            setVariableResult.put(i, result.getp());
-                        }
-                    }
-                    responsePayload = SetVariablesResponse.payload(setVariableResult);
+                    responsePayload = processSetVariablesRequest(setVariableData) ;
 
                     break;
                 case "GetVariables":
                     JSONArray getVariableData = requestPayload.getJSONArray("getVariableData");
-                    JSONArray getVariableResult = new JSONArray();
 
-                    for (int i = 0; i < getVariableData.length(); i++) {
-                        JSONObject item = getVariableData.getJSONObject(i);
-                        String component = item.getString("component");
-                        String variable = item.getString("variable");
-                        AttributeEnumType attributeEnumType = AttributeEnumType.valueOf(item.getString("attributeEnumType"));
-
-                        ControllerRepo controllerRepo = new ControllerRepo(context);
-
-                        ComponentType componentType = new ComponentType(component);
-                        VariableType variableType = new VariableType(variable);
-
-                        if (!controllerRepo.isComponent(component)) {
-                            GetVariableResultType result = new GetVariableResultType(GetVariableStatusEnumType.UnknownComponent, attributeEnumType, "", componentType, variableType);
-                            getVariableResult.put(i, result.getp());
-                            continue;
-                        }
-                        if (!controllerRepo.isVariable(component, variable)) {
-                            GetVariableResultType result = new GetVariableResultType(GetVariableStatusEnumType.UnknownVariable, attributeEnumType, "", componentType, variableType);
-                            getVariableResult.put(i, result.getp());
-                            continue;
-                        }
-
-                        if (!controllerRepo.getController(component, variable).getMutability().equals(MutabilityEnumType.WriteOnly.name())) {
-                            String attributeValue = controllerRepo.getController(component, variable).getvalue() ;
-                            GetVariableResultType result = new GetVariableResultType(GetVariableStatusEnumType.Accepted, attributeEnumType, attributeValue, componentType, variableType);
-                            getVariableResult.put(i, result.getp());
-                        } else {
-                            GetVariableResultType result = new GetVariableResultType(GetVariableStatusEnumType.Rejected, attributeEnumType, "", componentType, variableType);
-                            getVariableResult.put(i, result.getp());
-                        }
-                    }
-                    responsePayload = GetVariablesResponse.payload(getVariableResult);
+                    responsePayload = processGetVariablesRequest(getVariableData) ;
 
                     break;
-                    
+
                 default:
                     throw new IllegalStateException("Unexpected value: " + CALL.getAction());
                 }
@@ -396,7 +332,6 @@ public class MyClientEndpoint  {
 
             }
 
-
     }
 
     public void AfterResetCommand(ResetEnumType type) {
@@ -444,20 +379,20 @@ public class MyClientEndpoint  {
 
     private void processAuthResponse(JSONObject j2) throws JSONException {
 
-        IdTokenInfoRepo idTokenInfoRepo = new IdTokenInfoRepo(context);
+        IdTokenRepo idTokenRepo = new IdTokenRepo(context);
 
         String status = j2.getString("status");
         String cacheExpiryDateTime =  j2.getString("cacheExpiryDateTime");
         int chargingPriority = j2.getInt("chargingPriority");
         int evseId = j2.getInt("evseId") ;
 
-        IdTokenInfoEntity.MessageContent personalMessage = new IdTokenInfoEntity.MessageContent();
+        IdTokenEntities.MessageContent personalMessage = new IdTokenEntities.MessageContent();
         JSONObject j3 = j2.getJSONObject("personalMessage");
         personalMessage.content = j3.getString("content");
         personalMessage.language = j3.getString("language");
         personalMessage.format = j3.getString("format") ;
 
-        idTokenInfoRepo.insert(new IdTokenInfoEntity.IdTokenInfo(status,cacheExpiryDateTime,chargingPriority,personalMessage,evseId));
+        idTokenRepo.insert(new IdTokenEntities.IdTokenInfo(transactionId ,status,cacheExpiryDateTime,chargingPriority,personalMessage,evseId));
     }
 
     private void processBootResponse(JSONObject jsonObject) throws JSONException {
@@ -466,18 +401,15 @@ public class MyClientEndpoint  {
 
     }
 
-    private void processCostUpdatedRequest(JSONObject jsonObject) throws JSONException {
-        costUpdated.setTotalCost((float)jsonObject.getDouble("totalCost"));
-        costUpdated.setTransactionId(jsonObject.getString("transactionId"));
+    private JSONObject processCostUpdatedRequest(JSONObject requestPayload) throws JSONException {
+        ChargeRepo chargeRepo = new ChargeRepo(context) ;
+        chargeRepo.updateCost((float)requestPayload.getDouble("totalCost"),requestPayload.getString("transactionId"));
+        return CostUpdatedResponse.payload() ;
     }
 
     //BOOT
     public BootNotificationResponse getBootNotificationResponse(){
         return bootNotificationResponse;
-    }
-
-    public CostUpdatedRequest getCostUpdated(){
-        return costUpdated ;
     }
 
     public boolean getisCALLarrived(){
@@ -538,6 +470,80 @@ public class MyClientEndpoint  {
             notify.add(i, MessageInfoType.getp()) ;
         }
         return notify ;
+    }
+
+    public JSONObject processSetVariablesRequest(JSONArray setVariableData) throws JSONException {
+
+        JSONArray setVariableResult = new JSONArray();
+
+        for (int i = 0; i < setVariableData.length(); i++) {
+            JSONObject item = setVariableData.getJSONObject(i);
+            String component = item.getString("component");
+            String variable = item.getString("variable");
+            String attributeValue = item.getString("attributeValue");
+            AttributeEnumType attributeEnumType = AttributeEnumType.valueOf(item.getString("attributeEnumType"));
+            ControllerRepo controllerRepo = new ControllerRepo(context);
+
+            ComponentType componentType = new ComponentType(component);
+            VariableType variableType = new VariableType(variable);
+
+            if (!controllerRepo.isComponent(component)) {
+                SetVariableResultType result = new SetVariableResultType(attributeEnumType, SetVariableStatusEnumType.UnknownComponent, componentType, variableType);
+                setVariableResult.put(i, result.getp());
+                continue;
+            }
+            if (!controllerRepo.isVariable(component, variable)) {
+                SetVariableResultType result = new SetVariableResultType(attributeEnumType, SetVariableStatusEnumType.UnknownVariable, componentType, variableType);
+                setVariableResult.put(i, result.getp());
+                continue;
+            }
+
+            if (controllerRepo.updateController(component, variable, attributeValue, attributeEnumType.name())) {
+                SetVariableResultType result = new SetVariableResultType(attributeEnumType, SetVariableStatusEnumType.Accepted, componentType, variableType);
+                setVariableResult.put(i, result.getp());
+            } else {
+                SetVariableResultType result = new SetVariableResultType(attributeEnumType, SetVariableStatusEnumType.Rejected, componentType, variableType);
+                setVariableResult.put(i, result.getp());
+            }
+        }
+        return SetVariablesResponse.payload(setVariableResult);
+    }
+
+    public JSONObject processGetVariablesRequest(JSONArray getVariableData) throws JSONException {
+        JSONArray getVariableResult = new JSONArray();
+
+        for (int i = 0; i < getVariableData.length(); i++) {
+            JSONObject item = getVariableData.getJSONObject(i);
+            String component = item.getString("component");
+            String variable = item.getString("variable");
+            AttributeEnumType attributeEnumType = AttributeEnumType.valueOf(item.getString("attributeEnumType"));
+
+            ControllerRepo controllerRepo = new ControllerRepo(context);
+
+            ComponentType componentType = new ComponentType(component);
+            VariableType variableType = new VariableType(variable);
+
+            if (!controllerRepo.isComponent(component)) {
+                GetVariableResultType result = new GetVariableResultType(GetVariableStatusEnumType.UnknownComponent, attributeEnumType, "", componentType, variableType);
+                getVariableResult.put(i, result.getp());
+                continue;
+            }
+            if (!controllerRepo.isVariable(component, variable)) {
+                GetVariableResultType result = new GetVariableResultType(GetVariableStatusEnumType.UnknownVariable, attributeEnumType, "", componentType, variableType);
+                getVariableResult.put(i, result.getp());
+                continue;
+            }
+
+            if (!controllerRepo.getController(component, variable).getMutability().equals(MutabilityEnumType.WriteOnly.name())) {
+                String attributeValue = controllerRepo.getController(component, variable).getvalue();
+                GetVariableResultType result = new GetVariableResultType(GetVariableStatusEnumType.Accepted, attributeEnumType, attributeValue, componentType, variableType);
+                getVariableResult.put(i, result.getp());
+            } else {
+                GetVariableResultType result = new GetVariableResultType(GetVariableStatusEnumType.Rejected, attributeEnumType, "", componentType, variableType);
+                getVariableResult.put(i, result.getp());
+            }
+        }
+        return GetVariablesResponse.payload(getVariableResult);
     }
 
 

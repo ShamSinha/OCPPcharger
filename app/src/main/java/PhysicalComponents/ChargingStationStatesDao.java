@@ -33,6 +33,7 @@ public interface ChargingStationStatesDao {
     @Query("SELECT isAuthorized FROM ChargingStationStates WHERE transactionId = :transactionId")
     public LiveData<Boolean> isAuthorized(String transactionId );
 
+
     @Query("SELECT isDataSigned FROM ChargingStationStates WHERE transactionId = :transactionId ")
     public LiveData<Boolean> isDataSigned(String transactionId );
 
@@ -41,5 +42,8 @@ public interface ChargingStationStatesDao {
 
     @Query("SELECT isEnergyTransfer FROM ChargingStationStates WHERE transactionId = :transactionId")
     public LiveData<Boolean> isEnergyTransfer(String transactionId );
+
+    @Query("DELETE FROM ChargingStationStates")
+    public void deleteStates() ;
 
 }

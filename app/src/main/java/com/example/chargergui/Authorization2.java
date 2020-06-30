@@ -193,8 +193,6 @@ public class Authorization2 extends Activity {
         t.start();
     }
 
-
-
     public void GetRFIDthread(){
         if(bs.BTinit()){
             if(bs.BTconnect()){

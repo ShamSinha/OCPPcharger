@@ -10,12 +10,13 @@
         android:id="@+id/imageButtonpin"
         android:layout_width="250dp"
         android:layout_height="210dp"
-        android:layout_marginTop="60dp"
+        android:background="#32F8F8"
         android:onClick="OnClickPIN"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.221"
+        app:layout_constraintHorizontal_bias="0.205"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView10"
+        app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_enterpin"
         tools:ignore="VectorDrawableCompat" />
 
@@ -23,22 +24,27 @@
         android:id="@+id/imageButtonrfid"
         android:layout_width="250dp"
         android:layout_height="210dp"
-        android:layout_marginTop="60dp"
+        android:background="#32F8F8"
         android:onClick="OnClickRFID"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.773"
+        app:layout_constraintHorizontal_bias="0.763"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView10"
+        app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_rfidscan"
         tools:ignore="VectorDrawableCompat" />
 
     <TextView
         android:id="@+id/textView10"
-        android:layout_width="633dp"
-        android:layout_height="69dp"
+        android:layout_width="458dp"
+        android:layout_height="144dp"
         android:layout_gravity="center"
+        android:gravity="center"
         android:text="@string/use_any_one_of_the_n_authorization_method"
         android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+        android:textColor="#000000"
+        android:textSize="36sp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.501"
@@ -52,12 +58,14 @@
         android:layout_height="wrap_content"
         android:text="@string/enter_pin"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textSize="30sp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.268"
+        app:layout_constraintHorizontal_bias="0.247"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageButtonpin"
-        app:layout_constraintVertical_bias="0.181" />
+        app:layout_constraintVertical_bias="0.134" />
 
     <TextView
         android:id="@+id/textView12"
@@ -65,10 +73,12 @@
         android:layout_height="wrap_content"
         android:text="@string/scan_rfid"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textSize="30sp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.721"
+        app:layout_constraintHorizontal_bias="0.737"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView10"
-        app:layout_constraintVertical_bias="0.679" />
+        app:layout_constraintTop_toBottomOf="@+id/imageButtonrfid"
+        app:layout_constraintVertical_bias="0.134" />
 </androidx.constraintlayout.widget.ConstraintLayout>

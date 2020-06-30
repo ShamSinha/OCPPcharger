@@ -43,7 +43,7 @@ public class MainActivity extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
-        Boot = (TextView) findViewById(R.id.boottext);
+        Boot = findViewById(R.id.boottext);
         myClientEndpoint = MyClientEndpoint.getInstance() ;
     }
 
@@ -72,7 +72,6 @@ public class MainActivity extends Activity {
         if(myClientEndpoint.getBootNotificationResponse().getBootStatus() != RegistrationStatusEnumType.Accepted) {
             new CountDownTimer(myClientEndpoint.getBootNotificationResponse().getBootInterval()*1000, 1000) {
                 public void onTick(long millisUntilFinished) {
-
                 }
                 public void onFinish() {
                     StartConnection();

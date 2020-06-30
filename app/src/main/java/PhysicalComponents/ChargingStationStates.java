@@ -15,13 +15,16 @@ public class ChargingStationStates {
     public boolean isPowerPathClosed ;
     public boolean isEnergyTransfer ;
 
-    public ChargingStationStates(String transactionId, boolean isEVSideCablePluggedIn, boolean isAuthorized, boolean isDataSigned, boolean isPowerPathClosed, boolean isEnergyTransfer) {
-        this.transactionId = transactionId;
+    public ChargingStationStates(boolean isEVSideCablePluggedIn, boolean isAuthorized, boolean isDataSigned, boolean isPowerPathClosed, boolean isEnergyTransfer) {
         this.isEVSideCablePluggedIn = isEVSideCablePluggedIn;
         this.isAuthorized = isAuthorized;
         this.isDataSigned = isDataSigned;
         this.isPowerPathClosed = isPowerPathClosed;
         this.isEnergyTransfer = isEnergyTransfer;
+    }
+
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
     }
 
     public String getTransactionId() {

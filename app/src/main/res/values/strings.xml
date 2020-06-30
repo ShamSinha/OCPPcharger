@@ -43,7 +43,7 @@
     <string name="rate">Rate</string>
     <string name="current_charge">current charge</string>
     <string name="enter_pin">Enter PIN</string>
-    <string name="use_any_one_of_the_n_authorization_method">Use any one of the authorization method</string>
+    <string name="use_any_one_of_the_n_authorization_method">Use any one of the Authorization Method</string>
     <string name="scan_rfid">Scan RFID</string>
     <string name="want_to_charge_more">Want to Charge More</string>
     <string name="back">BACK</string>

@@ -49,10 +49,10 @@ public class ChargeEntity {
         @PrimaryKey
         public String transactionId ;
 
-        public float Cost ;
+        public float TotalCost ;
 
         public Cost(float cost) {
-            Cost = cost;
+            TotalCost = cost;
         }
 
         public void setTransactionId(String transactionId) {
@@ -60,7 +60,7 @@ public class ChargeEntity {
         }
 
         public float getCost() {
-            return Cost;
+            return TotalCost;
         }
 
         public String getTransactionId() {

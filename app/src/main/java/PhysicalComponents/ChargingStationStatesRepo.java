@@ -31,6 +31,10 @@ public class ChargingStationStatesRepo {
         return chargingStationStatesDao.isEnergyTransfer(transactionId);
     }
 
+    public void deleteStates(){
+        chargingStationStatesDao.deleteStates();
+    }
+
     public void insert(final ChargingStationStates chargingStationStates){
         ExecutorService executorService = Executors.newSingleThreadExecutor();
 

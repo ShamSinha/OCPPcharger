@@ -15,18 +15,17 @@ public interface ChargeDao {
     @Update
     public void updateCharge(ChargeEntity.Charging charging);
 
-    @Query("SELECT * FROM ChargeType.Charging WHERE transactionId = :transactionId")
+    @Query("SELECT * FROM ChargeEntity.Charging WHERE transactionId = :transactionId")
     LiveData<ChargeEntity.Charging> getCharge(String transactionId);
 
     @Insert
     public void insertCost(ChargeEntity.Cost cost) ;
 
-    @Update
-    public void updateCost(ChargeEntity.Cost cost) ;
+    @Query("UPDATE ChargeEntity.Cost SET TotalCost = :cost  WHERE transactionId = :transactionId")
+    public void updateCost(float cost , String transactionId) ;
 
-    @Query("SELECT * FROM ChargeType.Cost WHERE transactionId = :transactionId")
-    LiveData<ChargeEntity.Cost> getCost(String transactionId);
-
+    @Query("SELECT TotalCost FROM ChargeEntity.Cost WHERE transactionId = :transactionId")
+    LiveData<Float> getTotalCost(String transactionId);
 
 
 }

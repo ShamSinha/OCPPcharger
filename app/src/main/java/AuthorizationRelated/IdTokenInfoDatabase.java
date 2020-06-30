@@ -11,12 +11,12 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 
 
 
-@Database(entities = {IdTokenInfoEntity.IdTokenInfo.class} , version = 1)
+@Database(entities = {IdTokenEntities.IdTokenInfo.class} , version = 1)
 public abstract class IdTokenInfoDatabase extends RoomDatabase {
 
     private static AuthorizationRelated.IdTokenInfoDatabase instance;
 
-    public abstract IdTokenInfoDao idTokenInfoDao();
+    public abstract IdTokenDao idTokenInfoDao();
 
     public static synchronized AuthorizationRelated.IdTokenInfoDatabase getInstance(Context context) {
         if (instance == null) {
@@ -38,10 +38,10 @@ public abstract class IdTokenInfoDatabase extends RoomDatabase {
 
     private static class PopulateDbAsyncTask extends AsyncTask<Void, Void, Void> {
 
-        private IdTokenInfoDao idTokenInfoDao;
+        private IdTokenDao idTokenDao;
 
         private PopulateDbAsyncTask(AuthorizationRelated.IdTokenInfoDatabase db) {
-            idTokenInfoDao = db.idTokenInfoDao();
+            idTokenDao = db.idTokenInfoDao();
         }
 
         @Override

@@ -13,7 +13,11 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 
 import org.json.JSONException;
 
@@ -21,7 +25,8 @@ import java.io.IOException;
 
 import javax.websocket.EncodeException;
 
-import AuthorizationRelated.IdTokenInfoRepo;
+import AuthorizationRelated.IdTokenEntities;
+import AuthorizationRelated.IdTokenRepo;
 import ChargingStationRequest.StatusNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
 import AuthorizationRelated.AdditionalInfoType;
@@ -39,7 +44,7 @@ import TransactionRelated.TriggerReasonEnumType;
 import UseCasesOCPP.SendRequestToCSMS;
 
 
-public class Authorization1 extends Activity {
+public class Authorization1 extends AppCompatActivity {
     EditText PIN ;
     EditText Username ;
     TextView dateTime ;
@@ -60,6 +65,10 @@ public class Authorization1 extends Activity {
     int count ;
     SendRequestToCSMS toCSMS = new SendRequestToCSMS();
     MyClientEndpoint myClientEndpoint;
+
+    private Authorization1ViewModel authorization1ViewModel ;
+    boolean EVSideCablePluggedIn ;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,7 +95,6 @@ public class Authorization1 extends Activity {
         cardView2PIN.setVisibility(View.GONE);
         cardView3PIN.setVisibility(View.GONE);
 
-
         CableIn.setVisibility(View.GONE);
         CablePluginStatus.setVisibility(View.GONE);
         stopThread = false ;
@@ -96,7 +104,7 @@ public class Authorization1 extends Activity {
         myClientEndpoint = MyClientEndpoint.getInstance();
         DisplayMessageState.setMessageState(MessageStateEnumType.Idle);
 
-        IdTokenInfoRepo idTokenInfoRepo = new IdTokenInfoRepo(Authorization1.this) ;
+        authorization1ViewModel = new ViewModelProvider(this).get(Authorization1ViewModel.class) ;
 
     }
 
@@ -108,53 +116,93 @@ public class Authorization1 extends Activity {
 
         bs.BluetoothThreadforCablePlug();
 
-        Thread thread1 = new Thread(new Runnable() {
-            @Override
-            public void run() {
+        final String transactionId = "" ;
 
-                while (!Thread.currentThread().isInterrupted() && !stopThread) {
-                    if(IsCableConnectedBeforeAuthorized()){
-                        CablePluginStatus.setVisibility(View.VISIBLE);
-                        CableIn.setVisibility(View.VISIBLE);
-                    }
-                    else {
-                        CablePluginStatus.setVisibility(View.GONE);
-                        CableIn.setVisibility(View.GONE);
+        authorization1ViewModel = new ViewModelProvider(this).get(Authorization1ViewModel.class) ;
+        authorization1ViewModel.isAuthorized(transactionId).observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(@Nullable Boolean aBoolean) {
+                cardView2PIN.setVisibility(View.GONE);
+                cardView3PIN.setVisibility(View.VISIBLE);
+                if (aBoolean != null) {
+                    if (aBoolean) {
+                        authorization1ViewModel.updateAuthorized(transactionId, true);
+
+                        TransactionEventRequest.triggerReason = TriggerReasonEnumType.Authorized;
+                        if (EVSideCablePluggedIn) {
+                            TransactionEventRequest.eventType = TransactionEventEnumType.Updated;
+                            TransactionType.chargingState = ChargingStateEnumType.EVConnected;
+                        } else {
+                            TransactionEventRequest.eventType = TransactionEventEnumType.Started;
+                            TransactionType.chargingState = ChargingStateEnumType.Idle;
+                        }
+                        try {
+                            sendRequest(toCSMS.createTransactionEventRequest());
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                        new CountDownTimer(3000, 1000) {
+                            public void onTick(long millisUntilFinished) {
+
+                                AuthStatusText.setText("Authorized!");
+                                TickorCrossPIN.setImageResource(R.drawable.ic_png_check_mark_others_cdr_check_mark_area_svg_clipart);
+                            }
+
+                            public void onFinish() {
+                                if (EVSideCablePluggedIn) {
+                                    Intent i = new Intent(Authorization1.this, UserInput.class);
+                                    startActivity(i);
+                                } else {
+                                    Intent i = new Intent(Authorization1.this, CablePlugActivity.class);
+                                    startActivity(i);
+                                }
+
+                            }
+                        }.start();
+
+                    } else {
+                        AuthStatusText.setText(String.format("%s\nPIN", authorization1ViewModel.getIdTokenAndInfo(transactionId).getIdTokenInfo().getStatus()));
+                        TickorCrossPIN.setImageResource(R.drawable.ic_cross);
                     }
                 }
-
             }
         });
-        thread1.start();
 
+        authorization1ViewModel.isEVSideCablePluggedIn(transactionId).observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                EVSideCablePluggedIn = aBoolean ;
+                if(aBoolean){
+                    CablePluginStatus.setVisibility(View.VISIBLE);
+                    CableIn.setVisibility(View.VISIBLE);
+                }
+                else{
+                    CablePluginStatus.setVisibility(View.GONE);
+                    CableIn.setVisibility(View.GONE);
+                }
+            }
+        });
     }
 
-
-
-    public boolean IsCableConnectedBeforeAuthorized(){
-
-        if(ChargingStationStates.isEVSideCablePluggedIn && !ChargingStationStates.isAuthorized){
-
-            StatusNotificationRequest.setConnectorStatus(ConnectorStatusEnumType.Occupied);
-            try {
-                sendRequest(toCSMS.createStatusNotificationRequest());
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-            TransactionEventRequest.eventType = TransactionEventEnumType.Started;
-            TransactionType.chargingState = ChargingStateEnumType.EVConnected;
-            TransactionEventRequest.triggerReason = TriggerReasonEnumType.CablePluggedIn;
-            try {
-                sendRequest(toCSMS.createTransactionEventRequest());
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-            return true ;
+    public void CableConnectedBeforeAuthorized() {
+        StatusNotificationRequest.setConnectorStatus(ConnectorStatusEnumType.Occupied);
+        try {
+            sendRequest(toCSMS.createStatusNotificationRequest());
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
-        return false ;
+
+        TransactionEventRequest.eventType = TransactionEventEnumType.Started;
+        TransactionType.chargingState = ChargingStateEnumType.EVConnected;
+        TransactionEventRequest.triggerReason = TriggerReasonEnumType.CablePluggedIn;
+        try {
+            sendRequest(toCSMS.createTransactionEventRequest());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
+
 
     private void PINProcessing(){
         final Thread t = new Thread(){
@@ -179,7 +227,6 @@ public class Authorization1 extends Activity {
                                 if(count%4 == 0) {
                                     PINprocessing.setText("PIN Processing ....");
                                 }
-
                             }
                         });
 
@@ -195,24 +242,25 @@ public class Authorization1 extends Activity {
 
 
     public void OnClickBack(View view){
-        IdTokenType.setType(null);
-        IdTokenType.setIdToken(null);
         Intent i = new Intent(Authorization1.this, Authentication.class);
         startActivity(i);
-
+        authorization1ViewModel.deleteAll();
+        authorization1ViewModel.deleteStates();
     }
 
     public void OnClickAuthorize(View view) throws  JSONException {
         cardView1PIN.setVisibility(View.GONE);
         cardView2PIN.setVisibility(View.VISIBLE);
         PINProcessing();
+        IdTokenEntities.IdToken idToken = new IdTokenEntities.IdToken(PIN.getText().toString(),IdTokenEnumType.KeyCode.name(),Username.getText().toString());
+        idToken.setTransactionId();
+        authorization1ViewModel.insertIdToken(idToken);
+
         IdTokenType.setType(IdTokenEnumType.KeyCode);
         IdTokenType.setIdToken(PIN.getText().toString());
-
         AdditionalInfoType.setType("username");
         AdditionalInfoType.setAdditionalIdToken(Username.getText().toString());
         sendRequest(toCSMS.createAuthorizeRequest());
-        getResponse();
     }
     private void sendRequest(final CALL call) {
         Thread thread1 = new Thread(new Runnable() {
@@ -229,78 +277,6 @@ public class Authorization1 extends Activity {
                 }
         });
         thread1.start();
-    }
-
-    private void getResponse(){
-        final IdTokenInfoRepo idTokenInfoRepo = new IdTokenInfoRepo(Authorization1.this) ;
-        ChargingStationStatesRepo chargingStationStatesRepo = new ChargingStationStatesRepo(Authorization1.this) ;
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-                if(AuthorizationStatusEnumType.valueOf(idTokenInfoRepo.getIdTokenInfo().getStatus()) == AuthorizationStatusEnumType.Accepted){
-
-                    ChargingStationStates.setAuthorized(true);
-
-                    TransactionEventRequest.triggerReason = TriggerReasonEnumType.Authorized ;
-                    if(ChargingStationStates.isEVSideCablePluggedIn) {
-                        TransactionEventRequest.eventType = TransactionEventEnumType.Updated ;
-                        TransactionType.chargingState = ChargingStateEnumType.EVConnected;
-                    }
-                    if(!ChargingStationStates.isEVSideCablePluggedIn){
-                        TransactionEventRequest.eventType = TransactionEventEnumType.Started ;
-                        TransactionType.chargingState =ChargingStateEnumType.Idle ;
-                    }
-                    try {
-                        sendRequest(toCSMS.createTransactionEventRequest());
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        cardView2PIN.setVisibility(View.GONE);
-                        stopThread1 =  true ;
-                        if (ChargingStationStates.isAuthorized){
-                            cardView3PIN.setVisibility(View.VISIBLE);
-
-                            new CountDownTimer(3000, 1000) {
-                                public void onTick(long millisUntilFinished) {
-
-                                    AuthStatusText.setText("Authorized!");
-                                    TickorCrossPIN.setImageResource(R.drawable.ic_png_check_mark_others_cdr_check_mark_area_svg_clipart);
-
-                                }
-                                public void onFinish() {
-
-                                    if(ChargingStationStates.isEVSideCablePluggedIn) {
-                                        Intent i = new Intent(Authorization1.this, UserInput.class);
-                                        startActivity(i);
-                                    }
-                                    if(!ChargingStationStates.isEVSideCablePluggedIn){
-                                        Intent i = new Intent(Authorization1.this, CablePlugActivity.class);
-                                        startActivity(i);
-                                    }
-                                }
-                            }.start();
-                        }
-                        else {
-                            cardView3PIN.setVisibility(View.VISIBLE);
-                            AuthStatusText.setText(String.format("%s\nPIN", idTokenInfoRepo.getIdTokenInfo().getStatus()));
-                            TickorCrossPIN.setImageResource(R.drawable.ic_cross);
-                        }
-                    }
-                });
-
-            }
-        });
-        thread.start();
     }
 
 }

@@ -6,6 +6,6 @@ import org.json.JSONObject;
 public class CostUpdatedResponse {
 
     public static JSONObject payload() throws JSONException {
-        return null;
+        return new JSONObject();
     }
 }
