@@ -1,4 +1,4 @@
-package PhysicalComponents;
+package ChargingStationDetails;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -14,13 +14,13 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 @Database(entities = {ChargingStationStates.class} , version = 1)
 public abstract class ChargingStationStatesDatabase extends RoomDatabase {
 
-    private static PhysicalComponents.ChargingStationStatesDatabase instance;
+    private static ChargingStationDetails.ChargingStationStatesDatabase instance;
 
     public abstract ChargingStationStatesDao chargingStationStatesDao();
 
-    public static synchronized PhysicalComponents.ChargingStationStatesDatabase getInstance(Context context) {
+    public static synchronized ChargingStationDetails.ChargingStationStatesDatabase getInstance(Context context) {
         if (instance == null) {
-            instance = Room.databaseBuilder(context.getApplicationContext(), PhysicalComponents.ChargingStationStatesDatabase.class, "chargingStationStates_database")
+            instance = Room.databaseBuilder(context.getApplicationContext(), ChargingStationDetails.ChargingStationStatesDatabase.class, "chargingStationStates_database")
                     .fallbackToDestructiveMigration()
                     .addCallback(csStatesCallback)
                     .build();
@@ -28,11 +28,11 @@ public abstract class ChargingStationStatesDatabase extends RoomDatabase {
         return instance;
     }
 
-    private static PhysicalComponents.ChargingStationStatesDatabase.Callback csStatesCallback = new PhysicalComponents.ChargingStationStatesDatabase.Callback() {
+    private static ChargingStationDetails.ChargingStationStatesDatabase.Callback csStatesCallback = new ChargingStationDetails.ChargingStationStatesDatabase.Callback() {
         @Override
         public void onCreate(@NonNull SupportSQLiteDatabase db) {
             super.onCreate(db);
-            new PhysicalComponents.ChargingStationStatesDatabase.PopulateDbAsyncTask(instance).execute();
+            new ChargingStationDetails.ChargingStationStatesDatabase.PopulateDbAsyncTask(instance).execute();
         }
     };
 
@@ -40,7 +40,7 @@ public abstract class ChargingStationStatesDatabase extends RoomDatabase {
 
         private ChargingStationStatesDao chargingStationStatesDao;
 
-        private PopulateDbAsyncTask(PhysicalComponents.ChargingStationStatesDatabase db) {
+        private PopulateDbAsyncTask(ChargingStationDetails.ChargingStationStatesDatabase db) {
             chargingStationStatesDao = db.chargingStationStatesDao();
         }
 

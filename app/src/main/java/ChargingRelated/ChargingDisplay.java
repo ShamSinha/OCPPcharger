@@ -15,7 +15,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.chargergui.CALL;
-import PhysicalComponents.ChargingStationStates;
+import ChargingStationDetails.ChargingStationStates;
 import com.example.chargergui.DisplayMessageState;
 import com.example.chargergui.ImageChargeBattery;
 import com.example.chargergui.ImageSetBattery;
@@ -46,7 +46,7 @@ import EnumDataType.ReadingContextEnumType;
 import EnumDataType.ReasonEnumType;
 import TransactionRelated.TransactionEventEnumType;
 import TransactionRelated.TriggerReasonEnumType;
-import PhysicalComponents.CSPhysicalProperties;
+import ChargingStationDetails.CSPhysicalProperties;
 import UseCasesOCPP.SendRequestToCSMS;
 
 import static java.lang.String.format;

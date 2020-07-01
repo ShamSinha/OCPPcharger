@@ -37,7 +37,7 @@ import ChargingStationResponse.ResetResponse;
 import ChargingStationResponse.SetDisplayMessagesResponse;
 import ChargingStationResponse.SetVariablesResponse;
 import Controller_Components.ControllerRepo;
-import DataType.ChargingStationType;
+import ChargingStationDetails.ChargingStationType;
 import DataType.ComponentType;
 import DataType.GetVariableResultType;
 import DataType.SetVariableResultType;

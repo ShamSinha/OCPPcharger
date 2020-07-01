@@ -1,7 +1,7 @@
 package ChargingStationRequest;
 
 import EnumDataType.BootReasonEnumType;
-import DataType.ChargingStationType;
+import ChargingStationDetails.ChargingStationType;
 
 import org.json.JSONException;
 import org.json.JSONObject;

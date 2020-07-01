@@ -1,6 +1,6 @@
 package DataType;
 
-import PhysicalComponents.ChargingStationStates;
+import ChargingStationDetails.ChargingStationStates;
 
 import org.json.JSONException;
 import org.json.JSONObject;

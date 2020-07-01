@@ -1,4 +1,4 @@
-package PhysicalComponents;
+package ChargingStationDetails;
 
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;

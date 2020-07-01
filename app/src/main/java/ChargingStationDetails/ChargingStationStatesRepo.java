@@ -1,4 +1,4 @@
-package PhysicalComponents;
+package ChargingStationDetails;
 
 import android.content.Context;
 

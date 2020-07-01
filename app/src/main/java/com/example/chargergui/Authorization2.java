@@ -31,7 +31,7 @@ import EnumDataType.ChargingStateEnumType;
 import EnumDataType.ConnectorStatusEnumType;
 import EnumDataType.IdTokenEnumType;
 import DisplayMessagesRelated.MessageStateEnumType;
-import PhysicalComponents.ChargingStationStates;
+import ChargingStationDetails.ChargingStationStates;
 import TransactionRelated.TransactionEventEnumType;
 import TransactionRelated.TriggerReasonEnumType;
 import UseCasesOCPP.SendRequestToCSMS;

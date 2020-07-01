@@ -1,10 +1,7 @@
-package DataType;
+package ChargingStationDetails;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 import DataType.ModemType;
 

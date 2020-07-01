@@ -1,4 +1,4 @@
-package PhysicalComponents;
+package ChargingStationDetails;
 
 public class CSPhysicalProperties {
 

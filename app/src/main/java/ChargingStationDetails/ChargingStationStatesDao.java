@@ -1,9 +1,8 @@
-package PhysicalComponents;
+package ChargingStationDetails;
 
 import androidx.lifecycle.LiveData;
 import androidx.room.Insert;
 import androidx.room.Query;
-import androidx.room.Update;
 
 public interface ChargingStationStatesDao {
 

@@ -8,7 +8,7 @@ import androidx.lifecycle.LiveData;
 
 import AuthorizationRelated.IdTokenEntities;
 import AuthorizationRelated.IdTokenRepo;
-import PhysicalComponents.ChargingStationStatesRepo;
+import ChargingStationDetails.ChargingStationStatesRepo;
 
 public class Authorization1ViewModel extends AndroidViewModel {
     private IdTokenRepo repo ;

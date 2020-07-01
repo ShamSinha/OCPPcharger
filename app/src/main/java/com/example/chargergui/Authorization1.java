@@ -1,6 +1,5 @@
 package com.example.chargergui;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -25,20 +24,16 @@ import java.io.IOException;
 
 import javax.websocket.EncodeException;
 
+import AuthorizationRelated.AdditionalInfoType;
 import AuthorizationRelated.IdTokenEntities;
-import AuthorizationRelated.IdTokenRepo;
+import AuthorizationRelated.IdTokenType;
 import ChargingStationRequest.StatusNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
-import AuthorizationRelated.AdditionalInfoType;
-import AuthorizationRelated.IdTokenType;
 import DataType.TransactionType;
-import AuthorizationRelated.AuthorizationStatusEnumType;
+import DisplayMessagesRelated.MessageStateEnumType;
 import EnumDataType.ChargingStateEnumType;
 import EnumDataType.ConnectorStatusEnumType;
 import EnumDataType.IdTokenEnumType;
-import DisplayMessagesRelated.MessageStateEnumType;
-import PhysicalComponents.ChargingStationStates;
-import PhysicalComponents.ChargingStationStatesRepo;
 import TransactionRelated.TransactionEventEnumType;
 import TransactionRelated.TriggerReasonEnumType;
 import UseCasesOCPP.SendRequestToCSMS;
