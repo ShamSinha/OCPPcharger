@@ -66,6 +66,8 @@ public abstract class ControllerDatabase extends RoomDatabase {
             controllerDao.insert(new Controller("OCPPCommCtrlr","DefaultMessageTimeout", MutabilityEnumType.ReadWrite.toString(),"seconds", DataEnumType.integer.toString(),"",""));
             controllerDao.insert(new Controller("OCPPCommCtrlr","ResetRetries", MutabilityEnumType.ReadWrite.toString(),"", DataEnumType.integer.toString(),"",""));
             controllerDao.insert(new Controller("OCPPCommCtrlr","UnlockOnEVSideDisconnect", MutabilityEnumType.ReadWrite.toString(),"", DataEnumType.Boolean.toString(),"",""));
+            controllerDao.insert(new Controller("OCPPCommCtrlr","NetworkConfigurationPriority", MutabilityEnumType.ReadWrite.toString(),"", DataEnumType.SequenceList.toString(),"",""));
+            controllerDao.insert(new Controller("OCPPCommCtrlr","NetworkProfileConnectionAttempts", MutabilityEnumType.ReadWrite.toString(),"", DataEnumType.integer.toString(),"",""));
 
             controllerDao.insert(new Controller("TxCtrlr","ChargingBeforeAcceptedEnabled", MutabilityEnumType.ReadWrite.toString(),"", DataEnumType.Boolean.toString(),"",""));
             controllerDao.insert(new Controller("TxCtrlr","StopTxOnEVSideDisconnect", MutabilityEnumType.ReadWrite.toString(),"", DataEnumType.Boolean.toString(),"",""));

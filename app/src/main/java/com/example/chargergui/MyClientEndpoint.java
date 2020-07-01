@@ -108,6 +108,8 @@ public class MyClientEndpoint  {
         return session;
     }
 
+    public NetworkProfileRepo networkProfileRepo ;
+
     void ConnectClientToServer(final TextView text) {
         Thread thread = new Thread(new Runnable() {
             @Override
@@ -120,8 +122,12 @@ public class MyClientEndpoint  {
 
     private void connectToWebSocket(TextView text)  {
         //WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+        // session = container.connectToServer(this, uri);
 
-        URI uri = URI.create("ws://0f53e667.ngrok.io/mavenjavafxserver/chat");
+        networkProfileRepo = new NetworkProfileRepo(context);
+        NetworkProfile networkProfile = networkProfileRepo.getNetworkProfile(1) ;
+
+        URI uri = URI.create(networkProfile.getConnectionData().getOcppCsmsUrl());
 
         ClientManager client = ClientManager.createClient();
 
@@ -135,23 +141,13 @@ public class MyClientEndpoint  {
             text.append("\nDeployment Exception"+ R.string.conncsmsnot + "\n");
         } catch (IOException e) {
             e.printStackTrace();
-            text.append("\nIO Exception" + R.string.conncsmsnot+"\n");
+            text.append("\nIO Exception" + R.string.conncsmsnot + "\n");
         }
 
-        /*try {
-            session = container.connectToServer(this, uri);
 
-        } catch (DeploymentException e) {
-            e.printStackTrace();
-            text.append("\nDeployment Exception"+ R.string.conncsmsnot + "\n");
-        } catch (IOException e) {
-            e.printStackTrace();
-            text.append("\nIO Exception" + R.string.conncsmsnot+"\n");
-        }*/
         if(session != null){
             text.append("Connection with CSMS Established");
             text.append("\nConnected to Session :"+ session.getId() + "\n" );
-            BootNotificationRequest.setReason(BootReasonEnumType.PowerUp);
             text.append("\nBoot Reason: "+ BootNotificationRequest.getReason()+"\n");
 
             ChargingStation chargingStation = chargingStationRepo.getChargingStationType() ;
@@ -295,6 +291,8 @@ public class MyClientEndpoint  {
                     responsePayload = processGetVariablesRequest(getVariableData) ;
 
                     break;
+                case "SetNetworkProfile" :
+
 
                 default:
                     throw new IllegalStateException("Unexpected value: " + CALL.getAction());
