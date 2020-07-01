@@ -10,4 +10,7 @@ public interface ChargingStationDao {
 
     @Query("UPDATE ChargingStation SET firmwareVersion =:firmwareVersion")
     public void update(String firmwareVersion) ;
+
+    @Query("SELECT*FROM Chargingstation")
+    public ChargingStation getChargingStationType();
 }

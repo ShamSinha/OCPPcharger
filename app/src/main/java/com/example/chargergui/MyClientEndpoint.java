@@ -28,6 +28,8 @@ import javax.websocket.Session;
 
 import AuthorizationRelated.IdTokenRepo;
 import ChargingRelated.ChargeRepo;
+import ChargingStationDetails.ChargingStation;
+import ChargingStationDetails.ChargingStationRepo;
 import ChargingStationRequest.BootNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
 import ChargingStationResponse.CostUpdatedResponse;
@@ -40,6 +42,7 @@ import Controller_Components.ControllerRepo;
 import ChargingStationDetails.ChargingStationType;
 import DataType.ComponentType;
 import DataType.GetVariableResultType;
+import DataType.ModemType;
 import DataType.SetVariableResultType;
 import DataType.VariableType;
 import DisplayMessagesRelated.DisplayMessageStatusEnumType;
@@ -52,6 +55,7 @@ import DisplayMessagesRelated.NotifyDisplayMessagesRequest;
 import EnumDataType.AttributeEnumType;
 import DisplayMessagesRelated.MessagePriorityEnumType;
 import DisplayMessagesRelated.MessageStateEnumType;
+import EnumDataType.BootReasonEnumType;
 import EnumDataType.GetVariableStatusEnumType;
 import EnumDataType.MutabilityEnumType;
 import EnumDataType.RegistrationStatusEnumType;
@@ -97,8 +101,7 @@ public class MyClientEndpoint  {
     //BootNotificationResponse
     private BootNotificationResponse bootNotificationResponse = new BootNotificationResponse();
 
-    //AuthorizeResponse
-    private IdTokenEntities idInfo = new IdTokenEntities();
+    ChargingStationRepo chargingStationRepo = new ChargingStationRepo(context);
 
 
     public Session getOpenSession() {
@@ -125,7 +128,6 @@ public class MyClientEndpoint  {
         client.getProperties().put(ClientProperties.CREDENTIALS, new Credentials("ws_user", "password")); // Basic Authentication for Charging Station
         client.getProperties().put(ClientProperties.LOG_HTTP_UPGRADE, true);
 
-
         try {
             client.connectToServer(this,uri) ;
         } catch (DeploymentException e) {
@@ -149,13 +151,25 @@ public class MyClientEndpoint  {
         if(session != null){
             text.append("Connection with CSMS Established");
             text.append("\nConnected to Session :"+ session.getId() + "\n" );
+            BootNotificationRequest.setReason(BootReasonEnumType.PowerUp);
             text.append("\nBoot Reason: "+ BootNotificationRequest.getReason()+"\n");
+
+            ChargingStation chargingStation = chargingStationRepo.getChargingStationType() ;
+
+            ChargingStationType.setSerialNumber(chargingStation.getSerialNumber());
+            ChargingStationType.setModel(chargingStation.getModel());
+            ChargingStationType.setVendorName(chargingStation.getVendorName());
+            ChargingStationType.setFirmwareVersion(chargingStation.getFirmwareVersion());
+            ModemType.setIccid(chargingStation.getModem().iccid);
+            ModemType.setImsi(chargingStation.getModem().imsi);
+
             text.append("\nCharging Station\n");
             text.append("\nserialNumber: "+ChargingStationType.serialNumber+"\n");
             text.append("\nmodel: "+ChargingStationType.model+"\n");
             text.append("\nvendorName: "+ChargingStationType.vendorName+"\n");
             text.append("\nfirmwareVersion: "+ChargingStationType.firmwareVersion+"\n");
-            text.append("\nmodem: "+ChargingStationType.modem+"\n");
+            text.append("\nmodem iccid:"+ ModemType.iccid+"\n");
+            text.append("\nmodem imsi:"+ ModemType.imsi+"\n");
             text.append("\nSending BootNotificationRequest to CSMS\n");
             try {
                 session.getBasicRemote().sendObject(toCSMS.createBootNotificationRequest());

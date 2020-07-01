@@ -1,5 +1,6 @@
 package ChargingStationDetails;
 
+import androidx.room.Embedded;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
@@ -7,6 +8,11 @@ import DataType.ModemType;
 
 @Entity
 public class ChargingStation {
+
+    public static class Modem{
+        public String iccid;
+        public String imsi ;
+    }
     
     @PrimaryKey(autoGenerate = true)
     public int id ;
@@ -14,9 +20,10 @@ public class ChargingStation {
     public String model ;
     public String vendorName ;
     public String firmwareVersion ;
-    public String modem ;
+    @Embedded
+    public Modem modem ;
 
-    public ChargingStation(String serialNumber, String model, String vendorName, String firmwareVersion, String modem) {
+    public ChargingStation(String serialNumber, String model, String vendorName, String firmwareVersion, Modem modem) {
         this.serialNumber = serialNumber;
         this.model = model;
         this.vendorName = vendorName;
@@ -48,7 +55,7 @@ public class ChargingStation {
         return firmwareVersion;
     }
 
-    public String getModem() {
+    public Modem getModem() {
         return modem;
     }
 }

@@ -24,4 +24,8 @@ public class ChargingStationRepo {
         });
         executorService.shutdown();
     }
+
+    public ChargingStation getChargingStationType(){
+        return chargingStationDao.getChargingStationType();
+    }
 }
