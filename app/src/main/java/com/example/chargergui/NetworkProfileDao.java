@@ -10,4 +10,5 @@ public interface NetworkProfileDao {
 
     @Query("SELECT* FROM NetworkProfile WHERE configurationSlot = :configurationSlot")
     public NetworkProfile getNetworkProfile(int configurationSlot) ;
+
 }

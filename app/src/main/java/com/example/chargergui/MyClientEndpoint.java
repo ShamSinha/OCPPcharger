@@ -12,8 +12,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -26,10 +28,12 @@ import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
 
+import AuthorizationRelated.IdTokenEntities;
 import AuthorizationRelated.IdTokenRepo;
 import ChargingRelated.ChargeRepo;
 import ChargingStationDetails.ChargingStation;
 import ChargingStationDetails.ChargingStationRepo;
+import ChargingStationDetails.ChargingStationType;
 import ChargingStationRequest.BootNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
 import ChargingStationResponse.CostUpdatedResponse;
@@ -37,9 +41,9 @@ import ChargingStationResponse.GetDisplayMessagesResponse;
 import ChargingStationResponse.GetVariablesResponse;
 import ChargingStationResponse.ResetResponse;
 import ChargingStationResponse.SetDisplayMessagesResponse;
+import ChargingStationResponse.SetNetworkProfileResponse;
 import ChargingStationResponse.SetVariablesResponse;
 import Controller_Components.ControllerRepo;
-import ChargingStationDetails.ChargingStationType;
 import DataType.ComponentType;
 import DataType.GetVariableResultType;
 import DataType.ModemType;
@@ -49,24 +53,28 @@ import DisplayMessagesRelated.DisplayMessageStatusEnumType;
 import DisplayMessagesRelated.GetDisplayMessagesStatusEnumType;
 import DisplayMessagesRelated.MessageContentType;
 import DisplayMessagesRelated.MessageFormatEnumType;
+import DisplayMessagesRelated.MessageInfoEntity;
 import DisplayMessagesRelated.MessageInfoRepo;
 import DisplayMessagesRelated.MessageInfoType;
-import DisplayMessagesRelated.NotifyDisplayMessagesRequest;
-import EnumDataType.AttributeEnumType;
 import DisplayMessagesRelated.MessagePriorityEnumType;
 import DisplayMessagesRelated.MessageStateEnumType;
-import EnumDataType.BootReasonEnumType;
+import DisplayMessagesRelated.NotifyDisplayMessagesRequest;
+import EnumDataType.AttributeEnumType;
 import EnumDataType.GetVariableStatusEnumType;
 import EnumDataType.MutabilityEnumType;
+import EnumDataType.OCPPInterfaceEnumType;
+import EnumDataType.OCPPTransportEnumType;
+import EnumDataType.OCPPVersionEnumType;
 import EnumDataType.RegistrationStatusEnumType;
 import EnumDataType.ResetEnumType;
 import EnumDataType.ResetStatusEnumType;
+import EnumDataType.SetNetworkProfileStatusEnumType;
 import EnumDataType.SetVariableStatusEnumType;
 import TransactionRelated.TransactionEventEnumType;
 import UseCasesOCPP.BootNotificationResponse;
-import AuthorizationRelated.IdTokenEntities;
-import DisplayMessagesRelated.MessageInfoEntity;
 import UseCasesOCPP.SendRequestToCSMS;
+
+import static android.webkit.URLUtil.isValidUrl;
 
 @ClientEndpoint(
         decoders = {MessageDecoder.class},
@@ -78,7 +86,6 @@ import UseCasesOCPP.SendRequestToCSMS;
 public class MyClientEndpoint  {
 
     private Session session ;
-    private Context context ;
 
     private static MyClientEndpoint instance = new MyClientEndpoint(); // Eagerly Loading of single ton instance
 
@@ -86,12 +93,14 @@ public class MyClientEndpoint  {
         // private to prevent anyone else from instantiating
     }
 
-    public void init(Context context1){
-        context = context1 ;
-    }
-
     public static MyClientEndpoint getInstance(){
         return instance;
+    }
+
+    private WeakReference<Context> context ;
+
+    public void init(Context context1){
+        context = new WeakReference<>(context1) ;
     }
 
     private static boolean isCALLarrived = false;
@@ -100,8 +109,6 @@ public class MyClientEndpoint  {
 
     //BootNotificationResponse
     private BootNotificationResponse bootNotificationResponse = new BootNotificationResponse();
-
-    ChargingStationRepo chargingStationRepo = new ChargingStationRepo(context);
 
 
     public Session getOpenSession() {
@@ -124,10 +131,12 @@ public class MyClientEndpoint  {
         //WebSocketContainer container = ContainerProvider.getWebSocketContainer();
         // session = container.connectToServer(this, uri);
 
-        networkProfileRepo = new NetworkProfileRepo(context);
+        networkProfileRepo = new NetworkProfileRepo(context.get());
         NetworkProfile networkProfile = networkProfileRepo.getNetworkProfile(1) ;
 
         URI uri = URI.create(networkProfile.getConnectionData().getOcppCsmsUrl());
+
+        ChargingStationRepo chargingStationRepo = new ChargingStationRepo(context.get());
 
         ClientManager client = ClientManager.createClient();
 
@@ -193,8 +202,6 @@ public class MyClientEndpoint  {
         }
          */
     }
-
-
     @OnMessage
     public void onMessage(WebsocketMessage msg) throws JSONException {
         Log.d("TAG", "Websocket Message Received");
@@ -223,7 +230,7 @@ public class MyClientEndpoint  {
                     List<JSONObject> notifyDisplayMessage = new ArrayList<>();
                     List<MessageInfoEntity.MessageInfo> messageInfoEntityList = new ArrayList<>();
 
-                    MessageInfoRepo messageInfoRepo = new MessageInfoRepo(context);
+                    MessageInfoRepo messageInfoRepo = new MessageInfoRepo(context.get());
                     if (requestPayload.has("id")) {
                         int id = requestPayload.getInt("id");
                         if (messageInfoRepo.getMessageInfoById(id) != null) {
@@ -293,6 +300,7 @@ public class MyClientEndpoint  {
                     break;
                 case "SetNetworkProfile" :
 
+                    responsePayload = processSetNetworkProfileRequest(requestPayload);
 
                 default:
                     throw new IllegalStateException("Unexpected value: " + CALL.getAction());
@@ -358,7 +366,7 @@ public class MyClientEndpoint  {
     }
     private DisplayMessageStatusEnumType processSetDisplayMessageRequest(JSONObject j) throws JSONException {
 
-        MessageInfoRepo messageInfoRepo = new MessageInfoRepo(context);
+        MessageInfoRepo messageInfoRepo = new MessageInfoRepo(context.get());
 
         String priority = j.getString("priority");
         for (MessagePriorityEnumType s : MessagePriorityEnumType.values()) {
@@ -391,7 +399,7 @@ public class MyClientEndpoint  {
 
     private void processAuthResponse(JSONObject j2) throws JSONException {
 
-        IdTokenRepo idTokenRepo = new IdTokenRepo(context);
+        IdTokenRepo idTokenRepo = new IdTokenRepo(context.get());
 
         String status = j2.getString("status");
         String cacheExpiryDateTime =  j2.getString("cacheExpiryDateTime");
@@ -414,7 +422,7 @@ public class MyClientEndpoint  {
     }
 
     private JSONObject processCostUpdatedRequest(JSONObject requestPayload) throws JSONException {
-        ChargeRepo chargeRepo = new ChargeRepo(context) ;
+        ChargeRepo chargeRepo = new ChargeRepo(context.get()) ;
         chargeRepo.updateCost((float)requestPayload.getDouble("totalCost"),requestPayload.getString("transactionId"));
         return CostUpdatedResponse.payload() ;
     }
@@ -494,7 +502,7 @@ public class MyClientEndpoint  {
             String variable = item.getString("variable");
             String attributeValue = item.getString("attributeValue");
             AttributeEnumType attributeEnumType = AttributeEnumType.valueOf(item.getString("attributeEnumType"));
-            ControllerRepo controllerRepo = new ControllerRepo(context);
+            ControllerRepo controllerRepo = new ControllerRepo(context.get());
 
             ComponentType componentType = new ComponentType(component);
             VariableType variableType = new VariableType(variable);
@@ -530,7 +538,7 @@ public class MyClientEndpoint  {
             String variable = item.getString("variable");
             AttributeEnumType attributeEnumType = AttributeEnumType.valueOf(item.getString("attributeEnumType"));
 
-            ControllerRepo controllerRepo = new ControllerRepo(context);
+            ControllerRepo controllerRepo = new ControllerRepo(context.get());
 
             ComponentType componentType = new ComponentType(component);
             VariableType variableType = new VariableType(variable);
@@ -558,7 +566,26 @@ public class MyClientEndpoint  {
         return GetVariablesResponse.payload(getVariableResult);
     }
 
+    public JSONObject processSetNetworkProfileRequest(JSONObject requestPayload) throws JSONException {
 
+        int configurationSlot = requestPayload.getInt("configurationSlot");
+        JSONObject connectionData = requestPayload.getJSONObject("connectionData");
 
+        String ocppVersion = OCPPVersionEnumType.valueOf(connectionData.getString("ocppVersion")).name();
+        String ocppTransport = OCPPTransportEnumType.valueOf(connectionData.getString("ocppTransport")).name();
+        String ocppCsmsUrl = connectionData.getString("ocppCsmsUrl");
+        int messageTimeOut = connectionData.getInt("messageTimeOut");
+        String ocppInterface = OCPPInterfaceEnumType.valueOf(connectionData.getString("ocppInterface")).name();
+
+        if (isValidUrl(ocppCsmsUrl)) {
+            NetworkProfile networkProfile = new NetworkProfile(new NetworkProfile.NetworkConnectionProfileType(ocppVersion, ocppTransport, ocppCsmsUrl, messageTimeOut, ocppInterface));
+            networkProfile.setConfigurationSlot(configurationSlot);
+            networkProfileRepo.insert(networkProfile);
+            SetNetworkProfileResponse.setStatus(SetNetworkProfileStatusEnumType.Accepted);
+        } else {
+            SetNetworkProfileResponse.setStatus(SetNetworkProfileStatusEnumType.Rejected);
+        }
+        return SetNetworkProfileResponse.payload();
+    }
 
 }
