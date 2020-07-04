@@ -65,6 +65,18 @@ public class IdTokenEntities {
         public String format;
         public String language;
         public String content;
+
+        public String getFormat() {
+            return format;
+        }
+
+        public String getLanguage() {
+            return language;
+        }
+
+        public String getContent() {
+            return content;
+        }
     }
     @Entity
     public static class IdTokenInfo {

@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -412,7 +411,7 @@ public class MyClientEndpoint  {
         personalMessage.language = j3.getString("language");
         personalMessage.format = j3.getString("format") ;
 
-        idTokenRepo.insert(new IdTokenEntities.IdTokenInfo(transactionId ,status,cacheExpiryDateTime,chargingPriority,personalMessage,evseId));
+        idTokenRepo.insertIdTokenInfo(new IdTokenEntities.IdTokenInfo(transactionId ,status,cacheExpiryDateTime,chargingPriority,personalMessage,evseId));
     }
 
     private void processBootResponse(JSONObject jsonObject) throws JSONException {

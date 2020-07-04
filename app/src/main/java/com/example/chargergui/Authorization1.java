@@ -239,7 +239,7 @@ public class Authorization1 extends AppCompatActivity {
     public void OnClickBack(View view){
         Intent i = new Intent(Authorization1.this, Authentication.class);
         startActivity(i);
-        authorization1ViewModel.deleteAll();
+        authorization1ViewModel.deleteIdToken();
         authorization1ViewModel.deleteStates();
     }
 

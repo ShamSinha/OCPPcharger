@@ -1,11 +1,7 @@
 package AuthorizationRelated;
 
 import android.content.Context;
-import android.os.AsyncTask;
 
-import androidx.lifecycle.LiveData;
-
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -65,7 +61,7 @@ public class IdTokenRepo {
     public IdTokenEntities.IdTokenAndInfo getIdTokenAndInfo(String transactionId){
         return idTokenDao.getIdTokenAndInfo(transactionId) ;
     }
-    public void deleteAll(){
-         idTokenDao.deleteAll();
+    public void deleteIdToken(String transactionId){
+         idTokenDao.deleteIdToken(transactionId);
     }
 }

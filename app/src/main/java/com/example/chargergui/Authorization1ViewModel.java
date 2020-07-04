@@ -52,8 +52,8 @@ public class Authorization1ViewModel extends AndroidViewModel {
     public LiveData<Boolean> isAuthorized(String transactionId){
         return chargingStationStatesRepo.isAuthorized(transactionId) ;
     }
-    public void deleteAll(){
-        repo.deleteAll();
+    public void deleteIdToken(String transactionId){
+        repo.deleteIdToken(transactionId);
     }
     public void deleteStates(){
         chargingStationStatesRepo.deleteStates();

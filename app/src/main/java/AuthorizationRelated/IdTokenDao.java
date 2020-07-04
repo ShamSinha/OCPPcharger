@@ -24,8 +24,8 @@ public interface IdTokenDao {
     public void updateIdToken(IdTokenEntities.IdToken idToken) ;
 
     @Transaction
-    @Query("DELETE FROM IdToken")
-    public void deleteAll() ;
+    @Query("DELETE FROM IdToken WHERE transactionId = :transactionId")
+    public void deleteIdToken(String transactionId) ;
 
     @Transaction
     @Query("SELECT * FROM IdToken WHERE transactionId = :transactionId")
