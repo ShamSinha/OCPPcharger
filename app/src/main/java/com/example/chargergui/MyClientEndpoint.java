@@ -115,6 +115,8 @@ public class MyClientEndpoint  {
     }
 
     public NetworkProfileRepo networkProfileRepo ;
+    public WebsocketRepo websocketRepo ;
+
 
     void ConnectClientToServer(final TextView text) {
         Thread thread = new Thread(new Runnable() {
@@ -191,6 +193,7 @@ public class MyClientEndpoint  {
     @OnOpen
     public void onOpen(Session session1) throws IOException, DeploymentException, URISyntaxException {
         session = session1 ;
+        websocketRepo  = new WebsocketRepo(context.get());
         /*String content = "Websocket connection is alive";
         ByteBuffer buffer = ByteBuffer.wrap(content.getBytes("UTF-8"));
         try {
@@ -206,6 +209,11 @@ public class MyClientEndpoint  {
         Log.d("TAG", "Websocket Message Received");
         if (msg instanceof CALL) {
             isCALLarrived = true;
+
+            WebsocketEntities.CallArrived callArrived = new WebsocketEntities.CallArrived(true,false); ;
+            callArrived.setMessageId(CALL.getMessageId());
+            websocketRepo.insertCallArrived(callArrived);
+
             Log.d("TAG", "CALL received: " + CALL.getAction());
             JSONObject responsePayload = new JSONObject();   // responsePayload is JSON payload requested by CSMS.
             JSONObject requestPayload = ((CALL) msg).getPayload(); // get JSON payload from server request
@@ -304,14 +312,18 @@ public class MyClientEndpoint  {
                 default:
                     throw new IllegalStateException("Unexpected value: " + CALL.getAction());
                 }
+
+                websocketRepo.updateCallArrived(true,CALLRESULT.getMessageId());
                 isCALLarrived = false;
 
             }
             if (msg instanceof CALLRESULT) {
+
                 Log.d("TAG", "CALL received: " + CALL.getAction());
                 JSONObject respondedPayload;  // respondedPayload is a CALL message Response from CSMS
-
                 if (CALLRESULT.getMessageId().equals(CALL.getMessageId())) {
+                    websocketRepo.updateCallSent(true,CALLRESULT.getMessageId());
+
                     Log.d("TAG", "CALLRESULT received: " + CALL.getAction());
                     respondedPayload = ((CALLRESULT) msg).getPayload();
                     Log.d("TAG", "respondedPayload: " + respondedPayload);
@@ -345,6 +357,7 @@ public class MyClientEndpoint  {
 
                             break;
                     }
+
                 }
             }
             if (msg instanceof CALLERROR) {

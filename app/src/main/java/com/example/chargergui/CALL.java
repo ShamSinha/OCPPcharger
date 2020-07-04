@@ -34,5 +34,4 @@ public class CALL extends WebsocketMessage{
 
     public JSONObject getPayload() { return this.Payload ;}
 
-
 }

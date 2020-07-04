@@ -10,7 +10,6 @@ import androidx.room.RoomDatabase;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
 @Database(entities = {ChargeEntity.Charging.class,ChargeEntity.Cost.class} , version = 1)
-
 public abstract class ChargeDatabase extends RoomDatabase {
     private static ChargingRelated.ChargeDatabase instance ;
 

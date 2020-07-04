@@ -10,8 +10,8 @@ public class IdTokenRepo {
     private IdTokenDao idTokenDao;
 
     public IdTokenRepo(Context context){
-        IdTokenInfoDatabase database = IdTokenInfoDatabase.getInstance(context);
-        idTokenDao = database.idTokenInfoDao() ;
+        IdTokenDatabase database = IdTokenDatabase.getInstance(context);
+        idTokenDao = database.idTokenDao() ;
     }
 
     public void insertIdToken(final IdTokenEntities.IdToken idToken){
