@@ -15,6 +15,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.chargergui.CALL;
 import ChargingStationDetails.ChargingStationStates;
@@ -26,9 +27,12 @@ import com.example.chargergui.MyClientEndpoint;
 import com.example.chargergui.PINauthorizeDialog;
 import com.example.chargergui.R;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.websocket.EncodeException;
 
@@ -40,10 +44,12 @@ import AuthorizationRelated.IdTokenType;
 import DataType.SampledValueType;
 import DataType.TransactionType;
 import AuthorizationRelated.AuthorizationStatusEnumType;
+import DataType.UnitOfMeasureType;
 import EnumDataType.ChargingStateEnumType;
 import EnumDataType.ConnectorStatusEnumType;
 import EnumDataType.IdTokenEnumType;
 import DisplayMessagesRelated.MessageStateEnumType;
+import EnumDataType.MeasurandEnumType;
 import EnumDataType.ReadingContextEnumType;
 import EnumDataType.ReasonEnumType;
 import TransactionRelated.TransactionEventEnumType;
@@ -94,6 +100,9 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_charging);
+
+        chargeViewModel = new ViewModelProvider(this).get(ChargeViewModel.class) ;
+
         Payment =  findViewById(R.id.paybutton);
         BatteryCharge = findViewById(R.id.imageViewcharge);
         voltage =  findViewById(R.id.voltage);
@@ -118,8 +127,8 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
         voltage.setText(R.string.initialzero); // 0.00
         current.setText(R.string.initialzero); // 0.00
         Charge.setText(currentsoc);
-        ControllerRepo controllerRepo = new ControllerRepo(ChargingDisplay.this) ;
-        updatedCost.setText(format("%s 0.00", controllerRepo.getController("TariffCostCtrlr","Currency").getvalue() ));
+
+        updatedCost.setText(format("%s 0.00", chargeViewModel.getCurrency() ));
 
         SuspendTimer.setVisibility(View.GONE);
         AfterSuspend.setVisibility(View.GONE);
@@ -174,12 +183,24 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
             try {
                 TransactionEventRequest.eventType = TransactionEventEnumType.Updated ;
                 TransactionEventRequest.triggerReason = TriggerReasonEnumType.MeterValuePeriodic ;
-                TransactionType.setChargingState(ChargingStateEnumType.Charging);
-                SampledValueType.value = Energy ;
-                SampledValueType.context = ReadingContextEnumType.SamplePeriodic ;
-                send(toCSMS1.createTransactionEventRequest(ChargingDisplay.this)) ;
+                TransactionType.chargingState = ChargingStateEnumType.Charging ;
+                TransactionType.remoteStartId = 0 ;
+                TransactionType.stoppedReason = null ;
+                TransactionType.timeSpentCharging = (int) timeSpent;
 
-                updatedCost.setText(String.format("%s %s", TariffCostCtrlr.getCurrency(), myClientEndpoint.getCostUpdated().getTotalCost()));
+                SampledValueType energy = new SampledValueType(,ReadingContextEnumType.SamplePeriodic, MeasurandEnumType.EnergyActiveImportRegister) ;
+                SampledValueType soc = new SampledValueType(,ReadingContextEnumType.SamplePeriodic,MeasurandEnumType.SoC) ;
+                SampledValueType voltage = new SampledValueType(,ReadingContextEnumType.SamplePeriodic,MeasurandEnumType.Voltage);
+
+                JSONArray jsonArray = new JSONArray() ;
+                jsonArray.put(0,energy.getp(new UnitOfMeasureType("KWh",1)));
+                jsonArray.put(1,soc.getp(new UnitOfMeasureType("%",1))) ;
+                jsonArray.put(2,voltage.getp(new UnitOfMeasureType("V",1))) ;
+
+                TransactionEventRequest.SetMeterValues(jsonArray);
+
+                toCSMS1.sendTransactionEventRequest(ChargingDisplay.this) ;
+
                 mHandler.postDelayed(this,1000* SampledDataCtrlr.TxUpdatedInterval) ;
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -198,10 +219,9 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
         TransactionEventRequest.eventType = TransactionEventEnumType.Updated;
         TransactionEventRequest.triggerReason = TriggerReasonEnumType.MeterValuePeriodic;
         TransactionType.chargingState = ChargingStateEnumType.Charging;
-        SampledValueType.value = Energy;
-        SampledValueType.context = ReadingContextEnumType.TransactionEnd;
+
         try {
-            send(toCSMS1.createTransactionEventRequest());
+            toCSMS1.sendTransactionEventRequest(ChargingDisplay.this);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -210,7 +230,7 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
         TransactionEventRequest.triggerReason = TriggerReasonEnumType.ChargingStateChanged;
         TransactionType.chargingState = ChargingStateEnumType.SuspendedEVSE;
         try {
-            send(toCSMS1.createTransactionEventRequest());
+            toCSMS1.sendTransactionEventRequest(ChargingDisplay.this);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -532,36 +552,18 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
             TransactionEventRequest.triggerReason = TriggerReasonEnumType.EVCommunicationLost;
             TransactionType.stoppedReason = ReasonEnumType.EVDisconnected ;
             try {
-                send(toCSMS1.createTransactionEventRequest());
+                toCSMS1.sendTransactionEventRequest(ChargingDisplay.this);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
 
             StatusNotificationRequest.setConnectorStatus(ConnectorStatusEnumType.Available);
             try {
-                send(toCSMS1.createStatusNotificationRequest());
+                toCSMS1.sendStatusNotificationRequest();
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
-    }
-
-    private void send(final CALL call) {
-        Thread thread1 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    myClientEndpoint.getOpenSession().getBasicRemote().sendObject(call);
-                    Log.d("TAG" , "Message Sent" + CALL.getAction());
-                    Log.d("TAG", myClientEndpoint.getOpenSession().getId());
-
-                } catch (IOException | EncodeException e) {
-                    Log.e("ERROR" , "IOException in BasicRemote") ;
-                    e.printStackTrace();
-                }
-            }
-        });
-        thread1.start();
     }
 }
 

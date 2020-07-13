@@ -106,7 +106,6 @@ public class Authorization1 extends AppCompatActivity {
 
     }
 
-
     @Override
     protected void onStart() {
         super.onStart();
@@ -128,7 +127,7 @@ public class Authorization1 extends AppCompatActivity {
                             TransactionType.chargingState = ChargingStateEnumType.Idle;
                         }
                         try {
-                            sendRequest(toCSMS.createTransactionEventRequest());
+                            toCSMS.sendTransactionEventRequest(Authorization1.this);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -180,7 +179,7 @@ public class Authorization1 extends AppCompatActivity {
 
         StatusNotificationRequest.setConnectorStatus(ConnectorStatusEnumType.Occupied);
         try {
-            sendRequest(toCSMS.createStatusNotificationRequest());
+            toCSMS.sendStatusNotificationRequest();
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -189,11 +188,10 @@ public class Authorization1 extends AppCompatActivity {
         TransactionType.chargingState = ChargingStateEnumType.EVConnected;
         TransactionEventRequest.triggerReason = TriggerReasonEnumType.CablePluggedIn;
         try {
-            sendRequest(toCSMS.createTransactionEventRequest());
+            toCSMS.sendTransactionEventRequest(Authorization1.this);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
     }
 
     private void PINProcessing(){
@@ -254,24 +252,7 @@ public class Authorization1 extends AppCompatActivity {
         AdditionalInfoType.setType("username");
         AdditionalInfoType.setAdditionalIdToken(Username.getText().toString());
 
-        sendRequest(toCSMS.createAuthorizeRequest());
-    }
-    private void sendRequest(final CALL call) {
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-
-        executorService.execute(new Runnable() {
-            public void run() {
-                try {
-                    myClientEndpoint.getOpenSession().getBasicRemote().sendObject(call);
-                    Log.d("TAG", "Message Sent: " + CALL.getAction() + call.getPayload());
-
-                } catch (IOException | EncodeException e) {
-                    Log.e("ERROR", "IOException in BasicRemote");
-                    e.printStackTrace();
-                }
-            }
-        });
-        executorService.shutdown();
+        toCSMS.sendAuthorizeRequest();
     }
 
 }

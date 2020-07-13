@@ -28,6 +28,9 @@ public class ChargeViewModel extends AndroidViewModel {
     public Controller getController(String component , String variable){
         return controllerRepo.getController(component , variable) ;
     }
+    public String getCurrency(){
+        return controllerRepo.getController("TariffCostCtrlr","Currency").getvalue() ;
+    }
 
 
 

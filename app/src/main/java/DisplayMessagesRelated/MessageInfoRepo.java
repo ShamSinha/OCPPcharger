@@ -17,7 +17,7 @@ public class MessageInfoRepo {
     }
 
     public void insert(final MessageInfoEntity.MessageInfo messageInfo){
-            ExecutorService executorService = Executors.newSingleThreadExecutor();
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
 
         executorService.execute(new Runnable() {
             public void run() {

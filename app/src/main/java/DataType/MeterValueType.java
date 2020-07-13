@@ -17,15 +17,11 @@ public class MeterValueType {
         timestamp = d.dateTime();
     }
 
-    public static JSONObject getp(List<SampledValueType> sampledValues) throws JSONException {
+    public static JSONObject getp(JSONArray sampledValues) throws JSONException {
         JSONObject jp  = new JSONObject();
         jp.put("timestamp",timestamp);
 
-        JSONArray jsonArray = new JSONArray();
-        for (int i = 0 ; i < sampledValues.size() ; i++){
-            jsonArray.put(i,sampledValues.get(i));
-        }
-        jp.put("sampledValue", jsonArray ) ;
+        jp.put("sampledValue", sampledValues) ;
         return jp;
     }
 
