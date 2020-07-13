@@ -29,9 +29,9 @@ import javax.websocket.Session;
 
 import AuthorizationRelated.IdTokenEntities;
 import AuthorizationRelated.IdTokenRepo;
-import ChargingRelated.ChargeRepo;
 import ChargingStationDetails.ChargingStation;
 import ChargingStationDetails.ChargingStationRepo;
+import ChargingStationDetails.ChargingStationStatesRepo;
 import ChargingStationDetails.ChargingStationType;
 import ChargingStationRequest.BootNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
@@ -102,8 +102,6 @@ public class MyClientEndpoint  {
         context = new WeakReference<>(context1) ;
     }
 
-    private static boolean isCALLarrived = false;
-
     private SendRequestToCSMS toCSMS = new SendRequestToCSMS();
 
     //BootNotificationResponse
@@ -115,7 +113,7 @@ public class MyClientEndpoint  {
     }
 
     public NetworkProfileRepo networkProfileRepo ;
-    public WebsocketRepo websocketRepo ;
+
 
 
     void ConnectClientToServer(final TextView text) {
@@ -193,7 +191,7 @@ public class MyClientEndpoint  {
     @OnOpen
     public void onOpen(Session session1) throws IOException, DeploymentException, URISyntaxException {
         session = session1 ;
-        websocketRepo  = new WebsocketRepo(context.get());
+
         /*String content = "Websocket connection is alive";
         ByteBuffer buffer = ByteBuffer.wrap(content.getBytes("UTF-8"));
         try {
@@ -208,11 +206,6 @@ public class MyClientEndpoint  {
     public void onMessage(WebsocketMessage msg) throws JSONException {
         Log.d("TAG", "Websocket Message Received");
         if (msg instanceof CALL) {
-            isCALLarrived = true;
-
-            WebsocketEntities.CallArrived callArrived = new WebsocketEntities.CallArrived(true,false); ;
-            callArrived.setMessageId(CALL.getMessageId());
-            websocketRepo.insertCallArrived(callArrived);
 
             Log.d("TAG", "CALL received: " + CALL.getAction());
             JSONObject responsePayload = new JSONObject();   // responsePayload is JSON payload requested by CSMS.
@@ -313,8 +306,6 @@ public class MyClientEndpoint  {
                     throw new IllegalStateException("Unexpected value: " + CALL.getAction());
                 }
 
-                websocketRepo.updateCallArrived(true,CALLRESULT.getMessageId());
-                isCALLarrived = false;
 
             }
             if (msg instanceof CALLRESULT) {
@@ -322,7 +313,6 @@ public class MyClientEndpoint  {
                 Log.d("TAG", "CALL received: " + CALL.getAction());
                 JSONObject respondedPayload;  // respondedPayload is a CALL message Response from CSMS
                 if (CALLRESULT.getMessageId().equals(CALL.getMessageId())) {
-                    websocketRepo.updateCallSent(true,CALLRESULT.getMessageId());
 
                     Log.d("TAG", "CALLRESULT received: " + CALL.getAction());
                     respondedPayload = ((CALLRESULT) msg).getPayload();
@@ -412,6 +402,7 @@ public class MyClientEndpoint  {
     private void processAuthResponse(JSONObject j2) throws JSONException {
 
         IdTokenRepo idTokenRepo = new IdTokenRepo(context.get());
+        ChargingStationStatesRepo chargingStationStatesRepo = new ChargingStationStatesRepo(context.get());
 
         String status = j2.getString("status");
         String cacheExpiryDateTime =  j2.getString("cacheExpiryDateTime");
@@ -425,6 +416,10 @@ public class MyClientEndpoint  {
         personalMessage.format = j3.getString("format") ;
 
         idTokenRepo.insertIdTokenInfo(new IdTokenEntities.IdTokenInfo(transactionId ,status,cacheExpiryDateTime,chargingPriority,personalMessage,evseId));
+        if (status.equals("Accepted")) {
+            chargingStationStatesRepo.updateAuthorized(transactionId , true);
+        }
+
     }
 
     private void processBootResponse(JSONObject jsonObject) throws JSONException {
@@ -442,10 +437,6 @@ public class MyClientEndpoint  {
     //BOOT
     public BootNotificationResponse getBootNotificationResponse(){
         return bootNotificationResponse;
-    }
-
-    public boolean getisCALLarrived(){
-        return isCALLarrived;
     }
 
     private void sendResponse(final CALLRESULT callresult) {
@@ -486,7 +477,7 @@ public class MyClientEndpoint  {
     public List<JSONObject> processGetDisplayMessages(List<MessageInfoEntity.MessageInfo> messageInfoEntityList) throws JSONException {
 
         List<JSONObject> notify = new ArrayList<>();
-        for(int i = 0 ; i <messageInfoEntityList.size() ; i++ ){
+        for(int i = 0 ; i <messageInfoEntityList.size() ; i++){
 
             MessageInfoEntity.MessageInfo m = messageInfoEntityList.get(i);
             MessageInfoType.setId(m.getId());

@@ -1,7 +1,5 @@
 package Controller_Components;
 
-import com.example.chargergui.dateTime;
-
 //Provides a means to configure management of time tracking by Charging Station.
 
 public class ClockCtrlr {

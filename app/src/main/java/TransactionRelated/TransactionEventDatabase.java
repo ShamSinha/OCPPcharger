@@ -12,7 +12,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 
 
 
-@Database(entities = {TransactionEntities.TransactionEventRequest.class,TransactionEntities.TransactionEventResponse.class} , version = 1)
+@Database(entities = {TransactionEntities.TransactionEventRequest.class,TransactionEntities.TransactionEventResponse.class, TransactionEntities.SEQNO.class} , version = 1)
 public abstract class TransactionEventDatabase extends RoomDatabase {
 
     private static TransactionEventDatabase instance;
@@ -47,7 +47,9 @@ public abstract class TransactionEventDatabase extends RoomDatabase {
 
         @Override
         protected Void doInBackground(Void... voids) {
-
+            TransactionEntities.SEQNO seqno = new TransactionEntities.SEQNO(1);
+            seqno.setId(1);
+            transactionEventDao.insertSEQNO(seqno);
             return null;
         }
     }

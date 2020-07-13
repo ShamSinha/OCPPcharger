@@ -1,14 +1,11 @@
 package DataType;
 
 import EnumDataType.EventTriggerEnumType;
-import com.example.chargergui.dateTime;
+
 import com.example.chargergui.dateTime2;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 public class EventDataType {
     public static int eventId ;

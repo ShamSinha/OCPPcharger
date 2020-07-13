@@ -16,12 +16,12 @@ import TransactionRelated.TransactionEventEnumType;
 
 public class TransactionEventRequest {
 
-    public static TransactionEventEnumType eventType = TransactionEventEnumType.Started  ;
+    public static TransactionEventEnumType eventType ;
     public static String timestamp ;
     public static TriggerReasonEnumType triggerReason ;
-    public static int SeqNo = 0 ;
-    public static Boolean offline = false;
-    public static float cableMaxCurrent = 16;  //in Ampere
+    public static int SeqNo;
+    public static Boolean offline;
+    public static float cableMaxCurrent;  //in Ampere
 
     public static void setTimestamp() {
         dateTime2 d = new dateTime2();
@@ -29,14 +29,9 @@ public class TransactionEventRequest {
     }
 
     public static void SetSeqNo(){
-        if (SeqNo < 2147483647){
-            SeqNo = SeqNo + 1 ;
-        }
-        else {
-            SeqNo = 0 ;
-        }
-    }
 
+    }
+    
     public static JSONObject payload() throws JSONException {
         JSONObject jo  = new JSONObject();
 

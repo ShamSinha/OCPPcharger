@@ -6,33 +6,43 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
+import Controller_Components.Controller;
+import Controller_Components.ControllerRepo;
+import TransactionRelated.TransactionEntities;
+import TransactionRelated.TransactionEventRepo;
+
 public class ChargeViewModel extends AndroidViewModel {
-    private ChargeRepo chargeRepo ;
+    private TransactionEventRepo eventRepo ;
+    private ControllerRepo controllerRepo ;
 
     public ChargeViewModel(@NonNull Application application) {
         super(application);
-        chargeRepo = new ChargeRepo(application);
+        eventRepo = new TransactionEventRepo(application);
+        controllerRepo = new ControllerRepo(application);
     }
 
-    public void insertCharge(ChargeEntity.Charging charging){
-        chargeRepo.insertCharge(charging);
-    }
-    public void updateCharge(ChargeEntity.Charging charging){
-        chargeRepo.updateCharge(charging);
-    }
-    public void insertCost(ChargeEntity.Cost cost){
-        chargeRepo.insertCost(cost);
-    }
-    public void updateCost(ChargeEntity.Cost cost){
-        chargeRepo.updateCost(cost);
-    }
-    public LiveData<ChargeEntity.Charging> getCharge(String transactionId){
-        return chargeRepo.getCharge(transactionId) ;
+    public LiveData<TransactionEntities.EventRequestAndResponse> getEventReqAndResp(){
+        return eventRepo.getEventReqAndResp();
     }
 
-    public LiveData<ChargeEntity.Cost> getCost(String transactionId){
-        return chargeRepo.getCost(transactionId) ;
+    public Controller getController(String component , String variable){
+        return controllerRepo.getController(component , variable) ;
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 }

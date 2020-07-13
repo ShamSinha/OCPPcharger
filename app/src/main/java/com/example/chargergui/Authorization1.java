@@ -21,6 +21,8 @@ import androidx.lifecycle.ViewModelProvider;
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.websocket.EncodeException;
 
@@ -63,6 +65,7 @@ public class Authorization1 extends AppCompatActivity {
 
     private Authorization1ViewModel authorization1ViewModel ;
     boolean EVSideCablePluggedIn ;
+    String transactionId = "" ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,11 +110,6 @@ public class Authorization1 extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        final MainActivity bs = new MainActivity();
-
-        bs.BluetoothThreadforCablePlug();
-
-        final String transactionId = "" ;
 
         authorization1ViewModel = new ViewModelProvider(this).get(Authorization1ViewModel.class) ;
         authorization1ViewModel.isAuthorized(transactionId).observe(this, new Observer<Boolean>() {
@@ -121,8 +119,6 @@ public class Authorization1 extends AppCompatActivity {
                 cardView3PIN.setVisibility(View.VISIBLE);
                 if (aBoolean != null) {
                     if (aBoolean) {
-                        authorization1ViewModel.updateAuthorized(transactionId, true);
-
                         TransactionEventRequest.triggerReason = TriggerReasonEnumType.Authorized;
                         if (EVSideCablePluggedIn) {
                             TransactionEventRequest.eventType = TransactionEventEnumType.Updated;
@@ -181,6 +177,7 @@ public class Authorization1 extends AppCompatActivity {
     }
 
     public void CableConnectedBeforeAuthorized() {
+
         StatusNotificationRequest.setConnectorStatus(ConnectorStatusEnumType.Occupied);
         try {
             sendRequest(toCSMS.createStatusNotificationRequest());
@@ -196,8 +193,8 @@ public class Authorization1 extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-    }
 
+    }
 
     private void PINProcessing(){
         final Thread t = new Thread(){
@@ -239,39 +236,42 @@ public class Authorization1 extends AppCompatActivity {
     public void OnClickBack(View view){
         Intent i = new Intent(Authorization1.this, Authentication.class);
         startActivity(i);
-        authorization1ViewModel.deleteIdToken();
+        authorization1ViewModel.deleteIdToken(transactionId);
         authorization1ViewModel.deleteStates();
     }
 
-    public void OnClickAuthorize(View view) throws  JSONException {
+    public void OnClickAuthorize(View view) throws JSONException {
+
         cardView1PIN.setVisibility(View.GONE);
         cardView2PIN.setVisibility(View.VISIBLE);
         PINProcessing();
         IdTokenEntities.IdToken idToken = new IdTokenEntities.IdToken(PIN.getText().toString(),IdTokenEnumType.KeyCode.name(),Username.getText().toString());
-        idToken.setTransactionId();
+        idToken.setTransactionId(transactionId);
         authorization1ViewModel.insertIdToken(idToken);
 
         IdTokenType.setType(IdTokenEnumType.KeyCode);
         IdTokenType.setIdToken(PIN.getText().toString());
         AdditionalInfoType.setType("username");
         AdditionalInfoType.setAdditionalIdToken(Username.getText().toString());
+
         sendRequest(toCSMS.createAuthorizeRequest());
     }
     private void sendRequest(final CALL call) {
-        Thread thread1 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                    try {
-                        myClientEndpoint.getOpenSession().getBasicRemote().sendObject(call);
-                        Log.d("TAG", "Message Sent: " + CALL.getAction() + call.getPayload());
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-                    } catch (IOException | EncodeException e) {
-                        Log.e("ERROR", "IOException in BasicRemote");
-                        e.printStackTrace();
-                    }
+        executorService.execute(new Runnable() {
+            public void run() {
+                try {
+                    myClientEndpoint.getOpenSession().getBasicRemote().sendObject(call);
+                    Log.d("TAG", "Message Sent: " + CALL.getAction() + call.getPayload());
+
+                } catch (IOException | EncodeException e) {
+                    Log.e("ERROR", "IOException in BasicRemote");
+                    e.printStackTrace();
                 }
+            }
         });
-        thread1.start();
+        executorService.shutdown();
     }
 
 }

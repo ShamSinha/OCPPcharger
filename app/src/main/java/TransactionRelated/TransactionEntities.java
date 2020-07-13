@@ -18,48 +18,32 @@ public class TransactionEntities {
     public static class TransactionEventRequest{
 
         @PrimaryKey
-        public int SeqNo ;
+        public long SeqNo ;
 
         public String eventType ;
-        public Boolean offline ;
-        public float cableMaxCurrent ;
         public String triggerReason ;
         public String timestamp ;
 
         @Embedded
         public Transaction transaction ;
 
-        @Embedded
-        public MeterValue meterValue ;
-
-        public TransactionEventRequest(String eventType, Boolean offline, float cableMaxCurrent, String triggerReason, String timestamp, Transaction transaction, MeterValue meterValue) {
+        public TransactionEventRequest(String eventType, String triggerReason, String timestamp, Transaction transaction) {
             this.eventType = eventType;
-            this.offline = offline;
-            this.cableMaxCurrent = cableMaxCurrent;
             this.triggerReason = triggerReason;
             this.timestamp = timestamp;
             this.transaction = transaction;
-            this.meterValue = meterValue;
         }
 
-        public void setSeqNo(int seqNo) {
+        public void setSeqNo(long seqNo) {
             SeqNo = seqNo;
         }
 
-        public int getSeqNo() {
+        public long getSeqNo() {
             return SeqNo;
         }
 
         public String getEventType() {
             return eventType;
-        }
-
-        public Boolean getOffline() {
-            return offline;
-        }
-
-        public float getCableMaxCurrent() {
-            return cableMaxCurrent;
         }
 
         public String getTriggerReason() {
@@ -74,9 +58,7 @@ public class TransactionEntities {
             return transaction;
         }
 
-        public MeterValue getMeterValue() {
-            return meterValue;
-        }
+
     }
 
     public static class Transaction{
@@ -86,6 +68,14 @@ public class TransactionEntities {
         public int timeSpentCharging ;
         public String stoppedReason ;
         public int remoteStartId ;
+
+        public Transaction(String transactionId, String chargingState, int timeSpentCharging, String stoppedReason, int remoteStartId) {
+            this.transactionId = transactionId;
+            this.chargingState = chargingState;
+            this.timeSpentCharging = timeSpentCharging;
+            this.stoppedReason = stoppedReason;
+            this.remoteStartId = remoteStartId;
+        }
 
         public String getTransactionId() {
             return transactionId;
@@ -106,40 +96,7 @@ public class TransactionEntities {
         public int getRemoteStartId() {
             return remoteStartId;
         }
-    }
 
-    public static class MeterValue {
-
-        public String timestamp;
-        public float value;
-        public String context;
-        public String measurand;
-        public String unit;
-        public int multiplier;
-
-        public String getTimestamp() {
-            return timestamp;
-        }
-
-        public float getValue() {
-            return value;
-        }
-
-        public String getContext() {
-            return context;
-        }
-
-        public String getMeasurand() {
-            return measurand;
-        }
-
-        public String getUnit() {
-            return unit;
-        }
-
-        public int getMultiplier() {
-            return multiplier;
-        }
     }
 
     @Entity
@@ -148,14 +105,14 @@ public class TransactionEntities {
         @PrimaryKey(autoGenerate = true)
         public int id ;
 
-        public int ResponseSeqNo ;
+        public long ResponseSeqNo ;
         public float totalCost ;
         public int chargingPriority ;
 
         @Embedded
         public MessageContent updatedPersonalMessage ;
 
-        public TransactionEventResponse(int responseSeqNo, float totalCost, int chargingPriority, MessageContent updatedPersonalMessage) {
+        public TransactionEventResponse(long responseSeqNo, float totalCost, int chargingPriority, MessageContent updatedPersonalMessage) {
             ResponseSeqNo = responseSeqNo;
             this.totalCost = totalCost;
             this.chargingPriority = chargingPriority;
@@ -170,7 +127,7 @@ public class TransactionEntities {
             return id;
         }
 
-        public int getResponseSeqNo() {
+        public long getResponseSeqNo() {
             return ResponseSeqNo;
         }
 
@@ -193,6 +150,12 @@ public class TransactionEntities {
         public String language;
         public String content;
 
+        public MessageContent(String format, String language, String content) {
+            this.format = format;
+            this.language = language;
+            this.content = content;
+        }
+
         public String getFormat() {
             return format;
         }
@@ -206,8 +169,27 @@ public class TransactionEntities {
         }
     }
 
+    @Entity
+    public static class SEQNO{
 
+        @PrimaryKey
+        public int id ;
 
+        public long SeqNo;
 
+        public SEQNO(int seqNo) {
+            SeqNo = seqNo;
+        }
+        public int getId() {
+            return id;
+        }
 
+        public void setId(int id) {
+            this.id = id;
+        }
+
+        public long getSeqNo() {
+            return SeqNo;
+        }
+    }
 }

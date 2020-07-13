@@ -14,8 +14,22 @@ public interface TransactionEventDao {
     public void insertEventResp(TransactionEntities.TransactionEventResponse response);
 
     @Transaction
-    @Query("SELECT* FROM TransactionEventRequest WHERE SeqNo = (SELECT MAX(SeqNo) FROM TransactionEventRequest);")
-    public TransactionEntities.EventRequestAndResponse getEventReqAndResp();
+    @Query("SELECT* FROM TransactionEventRequest WHERE SeqNo = (SELECT MAX(SeqNo) FROM TransactionEventRequest)")
+    public LiveData<TransactionEntities.EventRequestAndResponse> getEventReqAndResp();
+
+    @Transaction
+    @Query("DELETE FROM TransactionEventRequest WHERE SeqNo = (SELECT MAX(SeqNo) FROM TransactionEventRequest)")
+    public void deleteEvent();
+
+    @Insert
+    public void insertSEQNO(TransactionEntities.SEQNO seqno);
+
+    @Query("UPDATE SEQNO SET SeqNo = CASE WHEN(SeqNo < 2147483647) THEN SeqNo + 1 ELSE 0 END WHERE id =1 ")
+    public void updateSeqNo();
+
+    @Query("SELECT*FROM SEQNO WHERE id = 1 ")
+    public long getSeqNo();
+
 
 
 }

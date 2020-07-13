@@ -18,6 +18,7 @@ import java.io.OutputStream;
 import java.util.Set;
 import java.util.UUID;
 
+import ChargingStationDetails.ChargingStationStatesRepo;
 import EnumDataType.RegistrationStatusEnumType;
 import ChargingStationDetails.ChargingStationStates;
 
@@ -25,7 +26,6 @@ import ChargingStationDetails.ChargingStationStates;
 public class MainActivity extends Activity {
     private static final String TAG = "main";
     // private final String DEVICE_NAME="BATTERYMETER";
-
     private final UUID PORT_UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");//Serial Port Service ID
     private BluetoothDevice device;
     private BluetoothSocket socket;
@@ -45,6 +45,8 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         Boot = findViewById(R.id.boottext);
         myClientEndpoint = MyClientEndpoint.getInstance() ;
+
+        MyBluetoothService myBluetoothService = new MyBluetoothService();
     }
 
     @Override
@@ -139,18 +141,17 @@ public class MainActivity extends Activity {
     }
 
 
-    public void BluetoothThreadforCablePlug() {
+    public void BluetoothThreadforCablePlug(final String d) {
     if (BTinit()) {
         if (BTconnect()) {
             deviceConnected = true;
-            Thread thread = new Thread(new Runnable() {
+            final Thread thread = new Thread(new Runnable(d) {
                 public void run() {
                     boolean stopThread;
                     stopThread = false;
                     while (!Thread.currentThread().isInterrupted() && !stopThread) {
                         try {
-                            String string = "CPEV";
-                            outputStream.write(string.getBytes());
+                            outputStream.write(d.getBytes());
 
                             int byteCount = inputStream.available();
                             if (byteCount > 0) {
@@ -158,6 +159,9 @@ public class MainActivity extends Activity {
                                 int numBytes; // bytes returned from read()
                                 numBytes = inputStream.read(mmBuffer);
                                 final String cableplug = new String(mmBuffer,0,numBytes,"UTF-8");
+
+                                ChargingStationStatesRepo chargingStationStatesRepo = new ChargingStationStatesRepo(MainActivity.this);
+                                chargingStationStatesRepo.updateEVSideCablePluggedIn("",true);
                                 Handler handler = new Handler();
                                 handler.post(new Runnable() {
                                     public void run() {

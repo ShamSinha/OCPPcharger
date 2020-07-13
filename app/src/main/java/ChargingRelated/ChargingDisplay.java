@@ -4,10 +4,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.Chronometer;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -58,7 +60,7 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
     Button stopCharging;
     TextView voltage;
     TextView current ;
-    TextView TimeSpent;
+
     TextView Charge ;
     TextView Miles ;
     TextView updatedCost ;
@@ -74,14 +76,17 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
     float Current = 0;
     float Energy = 0 ;
     String currentsoc ;
-    int counter = TxCtrlr.getEVConnectionTimeOut() ;
     int count = 0 ;
+    int counter = TxCtrlr.getEVConnectionTimeOut() ;
+    long timeSpent = 0 ;   //seconds
     boolean stopThread =false;
     boolean stopThread1 = false ;
     Handler mHandler = new Handler();
     SendRequestToCSMS toCSMS1 = new SendRequestToCSMS();
-    MainActivity bs ;
     MyClientEndpoint myClientEndpoint ;
+    private Chronometer chronometer;
+    private long pauseOffset;
+    private boolean running;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,7 +94,6 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_charging);
-
         Payment =  findViewById(R.id.paybutton);
         BatteryCharge = findViewById(R.id.imageViewcharge);
         voltage =  findViewById(R.id.voltage);
@@ -102,7 +106,7 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
         ChargingText =  findViewById(R.id.chargingtext);
         AfterSuspend =  findViewById(R.id.aftersuspend);
         SuspendTimer =  findViewById(R.id.suspendtimer);
-        TimeSpent =  findViewById(R.id.spent);
+
         AfterStopButton =  findViewById(R.id.textView14) ;
         progressBar = findViewById(R.id.progressBar1);
 
@@ -127,27 +131,53 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
 
         DisplayMessageState.setMessageState(MessageStateEnumType.Charging);
 
+        running = false ;
+        pauseOffset = 0 ;
+        chronometer = findViewById(R.id.spent);
+        chronometer.setFormat("Time: %s");
+        chronometer.setBase(SystemClock.elapsedRealtime());
+        startChronometer(); ////////////////////////////////////////////////////
+
+        chronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
+            @Override
+            public void onChronometerTick(Chronometer chronometer) {
+                timeSpent = (SystemClock.elapsedRealtime() - chronometer.getBase())/1000 ;
+            }
+        });
+
+    }
+    public void startChronometer() {
+        if (!running) {
+            chronometer.setBase(SystemClock.elapsedRealtime() - pauseOffset);
+            chronometer.start();
+            running = true;
+        }
+    }
+    public void pauseChronometer() {
+        if (running) {
+            chronometer.stop();
+            pauseOffset = SystemClock.elapsedRealtime() - chronometer.getBase();
+            running = false;
+        }
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         BluetoothThreadMeter();
-        TimerForTimeSpent();
         StartSendingMeterValues();
     }
 
     private Runnable sendTransReq = new Runnable() {
         @Override
         public void run() {
-
             try {
                 TransactionEventRequest.eventType = TransactionEventEnumType.Updated ;
                 TransactionEventRequest.triggerReason = TriggerReasonEnumType.MeterValuePeriodic ;
-                TransactionType.chargingState = ChargingStateEnumType.Charging;
+                TransactionType.setChargingState(ChargingStateEnumType.Charging);
                 SampledValueType.value = Energy ;
                 SampledValueType.context = ReadingContextEnumType.SamplePeriodic ;
-                send(toCSMS1.createTransactionEventRequest()) ;
+                send(toCSMS1.createTransactionEventRequest(ChargingDisplay.this)) ;
 
                 updatedCost.setText(String.format("%s %s", TariffCostCtrlr.getCurrency(), myClientEndpoint.getCostUpdated().getTotalCost()));
                 mHandler.postDelayed(this,1000* SampledDataCtrlr.TxUpdatedInterval) ;
@@ -184,7 +214,6 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
     }
 
     private void UpdateUiAfterStop(){
@@ -216,15 +245,11 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
     }
 
     public void openDialogPIN(){
-
         PINauthorizeDialog piNauthorizeDialog = new PINauthorizeDialog();
-
         piNauthorizeDialog.show(getSupportFragmentManager(),"3");
     }
 
     public void openDialogRFID(){
-
-
     }
 
     @Override
@@ -258,7 +283,7 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
     public void OnClickWantToChargeMore(View view){
 
     }
-
+/*
     private void TimerForTimeSpent(){
         final Thread t = new Thread(){
             @Override
@@ -288,7 +313,7 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
             }
         };
         t.start();
-    }
+    }*/
 
     private void BluetoothThreadMeter() {
         if (bs.BTinit()) {
@@ -445,7 +470,7 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
 
 
 
-    private void afterCableUnplugAtEVSide() throws IOException, EncodeException, JSONException {
+    private void afterCableUnplugAtEVSide() throws  JSONException {
 
         ChargingStationStates.setEnergyTransfer(false);
         StopSendingMeterValues();

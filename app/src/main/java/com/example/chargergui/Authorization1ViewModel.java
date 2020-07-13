@@ -17,6 +17,7 @@ public class Authorization1ViewModel extends AndroidViewModel {
     public Authorization1ViewModel(@NonNull Application application) {
         super(application);
         repo = new IdTokenRepo(application) ;
+        chargingStationStatesRepo = new ChargingStationStatesRepo(application);
     }
 
     public void insertIdTokenInfo(IdTokenEntities.IdTokenInfo idTokenInfo){
@@ -42,10 +43,6 @@ public class Authorization1ViewModel extends AndroidViewModel {
         chargingStationStatesRepo.updateEVSideCablePluggedIn(transactionId,state);
     }
 
-    public void updateAuthorized(String transactionId , boolean state){
-        chargingStationStatesRepo.updateAuthorized(transactionId,state);
-    }
-
     public LiveData<Boolean> isEVSideCablePluggedIn(String transactionId){
         return chargingStationStatesRepo.isEVSideCablePluggedIn(transactionId);
     }
@@ -58,6 +55,9 @@ public class Authorization1ViewModel extends AndroidViewModel {
     public void deleteStates(){
         chargingStationStatesRepo.deleteStates();
     }
+
+
+
 
 
 }

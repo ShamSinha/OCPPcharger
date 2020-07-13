@@ -120,7 +120,7 @@
         app:layout_constraintTop_toBottomOf="@+id/voltage"
         app:layout_constraintVertical_bias="0.083" />
 
-    <TextView
+    <Chronometer
         android:id="@+id/spent"
         android:layout_width="181dp"
         android:layout_height="46dp"
@@ -128,7 +128,6 @@
         android:layout_marginLeft="116dp"
         android:background="#FFFFFF"
         android:gravity="center"
-        android:text="00:00:00"
         android:textAppearance="@style/TextAppearance.AppCompat.Display1"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/stopbutton"
@@ -297,5 +296,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.049" />
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
