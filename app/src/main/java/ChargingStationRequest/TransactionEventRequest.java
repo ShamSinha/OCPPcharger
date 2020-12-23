@@ -7,16 +7,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.List;
-
-import DataType.EVSEType;
 import AuthorizationRelated.IdTokenType;
+import DataType.EVSEType;
 import DataType.MeterValueType;
-import DataType.SampledValueType;
 import DataType.TransactionType;
 import EnumDataType.ChargingStateEnumType;
-import TransactionRelated.TriggerReasonEnumType;
 import TransactionRelated.TransactionEventEnumType;
+import TransactionRelated.TriggerReasonEnumType;
 
 public class TransactionEventRequest {
 

@@ -4,45 +4,44 @@ import android.content.Context;
 
 import androidx.lifecycle.LiveData;
 
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class SocRepo {
+public class InputRepo {
 
-    private SocDao socDao;
-    private LiveData<SocEntity> Soc ;
+    private InputDao inputDao;
+    private LiveData<InputEntity> Input ;
 
-    public SocRepo(Context context){
-        SocDatabase database = SocDatabase.getInstance(context);
-        socDao = database.socDao() ;
-        Soc = socDao.getSoc();
+    public InputRepo(Context context){
+        InputDatabase database = InputDatabase.getInstance(context);
+        inputDao = database.inputDao() ;
+        Input = inputDao.getInput();
     }
 
-    public void insert(final SocEntity soc){
+    public void insert(final InputEntity input){
         ExecutorService executorService = Executors.newSingleThreadExecutor();
 
         executorService.execute(new Runnable() {
             public void run() {
-                socDao.insert(soc);
+                inputDao.insert(input);
             }
         });
         executorService.shutdown();
 
     }
-    public void update(final SocEntity soc){
+    public void update(final InputEntity input){
         ExecutorService executorService = Executors.newSingleThreadExecutor();
 
         executorService.execute(new Runnable() {
             public void run() {
-                socDao.update(soc);
+                inputDao.update(input);
             }
         });
         executorService.shutdown();
     }
 
-    public LiveData<SocEntity> getSoc(){
-        return Soc;
+    public LiveData<InputEntity> getInput(){
+        return Input;
     }
 
     public void deleteAll(){
@@ -50,11 +49,10 @@ public class SocRepo {
 
         executorService.execute(new Runnable() {
             public void run() {
-                socDao.deleteAll();
+                inputDao.deleteAll();
             }
         });
         executorService.shutdown();
     }
 
 }
-

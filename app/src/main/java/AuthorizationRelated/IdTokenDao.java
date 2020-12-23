@@ -12,23 +12,27 @@ import java.util.List;
 public interface IdTokenDao {
 
     @Insert
-    public void insertIdTokenInfo(IdTokenEntities.IdTokenInfo idTokenInfo );
+    public void insertIdTokenInfo(IdTokenInfoEntity idTokenInfo );
 
     @Insert
-    public void insertIdToken(IdTokenEntities.IdToken idToken) ;
+    public void insertIdToken(IdTokenEntity idToken) ;
 
     @Update
-    public void updateIdTokenInfo(IdTokenEntities.IdTokenInfo idTokenInfo);
+    public void updateIdTokenInfo(IdTokenInfoEntity idTokenInfo);
 
     @Update
-    public void updateIdToken(IdTokenEntities.IdToken idToken) ;
+    public void updateIdToken(IdTokenEntity idToken) ;
 
-    @Transaction
-    @Query("DELETE FROM IdToken WHERE transactionId = :transactionId")
-    public void deleteIdToken(String transactionId) ;
+    @Query("DELETE FROM IdTokenEntity")
+    public void deleteIdToken();
 
-    @Transaction
-    @Query("SELECT * FROM IdToken WHERE transactionId = :transactionId")
-    public IdTokenEntities.IdTokenAndInfo getIdTokenAndInfo(String transactionId) ;
+    @Query("DELETE FROM IdTokenInfoEntity")
+    public void deleteIdTokenInfo();
+
+    @Query("SELECT * FROM IdTokenEntity LIMIT 1")
+    public IdTokenEntity getIdToken() ;
+
+    @Query("SELECT * FROM IdTokenInfoEntity LIMIT 1")
+    public IdTokenInfoEntity getIdTokenInfo() ;
 
 }

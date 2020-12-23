@@ -24,11 +24,4 @@ public interface MessageInfoDao {
 
     @Query("SELECT * FROM MessageInfoType.MessageInfo WHERE state = :state")
     List<MessageInfoEntity.MessageInfo> getMessageInfoByState(String state);
-
-
-
-
-
-
-
 }

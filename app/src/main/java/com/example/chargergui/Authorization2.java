@@ -16,6 +16,11 @@ import android.widget.TextView;
 
 import androidx.cardview.widget.CardView;
 
+import com.galarzaa.androidthings.Rc522;
+import com.google.android.things.pio.Gpio;
+import com.google.android.things.pio.PeripheralManager;
+import com.google.android.things.pio.SpiDevice;
+
 import org.json.JSONException;
 
 import java.io.IOException;
@@ -54,6 +59,11 @@ public class Authorization2 extends Activity {
     SendRequestToCSMS toCSMS = new SendRequestToCSMS();
     final MainActivity bs = new MainActivity();
     MyClientEndpoint myClientEndpoint ;
+
+    private Rc522 mRc522;
+    private Gpio resetPin;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,12 +98,19 @@ public class Authorization2 extends Activity {
 
         GetRFIDthread();
 
+        try {
+            PeripheralManager manager = PeripheralManager.getInstance();
+            resetPin = manager.openGpio("BCM25");
+            SpiDevice spiDevice = manager.openSpiDevice("SPI0.0") ;
+            mRc522 = new Rc522(spiDevice, resetPin);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
     @Override
     protected void onStart() {
         super.onStart();
-
-        bs.BluetoothThreadforCablePlug();
 
         Thread thread1 = new Thread(new Runnable() {
             @Override
@@ -120,7 +137,7 @@ public class Authorization2 extends Activity {
 
             StatusNotificationRequest.setConnectorStatus(ConnectorStatusEnumType.Occupied);
             try {
-                send(toCSMS.createStatusNotificationRequest());
+                toCSMS.sendStatusNotificationRequest();
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -129,7 +146,7 @@ public class Authorization2 extends Activity {
             TransactionType.chargingState = ChargingStateEnumType.EVConnected;
             TransactionEventRequest.triggerReason = TriggerReasonEnumType.CablePluggedIn;
             try {
-                send(toCSMS.createTransactionEventRequest());
+                toCSMS.sendTransactionEventRequest();
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -149,7 +166,7 @@ public class Authorization2 extends Activity {
         IdTokenType.setType(IdTokenEnumType.ISO14443);
         IdTokenType.setIdToken(rfid);
         try {
-            send(toCSMS.createAuthorizeRequest());
+            toCSMS.sendAuthorizeRequest();
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -193,76 +210,12 @@ public class Authorization2 extends Activity {
         t.start();
     }
 
-    public void GetRFIDthread(){
-        if(bs.BTinit()){
-            if(bs.BTconnect()){
-                bs.deviceConnected=true;
-                stopThread = false;
-
-                Thread thread  = new Thread(new Runnable()
-                {
-                    public void run()
-                    {
-                        while(!Thread.currentThread().isInterrupted() && !stopThread)
-                        {
-                            try
-                            {
-                                String string = "RFID";
-                                bs.outputStream.write(string.getBytes());
-
-                                int byteCount = bs.inputStream.available();
-                                if(byteCount > 0)
-                                {
-                                    byte[] mmBuffer = new byte[1024];
-                                    int numBytes; // bytes returned from read()
-                                    numBytes = bs.inputStream.read(mmBuffer);
-                                    final String ch=new String(mmBuffer,"UTF-8");
-                                    Handler handler = new Handler();
-                                    handler.post(new Runnable() {
-                                        public void run()
-                                        {
-                                            AfterHavingRFID(ch);
-                                        }
-                                    });
-
-                                }
-                            }
-                            catch (IOException ex)
-                            {
-                                stopThread = true;
-                            }
-                        }
-                    }
-                });
-
-                thread.start();
-            }
-        }
-    }
 
     public void OnClickBack2(View view){
         IdTokenType.setType(null);
         IdTokenType.setIdToken(null);
         Intent i = new Intent(Authorization2.this, Authentication.class);
         startActivity(i);
-    }
-
-    private void send(final CALL call) {
-        Thread thread1 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    myClientEndpoint.getOpenSession().getBasicRemote().sendObject(call);
-                    Log.d("TAG" , "Message Sent" + CALL.getAction() + call.getPayload());
-
-
-                } catch (IOException | EncodeException e) {
-                    Log.e("ERROR" , "IOException in BasicRemote") ;
-                    e.printStackTrace();
-                }
-            }
-        });
-        thread1.start();
     }
 
     private void getResponse(){
@@ -289,7 +242,7 @@ public class Authorization2 extends Activity {
                         TransactionType.chargingState =ChargingStateEnumType.Idle ;
                     }
                     try {
-                        send(toCSMS.createTransactionEventRequest());
+                        toCSMS.sendTransactionEventRequest();
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }

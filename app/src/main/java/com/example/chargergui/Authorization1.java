@@ -3,7 +3,6 @@ package com.example.chargergui;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -20,14 +19,8 @@ import androidx.lifecycle.ViewModelProvider;
 
 import org.json.JSONException;
 
-import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import javax.websocket.EncodeException;
-
 import AuthorizationRelated.AdditionalInfoType;
-import AuthorizationRelated.IdTokenEntities;
+import AuthorizationRelated.IdTokenEntity;
 import AuthorizationRelated.IdTokenType;
 import ChargingStationRequest.StatusNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
@@ -103,7 +96,6 @@ public class Authorization1 extends AppCompatActivity {
         DisplayMessageState.setMessageState(MessageStateEnumType.Idle);
 
         authorization1ViewModel = new ViewModelProvider(this).get(Authorization1ViewModel.class) ;
-
     }
 
     @Override
@@ -111,7 +103,7 @@ public class Authorization1 extends AppCompatActivity {
         super.onStart();
 
         authorization1ViewModel = new ViewModelProvider(this).get(Authorization1ViewModel.class) ;
-        authorization1ViewModel.isAuthorized(transactionId).observe(this, new Observer<Boolean>() {
+        authorization1ViewModel.isAuthorized().observe(this, new Observer<Boolean>() {
             @Override
             public void onChanged(@Nullable Boolean aBoolean) {
                 cardView2PIN.setVisibility(View.GONE);
@@ -152,14 +144,14 @@ public class Authorization1 extends AppCompatActivity {
                         }.start();
 
                     } else {
-                        AuthStatusText.setText(String.format("%s\nPIN", authorization1ViewModel.getIdTokenAndInfo(transactionId).getIdTokenInfo().getStatus()));
+                        AuthStatusText.setText(String.format("%s\nPIN", authorization1ViewModel.getIdTokenInfo().getStatus()));
                         TickorCrossPIN.setImageResource(R.drawable.ic_cross);
                     }
                 }
             }
         });
 
-        authorization1ViewModel.isEVSideCablePluggedIn(transactionId).observe(this, new Observer<Boolean>() {
+        authorization1ViewModel.isEVSideCablePluggedIn().observe(this, new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean aBoolean) {
                 EVSideCablePluggedIn = aBoolean ;
@@ -234,7 +226,7 @@ public class Authorization1 extends AppCompatActivity {
     public void OnClickBack(View view){
         Intent i = new Intent(Authorization1.this, Authentication.class);
         startActivity(i);
-        authorization1ViewModel.deleteIdToken(transactionId);
+        authorization1ViewModel.deleteIdToken();
         authorization1ViewModel.deleteStates();
     }
 
@@ -243,7 +235,7 @@ public class Authorization1 extends AppCompatActivity {
         cardView1PIN.setVisibility(View.GONE);
         cardView2PIN.setVisibility(View.VISIBLE);
         PINProcessing();
-        IdTokenEntities.IdToken idToken = new IdTokenEntities.IdToken(PIN.getText().toString(),IdTokenEnumType.KeyCode.name(),Username.getText().toString());
+        IdTokenEntity idToken = new IdTokenEntity(PIN.getText().toString(),IdTokenEnumType.KeyCode.name(),Username.getText().toString());
         idToken.setTransactionId(transactionId);
         authorization1ViewModel.insertIdToken(idToken);
 

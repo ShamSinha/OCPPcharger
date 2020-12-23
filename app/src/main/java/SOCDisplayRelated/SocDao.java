@@ -12,16 +12,16 @@ import java.util.List;
 public interface SocDao {
 
     @Insert
-    public void insert(SocEntities socEntities);
+    public void insert(SocEntity socEntity);
 
     @Update
-    public void update(SocEntities socEntities);
+    public void update(SocEntity socEntity);
 
-    @Query("DELETE FROM SocEntities")
+    @Query("DELETE FROM SocEntity")
     void deleteAll();
 
-    @Query("SELECT * FROM SocEntities")
-    LiveData<List<SocEntities>> getAllSoc();
+    @Query("SELECT * FROM SocEntity LIMIT 1")
+    LiveData<SocEntity> getSoc();
 
 
 }

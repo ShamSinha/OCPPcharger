@@ -33,7 +33,7 @@ public class ChargeDialog extends AppCompatDialogFragment {
 
         editcharge.setHint(currentsoc+"% < Input Charge < 100%");
         builder.setView(view)
-                .setTitle("Enter Charge Value")
+                .setTitle("Enter Charge")
                 .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {

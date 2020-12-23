@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import Controller_Components.ControllerRepo;
 import DisplayMessagesRelated.MessageStateEnumType;
 import ChargingRelated.ChargingDisplay;
 import SOCDisplayRelated.SOCdisplay;
@@ -21,14 +22,16 @@ import SOCDisplayRelated.SOCdisplay;
 
 public class UserInput extends AppCompatActivity implements AmountDialog.AmountDialogListener , ChargeDialog.ChargeDialogListener  {
 
-    TextView amounttext;
-    TextView chargetext ;
-    Button startcharging ;
+    TextView amountText;
+    TextView chargeText ;
+    Button startCharging ;
     TextView Rate ;
     TextView CurrentSOC ;
     String str ;
     String str2 ;
     String maximum_cost ;
+    String currency ;
+    ControllerRepo controllerRepo ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,9 +43,9 @@ public class UserInput extends AppCompatActivity implements AmountDialog.AmountD
         DisplayMessageState.setMessageState(MessageStateEnumType.Idle);
 
 
-        amounttext = findViewById(R.id.textView7);
-        chargetext = findViewById(R.id.textView8);
-        startcharging = findViewById(R.id.startchargingbutton);
+        amountText = findViewById(R.id.textView7);
+        chargeText = findViewById(R.id.textView8);
+        startCharging = findViewById(R.id.startchargingbutton);
         Rate = findViewById(R.id.rate1);
         CurrentSOC = findViewById(R.id.soc);
         Intent i = getIntent();
@@ -50,7 +53,7 @@ public class UserInput extends AppCompatActivity implements AmountDialog.AmountD
         CurrentSOC.setText(String.format("Charge\n %s%%", str));
         str2 = i.getStringExtra("rate");
         Rate.setText(str2);
-        startcharging.setEnabled(false);
+        startCharging.setEnabled(false);
         SOCdisplay soCdisplay = new SOCdisplay();
         maximum_cost = String.valueOf(estimatedcost(100,Float.parseFloat(str),soCdisplay.getBatteryCapacity()));
 
@@ -68,7 +71,7 @@ public class UserInput extends AppCompatActivity implements AmountDialog.AmountD
             }
         });
 
-        startcharging.setOnClickListener(new View.OnClickListener() {
+        startCharging.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(UserInput.this , ChargingDisplay.class);
@@ -103,24 +106,22 @@ public class UserInput extends AppCompatActivity implements AmountDialog.AmountD
 
     }
 
-
-
     public void applyTexts(int i) {
-        amounttext.setText(String.format(getString(R.string.amo), TariffCostCtrlr.getCurrency() ,String.valueOf(i)));
+        amountText.setText(String.format(getString(R.string.amo), TariffCostCtrlr.getCurrency() ,String.valueOf(i)));
         //float l = estimatedcharge(i) ;
-        //chargetext.setText(String.format(getString(R.string.estimated_charge), String.valueOf(l)));
+        //chargeText.setText(String.format(getString(R.string.estimated_charge), String.valueOf(l)));
 
     }
 
     public void applyTexts2(float j) {
-        chargetext.setText(String.format(String.valueOf(j)," % Charge"));
+        chargeText.setText(String.format(String.valueOf(j)," % Charge"));
         //int cost = estimatedcost(j);
         //amounttext.setText(String.format(getString(R.string.amo), String.valueOf(cost)));
 
     }
 
     public void applyTextsinvalid() {
-        chargetext.setText( "     Invalid Charge!\n Enter Valid Charge Value") ;
+        chargeText.setText( "     Invalid Charge!\n Enter Valid Charge Value") ;
 
     }
 

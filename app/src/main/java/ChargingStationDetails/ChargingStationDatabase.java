@@ -44,7 +44,7 @@ public abstract class ChargingStationDatabase extends RoomDatabase {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            chargingStationDao.insert(new ChargingStation("","SingleSocketCharger","VendorX","1",""));
+            chargingStationDao.insert(new ChargingStation("","SingleSocketCharger","VendorX","1","h"));
             return null;
         }
     }

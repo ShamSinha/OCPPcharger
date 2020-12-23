@@ -1,6 +1,5 @@
 package SOCDisplayRelated;
 
-
 import android.content.Context;
 import android.os.AsyncTask;
 
@@ -10,24 +9,24 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
-@Database(entities = {SocEntity.class} , version = 1)
-public abstract class SocDatabase extends RoomDatabase {
+@Database(entities = {InputEntity.class} , version = 1)
+public abstract class InputDatabase extends RoomDatabase {
 
-    private static SocDatabase instance ;
+    private static InputDatabase instance ;
 
-    public abstract SocDao socDao();
+    public abstract InputDao inputDao();
 
-    public static synchronized SocDatabase getInstance(Context context){
+    public static synchronized InputDatabase getInstance(Context context){
         if(instance == null){
-            instance = Room.databaseBuilder(context,SocDatabase.class,"soc_database")
+            instance = Room.databaseBuilder(context,InputDatabase.class,"input_database")
                     .allowMainThreadQueries()
-                    .addCallback(socCallback)
+                    .addCallback(inputCallback)
                     .build();
         }
         return instance ;
     }
 
-    public static SocDatabase.Callback socCallback = new SocDatabase.Callback(){
+    public static InputDatabase.Callback inputCallback = new InputDatabase.Callback(){
         @Override
         public void onCreate(@NonNull SupportSQLiteDatabase db) {
             super.onCreate(db);
@@ -36,13 +35,13 @@ public abstract class SocDatabase extends RoomDatabase {
     };
 
     public static class PopulateDbAsyncTask extends AsyncTask<Void,Void,Void> {
-        private SocDao socDao ;
-        private PopulateDbAsyncTask(SocDatabase db){
-            socDao = db.socDao();
+        private InputDao inputDao ;
+        private PopulateDbAsyncTask(InputDatabase db){
+            inputDao = db.inputDao();
         }
         @Override
         protected Void doInBackground(Void... voids) {
-            socDao.insert(new SocEntity(0,0,"BatteryType"));
+            inputDao.insert(new InputEntity(0,0));
             return null ;
         }
 

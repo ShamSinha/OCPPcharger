@@ -27,8 +27,9 @@ import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
 
-import AuthorizationRelated.IdTokenEntities;
+import AuthorizationRelated.IdTokenInfoEntity;
 import AuthorizationRelated.IdTokenRepo;
+import AuthorizationRelated.MessageContent;
 import ChargingStationDetails.ChargingStation;
 import ChargingStationDetails.ChargingStationRepo;
 import ChargingStationDetails.ChargingStationStatesRepo;
@@ -176,11 +177,7 @@ public class MyClientEndpoint  {
             text.append("\nmodem imsi:"+ ModemType.imsi+"\n");
             text.append("\nSending BootNotificationRequest to CSMS\n");
             try {
-                session.getBasicRemote().sendObject(toCSMS.createBootNotificationRequest());
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (EncodeException e) {
-                e.printStackTrace();
+                toCSMS.sendBootNotificationRequest();
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -409,15 +406,19 @@ public class MyClientEndpoint  {
         int chargingPriority = j2.getInt("chargingPriority");
         int evseId = j2.getInt("evseId") ;
 
-        IdTokenEntities.MessageContent personalMessage = new IdTokenEntities.MessageContent();
+        MessageContent personalMessage = new MessageContent();
         JSONObject j3 = j2.getJSONObject("personalMessage");
-        personalMessage.content = j3.getString("content");
-        personalMessage.language = j3.getString("language");
-        personalMessage.format = j3.getString("format") ;
+        personalMessage.setContent(j3.getString("content"));
+        personalMessage.setLanguage(j3.getString("language"));
+        personalMessage.setFormat(j3.getString("format")) ;
 
-        idTokenRepo.insertIdTokenInfo(new IdTokenEntities.IdTokenInfo(transactionId ,status,cacheExpiryDateTime,chargingPriority,personalMessage,evseId));
+        idTokenRepo.deleteIdTokenInfo();
+
+        String transactionId = idTokenRepo.getIdToken().getTransactionId();
+
+        idTokenRepo.insertIdTokenInfo(new IdTokenInfoEntity(status,cacheExpiryDateTime,chargingPriority,evseId,personalMessage));
         if (status.equals("Accepted")) {
-            chargingStationStatesRepo.updateAuthorized(transactionId , true);
+            chargingStationStatesRepo.updateAuthorized(transactionId ,true);
         }
 
     }
@@ -425,7 +426,6 @@ public class MyClientEndpoint  {
     private void processBootResponse(JSONObject jsonObject) throws JSONException {
         bootNotificationResponse.setBootStatus(RegistrationStatusEnumType.valueOf(jsonObject.getString("status"))) ;
         bootNotificationResponse.setBootInterval(jsonObject.getInt("interval"));
-
     }
 
     private JSONObject processCostUpdatedRequest(JSONObject requestPayload) throws JSONException {

@@ -34,7 +34,6 @@ public class WelcomeAndStart extends Activity {
         setContentView(R.layout.activity_welcome_and_start);
         myClientEndpoint = MyClientEndpoint.getInstance();
         messageInfoType = new MessageInfoEntity();
-
     }
 
     public void onClickStart(View view){

@@ -12,7 +12,7 @@ public class ChargingStationStatesRepo {
 
     public ChargingStationStatesRepo(Context context){
         ChargingStationStatesDatabase database = ChargingStationStatesDatabase.getInstance(context);
-        chargingStationStatesDao = database.chargingStationStatesDao() ;
+        chargingStationStatesDao = database.chargingStationStatesDao();
     }
 
     public LiveData<Boolean> isEVSideCablePluggedIn(String transactionId){

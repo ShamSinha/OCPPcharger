@@ -15,6 +15,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.chargergui.CALL;
@@ -83,7 +84,7 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
     float Energy = 0 ;
     String currentsoc ;
     int count = 0 ;
-    int counter = TxCtrlr.getEVConnectionTimeOut() ;
+    int counter ;
     long timeSpent = 0 ;   //seconds
     boolean stopThread =false;
     boolean stopThread1 = false ;
@@ -123,6 +124,8 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
         currentsoc = intent.getStringExtra("currentsoc");
         SOC = Float.parseFloat(currentsoc);
         new ImageChargeBattery(SOC, BatteryCharge);
+
+        counter = chargeViewModel.getEVConnectionTimeOut() ;
 
         voltage.setText(R.string.initialzero); // 0.00
         current.setText(R.string.initialzero); // 0.00
@@ -479,7 +482,7 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
         TransactionEventRequest.triggerReason = TriggerReasonEnumType.CablePluggedIn;
         TransactionType.chargingState = ChargingStateEnumType.Charging;
         try {
-            toCSMS1.createTransactionEventRequest();
+            toCSMS1.sendTransactionEventRequest(ChargingDisplay.this);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -492,22 +495,22 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
 
     private void afterCableUnplugAtEVSide() throws  JSONException {
 
-        ChargingStationStates.setEnergyTransfer(false);
+        /////////ChargingStationStates.setEnergyTransfer(false);
         StopSendingMeterValues();
         stopThread = true ;
 
-        if(!TxCtrlr.isStopTxOnEVSideDisconnect()){ // Suspend Transaction After CableUnplug at EV side
+        if(!chargeViewModel.isStopTxOnEVSideDisconnect()){ // Suspend Transaction After CableUnplug at EV side
 
             UpdateUiAfterSuspend();
 
             TransactionEventRequest.eventType = TransactionEventEnumType.Updated;
             TransactionEventRequest.triggerReason = TriggerReasonEnumType.EVCommunicationLost;
 
-            send(toCSMS1.createTransactionEventRequest());
+            toCSMS1.sendTransactionEventRequest(ChargingDisplay.this);
 
             if(CSPhysicalProperties.isCableIsPermanentAttached) {
 
-                new CountDownTimer(TxCtrlr.getEVConnectionTimeOut() * 1000, 1000) {
+                new CountDownTimer(chargeViewModel.getEVConnectionTimeOut() * 1000, 1000) {
                     public void onTick(long millisUntilFinished) {
                         int minutes = counter / 60;
                         int seconds = counter % 60;
@@ -516,20 +519,20 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
 
                     }
                     public void onFinish() {
-                        if (!ChargingStationStates.isEVSideCablePluggedIn) {
+                        if (!chargeViewModel.isEVSideCablePluggedIn().getValue()) {
                             SuspendTimer.setText(getString(R.string.timersuspend, 0, 0));
                             TransactionEventRequest.eventType = TransactionEventEnumType.Ended;
                             TransactionEventRequest.triggerReason = TriggerReasonEnumType.EVCommunicationLost;
                             TransactionType.stoppedReason = ReasonEnumType.EVDisconnected;
                             try {
-                                send(toCSMS1.createTransactionEventRequest());
+                                toCSMS1.sendTransactionEventRequest(ChargingDisplay.this);
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
 
                             StatusNotificationRequest.setConnectorStatus(ConnectorStatusEnumType.Available);
                             try {
-                                send(toCSMS1.createStatusNotificationRequest());
+                                toCSMS1.sendStatusNotificationRequest();
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -542,12 +545,10 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
 
                 }.start() ;
             }
-
             BluetoothThreadforCablePlug();
-
         }
 
-        if(TxCtrlr.isStopTxOnEVSideDisconnect()){   // Stop Transaction After CableUnplug at EV side
+        if(chargeViewModel.isStopTxOnEVSideDisconnect()){   // Stop Transaction After CableUnplug at EV side
             TransactionEventRequest.eventType = TransactionEventEnumType.Ended;
             TransactionEventRequest.triggerReason = TriggerReasonEnumType.EVCommunicationLost;
             TransactionType.stoppedReason = ReasonEnumType.EVDisconnected ;
@@ -564,6 +565,47 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
                 e.printStackTrace();
             }
         }
+    }
+
+    public void sg(){
+
+        chargeViewModel.isAuthorized().observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                if(!aBoolean){
+
+                }
+            }
+        });
+
+        chargeViewModel.isPowerPathClosed().observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                if(!aBoolean){
+
+                }
+            }
+        });
+
+        chargeViewModel.isEVSideCablePluggedIn().observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                if(!aBoolean){
+
+                }
+            }
+        });
+
+        chargeViewModel.isEnergyTransfer().observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                if(!aBoolean){
+
+                }
+
+            }
+        });
+
     }
 }
 

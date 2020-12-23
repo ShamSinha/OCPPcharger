@@ -55,7 +55,7 @@
         tools:layout_editor_absoluteY="308dp" />
 
     <Button
-        android:id="@+id/standard"
+        android:id="@+id/input"
         android:layout_width="250dp"
         android:layout_height="70dp"
         android:layout_marginStart="64dp"
@@ -94,7 +94,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="36dp"
         android:text="@string/textview2"
-        app:layout_constraintBottom_toTopOf="@+id/standard"
+        app:layout_constraintBottom_toTopOf="@+id/input"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView6"

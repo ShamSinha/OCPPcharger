@@ -19,22 +19,18 @@ import java.util.Set;
 import java.util.UUID;
 
 import ChargingStationDetails.ChargingStationStatesRepo;
+import Controller_Components.ControllerRepo;
+import EnumDataType.AttributeEnumType;
 import EnumDataType.RegistrationStatusEnumType;
 import ChargingStationDetails.ChargingStationStates;
 
 
 public class MainActivity extends Activity {
-    private static final String TAG = "main";
-    // private final String DEVICE_NAME="BATTERYMETER";
-    private final UUID PORT_UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");//Serial Port Service ID
-    private BluetoothDevice device;
-    private BluetoothSocket socket;
-    public OutputStream outputStream;
-    public InputStream inputStream;
-    public boolean deviceConnected = false;
+
     TextView Boot;
-    String DEVICE_ADDRESS = "98:D3:32:71:14:A8";
+
     MyClientEndpoint myClientEndpoint ;
+    ControllerRepo controllerRepo ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,29 +41,22 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         Boot = findViewById(R.id.boottext);
         myClientEndpoint = MyClientEndpoint.getInstance() ;
-
-        MyBluetoothService myBluetoothService = new MyBluetoothService();
     }
 
     @Override
     protected void onStart() {
-        super.onStart();
-
-        if(BTinit()){
-            Boot.append("\nConnection to Meter Established.\n");
-            if (BTconnect()){
-                Boot.append("\n InputStream and OutputStream Established");
-            }
-        }
+        super.onStart() ;
         StartConnection();
     }
 
     private void StartConnection(){
-
         myClientEndpoint.ConnectClientToServer(Boot);
 
         if(myClientEndpoint.getBootNotificationResponse().getBootStatus() == RegistrationStatusEnumType.Accepted){
-            OCPPCommCtrlr.setHeartbeatInterval(myClientEndpoint.getBootNotificationResponse().getBootInterval());
+            int interval = myClientEndpoint.getBootNotificationResponse().getBootInterval();
+            String s = String.valueOf(interval);
+            controllerRepo.updateController("OCPPCommCtrlr","HeartbeatInterval",s, AttributeEnumType.Actual.toString()) ;
+
             Intent i = new Intent(MainActivity.this , WelcomeAndStart.class);
             startActivity(i);
         }
@@ -81,111 +70,6 @@ public class MainActivity extends Activity {
             };
         }
     }
-
-    public boolean BTinit() {
-        boolean found = false;
-        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (bluetoothAdapter == null) {
-            Boot.append("\nDevice doesnot Support Bluetooth\n");
-        }
-        assert bluetoothAdapter != null;
-        if (!bluetoothAdapter.isEnabled()) {
-            Intent enableAdapter = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableAdapter, 0);
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        Set<BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
-        if (bondedDevices.isEmpty()) {
-            Boot.append("\nPair the Meter first\n");
-        } else {
-            for (BluetoothDevice iterator : bondedDevices) {
-                //DEVICE_ADDRESS = "98:D3:32:71:14:A8";
-                Boot.append("\nConnecting To Meter  " + DEVICE_ADDRESS + "\n");
-                if (iterator.getAddress().equals(DEVICE_ADDRESS)) {
-                    Boot.append(". ");
-                    device = iterator;
-                    found = true;
-                    break;
-                }
-            }
-        }
-        return found;
-    }
-
-    public boolean BTconnect() {
-        boolean connected = true;
-        try {
-            socket = device.createRfcommSocketToServiceRecord(PORT_UUID);
-            socket.connect();
-        } catch (IOException e) {
-            e.printStackTrace();
-            connected = false;
-        }
-        if (connected) {
-            try {
-                outputStream = socket.getOutputStream();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
-                inputStream = socket.getInputStream();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return connected;
-    }
-
-
-    public void BluetoothThreadforCablePlug(final String d) {
-    if (BTinit()) {
-        if (BTconnect()) {
-            deviceConnected = true;
-            final Thread thread = new Thread(new Runnable(d) {
-                public void run() {
-                    boolean stopThread;
-                    stopThread = false;
-                    while (!Thread.currentThread().isInterrupted() && !stopThread) {
-                        try {
-                            outputStream.write(d.getBytes());
-
-                            int byteCount = inputStream.available();
-                            if (byteCount > 0) {
-                                byte[] mmBuffer = new byte[1024];
-                                int numBytes; // bytes returned from read()
-                                numBytes = inputStream.read(mmBuffer);
-                                final String cableplug = new String(mmBuffer,0,numBytes,"UTF-8");
-
-                                ChargingStationStatesRepo chargingStationStatesRepo = new ChargingStationStatesRepo(MainActivity.this);
-                                chargingStationStatesRepo.updateEVSideCablePluggedIn("",true);
-                                Handler handler = new Handler();
-                                handler.post(new Runnable() {
-                                    public void run() {
-                                        if(cableplug.equals("T")) {
-                                            ChargingStationStates.setCablePluggedIn(true);
-                                        }
-                                        else if(cableplug.equals("F")){
-                                            ChargingStationStates.setCablePluggedIn(false);
-                                        }
-                                    }
-                                });
-
-                            }
-                        } catch (IOException ex) {
-                            stopThread = true;
-                        }
-                    }
-                }
-            });
-
-            thread.start();
-        }
-    }
-}
 }
 
 

@@ -14,7 +14,7 @@ public class IdTokenRepo {
         idTokenDao = database.idTokenDao() ;
     }
 
-    public void insertIdToken(final IdTokenEntities.IdToken idToken){
+    public void insertIdToken(final IdTokenEntity idToken){
         ExecutorService executorService = Executors.newSingleThreadExecutor();
 
         executorService.execute(new Runnable() {
@@ -25,7 +25,7 @@ public class IdTokenRepo {
         executorService.shutdown();
 
     }
-    public void updateIdToken(final IdTokenEntities.IdToken idToken){
+    public void updateIdToken(final IdTokenEntity idToken){
         ExecutorService executorService = Executors.newSingleThreadExecutor();
 
         executorService.execute(new Runnable() {
@@ -36,7 +36,7 @@ public class IdTokenRepo {
         executorService.shutdown();
     }
 
-    public void insertIdTokenInfo(final IdTokenEntities.IdTokenInfo idTokenInfo){
+    public void insertIdTokenInfo(final IdTokenInfoEntity idTokenInfo){
         ExecutorService executorService = Executors.newSingleThreadExecutor();
 
         executorService.execute(new Runnable() {
@@ -47,7 +47,7 @@ public class IdTokenRepo {
         executorService.shutdown();
 
     }
-    public void updateIdTokenInfo(final IdTokenEntities.IdTokenInfo idTokenInfo){
+    public void updateIdTokenInfo(final IdTokenInfoEntity idTokenInfo){
         ExecutorService executorService = Executors.newSingleThreadExecutor();
 
         executorService.execute(new Runnable() {
@@ -58,10 +58,18 @@ public class IdTokenRepo {
         executorService.shutdown();
     }
 
-    public IdTokenEntities.IdTokenAndInfo getIdTokenAndInfo(String transactionId){
-        return idTokenDao.getIdTokenAndInfo(transactionId) ;
+    public void deleteIdToken(){
+         idTokenDao.deleteIdToken();
     }
-    public void deleteIdToken(String transactionId){
-         idTokenDao.deleteIdToken(transactionId);
+    public void deleteIdTokenInfo(){
+        idTokenDao.deleteIdTokenInfo();
+    }
+
+    public IdTokenEntity getIdToken(){
+        return idTokenDao.getIdToken();
+    }
+
+    public IdTokenInfoEntity getIdTokenInfo(){
+        return idTokenDao.getIdTokenInfo();
     }
 }

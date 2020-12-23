@@ -1,0 +1,36 @@
+package SOCDisplayRelated;
+
+
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
+@Entity
+public class InputEntity {
+
+    @PrimaryKey(autoGenerate = true)
+    private int id ;
+
+    private final int InputAmount ;
+    private final float TargetCharge ;
+
+    public InputEntity(int inputAmount, float targetCharge) {
+        InputAmount = inputAmount;
+        TargetCharge = targetCharge;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public int getInputAmount() {
+        return InputAmount;
+    }
+
+    public float getTargetCharge() {
+        return TargetCharge;
+    }
+}

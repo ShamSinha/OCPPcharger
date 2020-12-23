@@ -12,7 +12,7 @@ public class ChargingStationType {
     public static String vendorName ;
     public static String firmwareVersion ;
 
-    public static void setSerialNumber(String serialNumber) {
+    public static void setSerialNumber(String serialNumber){
         ChargingStationType.serialNumber = serialNumber;
     }
 
@@ -27,7 +27,6 @@ public class ChargingStationType {
     public static void setFirmwareVersion(String firmwareVersion) {
         ChargingStationType.firmwareVersion = firmwareVersion;
     }
-
 
     public static JSONObject getp() throws JSONException {
         JSONObject jp  = new JSONObject();

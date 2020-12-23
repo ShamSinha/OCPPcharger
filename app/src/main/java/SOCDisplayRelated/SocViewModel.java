@@ -8,29 +8,34 @@ import androidx.lifecycle.LiveData;
 
 import java.util.List;
 
+import Controller_Components.ControllerRepo;
+
 
 public class SocViewModel extends AndroidViewModel {
 
     private SocRepo repo ;
-    private LiveData<List<SocEntities>> allSoc ;
+
+    private LiveData<SocEntity>Soc ;
     public SocViewModel(@NonNull Application application) {
         super(application);
         repo = new SocRepo(application);
-        allSoc = repo.getAllSoc();
+        Soc = repo.getSoc();
     }
 
-    public void insert(SocEntities Soc){
+    public void insert(SocEntity Soc){
         repo.insert(Soc);
     }
-    public void update(SocEntities Soc){
+    public void update(SocEntity Soc){
         repo.update(Soc);
     }
 
-    public LiveData<List<SocEntities>> getAllSoc() {
-        return allSoc;
+    public LiveData<SocEntity> getSoc() {
+        return Soc;
     }
 
     public void deleteAll(){
          repo.deleteAll();
     }
+
+
 }
