@@ -71,10 +71,10 @@ public class SOCdisplay extends AppCompatActivity {
             @Override
             public void onChanged(SocEntity socEntity) {
                 Charge.setText(String.valueOf(socEntity.getInitialSOC())) ;
-                float energy = (socEntity.getBatteryCapacity()*socEntity.getInitialSOC())/100 ;
+                double energy = (socEntity.getBatteryCapacity()*socEntity.getInitialSOC())/100 ;
                 EnergyinKWh.setText(String.valueOf(energy));
                 Batterytype.setText(socEntity.getBatteryType());
-                new ImageSetBattery(socEntity.getInitialSOC(), battery);
+                new ImageSetBattery((float) socEntity.getInitialSOC(), battery);
             }
         });
 

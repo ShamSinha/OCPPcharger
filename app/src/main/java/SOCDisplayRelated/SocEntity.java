@@ -9,11 +9,11 @@ public class SocEntity {
     @PrimaryKey(autoGenerate = true)
     private int id;
 
-    public float InitialSOC;
+    public double InitialSOC;
     public int BatteryCapacity;
     public String BatteryType;
 
-    public SocEntity(float initialSOC, int batteryCapacity, String batteryType) {
+    public SocEntity(double initialSOC, int batteryCapacity, String batteryType) {
         InitialSOC = initialSOC;
         BatteryType = batteryType;
         BatteryCapacity = batteryCapacity;
@@ -27,7 +27,7 @@ public class SocEntity {
         this.id = id;
     }
 
-    public float getInitialSOC() {
+    public double getInitialSOC() {
         return InitialSOC;
     }
 

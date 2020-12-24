@@ -1,6 +1,7 @@
 package com.example.chargergui;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 
 import android.content.Intent;
@@ -25,13 +26,16 @@ public class UserInput extends AppCompatActivity implements AmountDialog.AmountD
     TextView amountText;
     TextView chargeText ;
     Button startCharging ;
+    Button reset;
+    Button fullCharge;
+    ImageButton AMOUNT ;
+    ImageButton CHARGE ;
     TextView Rate ;
     TextView CurrentSOC ;
-    String str ;
-    String str2 ;
-    String maximum_cost ;
-    String currency ;
-    ControllerRepo controllerRepo ;
+
+
+    private UserInputViewModel inputViewModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,97 +50,70 @@ public class UserInput extends AppCompatActivity implements AmountDialog.AmountD
         amountText = findViewById(R.id.textView7);
         chargeText = findViewById(R.id.textView8);
         startCharging = findViewById(R.id.startchargingbutton);
+        reset = findViewById(R.id.resetInput);
+        fullCharge = findViewById(R.id.full);
+        AMOUNT = findViewById(R.id.imageButtonrupee);
+        CHARGE = findViewById(R.id.imageButtonbattery);
         Rate = findViewById(R.id.rate1);
         CurrentSOC = findViewById(R.id.soc);
-        Intent i = getIntent();
-        str = i.getStringExtra("ch");
-        CurrentSOC.setText(String.format("Charge\n %s%%", str));
-        str2 = i.getStringExtra("rate");
-        Rate.setText(str2);
+
         startCharging.setEnabled(false);
-        SOCdisplay soCdisplay = new SOCdisplay();
-        maximum_cost = String.valueOf(estimatedcost(100,Float.parseFloat(str),soCdisplay.getBatteryCapacity()));
 
-        final ImageButton AMOUNT = findViewById(R.id.imageButtonrupee);
-        AMOUNT.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                openDialog(maximum_cost);
-            }
-        });
+        inputViewModel = new ViewModelProvider(this).get(UserInputViewModel.class);
+    }
 
-        final ImageButton CHARGE = findViewById(R.id.imageButtonbattery);
-        CHARGE.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                openDialog2(str);
-            }
-        });
+    public void OnclickBatteryImage(View view){
+        openChargeDialog(inputViewModel.getSoc());
+    }
 
-        startCharging.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(UserInput.this , ChargingDisplay.class);
-                intent.putExtra("currentsoc",str);
-                startActivity(intent);
-            }
-        });
+    public void OnclickAmountImage(View view){
+        openAmountDialog(inputViewModel.getMaximumValidAmount());
+    }
 
+    public void OnclickStart(View view){
+        Intent i = new Intent(UserInput.this , ChargingDisplay.class);
+        startActivity(i);
+    }
 
+    public void OnclickReset(View view){
+        inputViewModel.reset();
+    }
+
+    public void OnclickFull(View view){
 
     }
 
-    public void openDialog(String maximum_cost){
+    public void openAmountDialog(int maximum_amount){
         AmountDialog amountDialog = new AmountDialog();
         Bundle data = new Bundle();//create bundle instance
-        data.putString("maximumCost", maximum_cost );//put string to pass with a key value
+        data.putInt("MAX_COST", maximum_amount);
 
         amountDialog.setArguments(data);//Set bundle data to fragment
-
         amountDialog.show(getSupportFragmentManager(),"");
-
     }
 
-    public void openDialog2(String s){
+    public void openChargeDialog(double InitialSOC){
         ChargeDialog chargeDialog = new ChargeDialog();
         Bundle data = new Bundle();//create bundle instance
-        data.putString("currentsoc", s);//put string to pass with a key value
+        data.putDouble("Initial_SOC", InitialSOC);
 
         chargeDialog.setArguments(data);//Set bundle data to fragment
         chargeDialog.show(getSupportFragmentManager(),"");
-
-
     }
 
-    public void applyTexts(int i) {
-        amountText.setText(String.format(getString(R.string.amo), TariffCostCtrlr.getCurrency() ,String.valueOf(i)));
-        //float l = estimatedcharge(i) ;
-        //chargeText.setText(String.format(getString(R.string.estimated_charge), String.valueOf(l)));
-
+    public void applyTextAmount(int i) {
+        amountText.setText(String.format(getString(R.string.amo), inputViewModel.getCurrency() ,String.valueOf(i)));
     }
 
-    public void applyTexts2(float j) {
+    public void applyTextCharge(double j) {
         chargeText.setText(String.format(String.valueOf(j)," % Charge"));
-        //int cost = estimatedcost(j);
-        //amounttext.setText(String.format(getString(R.string.amo), String.valueOf(cost)));
-
     }
 
-    public void applyTextsinvalid() {
+    public void applyTextInvalid() {
         chargeText.setText( "     Invalid Charge!\n Enter Valid Charge Value") ;
-
     }
 
 
-    public float estimatedcharge(int amount, float currentsoc , int BatteryCapacity){  // in Wh
-        float l ;
-        l = 5 ;
-        return l ;
-    }
-    public int estimatedcost(float targetsoc , float currentsoc , int BatteryCapacity){
-        int cost ;
-        cost = 500 ;
-        return cost ;
-
-    }
 
 
 

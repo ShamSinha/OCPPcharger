@@ -9,6 +9,7 @@
         android:id="@+id/InCharge"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/charge_value_100" />
+        android:hint="@string/charge_value_100"
+        android:inputType="number" />
 
 </LinearLayout>

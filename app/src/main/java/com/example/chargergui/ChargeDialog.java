@@ -14,10 +14,11 @@ import android.widget.EditText;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import SOCDisplayRelated.InputRepo;
 
 
 public class ChargeDialog extends AppCompatDialogFragment {
-    private EditText editcharge;
+    private EditText editCharge;
     private ChargeDialogListener listener;
     @NonNull
     @Override
@@ -26,12 +27,15 @@ public class ChargeDialog extends AppCompatDialogFragment {
 
 
         assert getArguments() != null;
-        final String currentsoc = getArguments().getString("currentsoc");//Get pass data with its key value
+        final double InitialSoc = Math.ceil(getArguments().getDouble("Initial_SOC"));//Get pass data with its key value
+
 
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.layout_dialog_charge,null);
 
-        editcharge.setHint(currentsoc+"% < Input Charge < 100%");
+        final InputRepo inputRepo = new InputRepo(getContext());
+
+        editCharge.setHint(InitialSoc + "% < Input Charge < 100%");
         builder.setView(view)
                 .setTitle("Enter Charge")
                 .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
@@ -44,23 +48,22 @@ public class ChargeDialog extends AppCompatDialogFragment {
                 .setPositiveButton("ok", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        float j = Float.parseFloat(editcharge.getText().toString());
-                        UserInput u = new UserInput();
 
-                        assert currentsoc != null;
-                        if(j<=100  & j > Float.parseFloat(currentsoc)) {
-                            Target.SOC = j ;
-                            listener.applyTexts2(j);
+                        double inputCharge = Double.parseDouble(editCharge.getText().toString());
+
+                        if(inputCharge <=100.0  && inputCharge > InitialSoc) {
+                            listener.applyTextCharge(inputCharge);
                             UserInput userInput = new UserInput();
-                            userInput.startcharging.setEnabled(true);
+                            userInput.startCharging.setEnabled(true);
+                            
                         }
                         else {
-                            listener.applyTextsinvalid() ;
+                            listener.applyTextInvalid() ;
                         }
                     }
                 });
 
-        editcharge = view.findViewById(R.id.InCharge);
+        editCharge = view.findViewById(R.id.InCharge);
         return builder.create();
     }
 
@@ -76,7 +79,7 @@ public class ChargeDialog extends AppCompatDialogFragment {
     }
 
     public interface ChargeDialogListener{
-        void applyTexts2(float j) ;
-        void applyTextsinvalid();
+        void applyTextCharge(double input) ;
+        void applyTextInvalid();
     }
 }

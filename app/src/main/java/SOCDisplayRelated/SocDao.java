@@ -20,6 +20,9 @@ public interface SocDao {
     @Query("DELETE FROM SocEntity")
     void deleteAll();
 
+    @Query("SELECT COUNT(*) FROM SocEntity")
+    public int getSize();
+
     @Query("SELECT * FROM SocEntity LIMIT 1")
     LiveData<SocEntity> getSoc();
 

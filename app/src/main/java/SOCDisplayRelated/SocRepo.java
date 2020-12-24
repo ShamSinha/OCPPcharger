@@ -55,6 +55,9 @@ public class SocRepo {
         });
         executorService.shutdown();
     }
+    public boolean isEmptySocTable(){
+        return socDao.getSize() == 0;
+    }
 
 }
 

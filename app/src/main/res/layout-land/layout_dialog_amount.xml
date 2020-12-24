@@ -9,6 +9,7 @@
         android:id="@+id/InRupees"
         android:layout_width="915dp"
         android:layout_height="70dp"
-        android:hint="@string/amount_in_rupees" />
+        android:hint="@string/amount_in_rupees"
+        android:inputType="number" />
 
 </LinearLayout>

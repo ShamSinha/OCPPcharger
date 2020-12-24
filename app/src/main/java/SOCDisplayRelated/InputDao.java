@@ -21,6 +21,9 @@ public interface InputDao {
     @Query("DELETE FROM InputEntity")
     void deleteAll();
 
+    @Query("SELECT COUNT(*) FROM InputEntity")
+    public int getSize();
+
     @Query("SELECT * FROM InputEntity LIMIT 1")
     LiveData<InputEntity> getInput();
 }

@@ -24,7 +24,7 @@ public class AmountDialog extends AppCompatDialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
         assert getArguments() != null;
-        final String maximumCost = getArguments().getString("maximumCost");//Get pass data with its key value
+        final int maximumCost = getArguments().getInt("MAX_COST");
         
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.layout_dialog_amount,null);
@@ -42,7 +42,8 @@ public class AmountDialog extends AppCompatDialogFragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         int i = Integer.parseInt(editamount.getText().toString());
-                        listener.applyTexts(i);
+                        if(i <= maximumCost) listener.applyTextAmount(i);
+                        else listener.applyTextAmount(maximumCost);
                     }
                 });
 
@@ -62,6 +63,6 @@ public class AmountDialog extends AppCompatDialogFragment {
     }
 
     public interface AmountDialogListener{
-        void applyTexts(int i) ;
+        void applyTextAmount(int i) ;
     }
 }

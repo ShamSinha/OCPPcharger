@@ -52,4 +52,5 @@
     <string name="inoutwork">Inputstream and Outputstream working</string>
     <string name="initialzero">0.00</string>
     <string name="chargingdone">CHARGING DONE</string>
+    <string name="start_n_charging">START\n CHARGING</string>
 </resources>

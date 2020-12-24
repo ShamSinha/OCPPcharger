@@ -55,4 +55,8 @@ public class InputRepo {
         executorService.shutdown();
     }
 
+    public boolean isEmptyInputTable(){
+        return inputDao.getSize() == 0;
+    }
+
 }
