@@ -48,9 +48,6 @@ public class ChargeDialog extends AppCompatDialogFragment {
 
                         if(inputCharge <=100.0  && inputCharge > InitialSoc) {
                             listener.setCharge(inputCharge);
-                            UserInput userInput = new UserInput();
-                            userInput.startCharging.setEnabled(true);
-
                         }
                         else {
                             listener.applyTextInvalid() ;

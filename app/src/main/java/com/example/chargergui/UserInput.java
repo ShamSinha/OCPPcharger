@@ -122,11 +122,13 @@ public class UserInput extends AppCompatActivity implements AmountDialog.AmountD
     public void setAmount(int i) {
         inputViewModel.setAMOUNT(i);
         inputViewModel.inputDatabase();
+        applyInput();
     }
 
     public void setCharge(double j) {
         inputViewModel.setSOC(j);
         inputViewModel.inputDatabase();
+        applyInput();
     }
 
     public void applyTextInvalid() {
