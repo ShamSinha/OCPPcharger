@@ -17,7 +17,9 @@ public class UserInputViewModel extends AndroidViewModel {
     private IdTokenRepo idTokenRepo;
     private SocRepo socRepo ;
     private ControllerRepo controllerRepo;
-    double tariff = 6 ;// Rs. per KWh
+    private final double tariff = 6 ;// Rs. per KWh
+    private double SOC;
+    private int AMOUNT ;
 
     public UserInputViewModel(@NonNull Application application) {
         super(application);
@@ -27,17 +29,31 @@ public class UserInputViewModel extends AndroidViewModel {
         socRepo = new SocRepo(application);
     }
 
+    public void setSOC(double SOC) {
+        this.SOC = SOC;
+        this.AMOUNT = estimatedCost(SOC) ;
+    }
+
+    public void setAMOUNT(int AMOUNT) {
+        this.AMOUNT = AMOUNT;
+        this.SOC = estimatedCharge(AMOUNT) ;
+    }
+
     public String getCurrency(){
         return controllerRepo.getController("TariffCostCtrlr","Currency").getvalue();
     }
 
-    public double getSoc(){
+    public double getInitialSoc(){
         return socRepo.getSoc().getValue().getInitialSOC();
     }
 
-    public void inputCharge(float charge, int amount){
+    public double getTariff() {
+        return tariff;
+    }
+
+    public void inputDatabase(){
         reset();
-        inputRepo.insert(new InputEntity(amount,charge));
+        inputRepo.insert(new InputEntity(AMOUNT,SOC));
     }
 
     public void reset(){
@@ -47,6 +63,14 @@ public class UserInputViewModel extends AndroidViewModel {
         reset();
         int amount = estimatedCost(100);
         inputRepo.insert(new InputEntity(amount,100));
+    }
+
+    public double getInputCharge(){
+        return inputRepo.getInput().getValue().getTargetCharge() ;
+    }
+
+    public int getInputAmount(){
+        return inputRepo.getInput().getValue().getInputAmount() ;
     }
 
     public double estimatedCharge(int amount){

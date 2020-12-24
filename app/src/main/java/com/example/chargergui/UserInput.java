@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -30,9 +31,8 @@ public class UserInput extends AppCompatActivity implements AmountDialog.AmountD
     Button fullCharge;
     ImageButton AMOUNT ;
     ImageButton CHARGE ;
-    TextView Rate ;
-    TextView CurrentSOC ;
-
+    TextView Tariff ;
+    TextView InitialSOC ;
 
     private UserInputViewModel inputViewModel;
 
@@ -46,7 +46,6 @@ public class UserInput extends AppCompatActivity implements AmountDialog.AmountD
 
         DisplayMessageState.setMessageState(MessageStateEnumType.Idle);
 
-
         amountText = findViewById(R.id.textView7);
         chargeText = findViewById(R.id.textView8);
         startCharging = findViewById(R.id.startchargingbutton);
@@ -54,16 +53,32 @@ public class UserInput extends AppCompatActivity implements AmountDialog.AmountD
         fullCharge = findViewById(R.id.full);
         AMOUNT = findViewById(R.id.imageButtonrupee);
         CHARGE = findViewById(R.id.imageButtonbattery);
-        Rate = findViewById(R.id.rate1);
-        CurrentSOC = findViewById(R.id.soc);
-
-        startCharging.setEnabled(false);
+        Tariff = findViewById(R.id.rate1);
+        InitialSOC = findViewById(R.id.soc);
 
         inputViewModel = new ViewModelProvider(this).get(UserInputViewModel.class);
+
+        InitialSOC.setText(String.format("SOC - %s%%", inputViewModel.getInitialSoc()));
+        Tariff.setText(String.format("Tariff - %s %s/KWh", inputViewModel.getCurrency(), inputViewModel.getTariff()));
+
+        applyResetInput();
+
+    }
+
+    public void applyResetInput(){
+        amountText.setText(R.string.am);
+        chargeText.setText(R.string.ch);
+        startCharging.setEnabled(false);
+    }
+
+    public void applyInput(){
+        amountText.setText(String.format("%s %s", inputViewModel.getCurrency(), inputViewModel.getInputAmount()));
+        chargeText.setText(String.format("%s%%", inputViewModel.getInputCharge()));
+        startCharging.setEnabled(true);
     }
 
     public void OnclickBatteryImage(View view){
-        openChargeDialog(inputViewModel.getSoc());
+        openChargeDialog(inputViewModel.getInitialSoc());
     }
 
     public void OnclickAmountImage(View view){
@@ -77,10 +92,13 @@ public class UserInput extends AppCompatActivity implements AmountDialog.AmountD
 
     public void OnclickReset(View view){
         inputViewModel.reset();
+        applyResetInput();
     }
 
-    public void OnclickFull(View view){
 
+    public void OnclickFull(View view){
+        inputViewModel.fullCharge();
+        applyInput();
     }
 
     public void openAmountDialog(int maximum_amount){
@@ -94,29 +112,24 @@ public class UserInput extends AppCompatActivity implements AmountDialog.AmountD
 
     public void openChargeDialog(double InitialSOC){
         ChargeDialog chargeDialog = new ChargeDialog();
-        Bundle data = new Bundle();//create bundle instance
+        Bundle data = new Bundle();
         data.putDouble("Initial_SOC", InitialSOC);
 
-        chargeDialog.setArguments(data);//Set bundle data to fragment
+        chargeDialog.setArguments(data);
         chargeDialog.show(getSupportFragmentManager(),"");
     }
 
-    public void applyTextAmount(int i) {
-        amountText.setText(String.format(getString(R.string.amo), inputViewModel.getCurrency() ,String.valueOf(i)));
+    public void setAmount(int i) {
+        inputViewModel.setAMOUNT(i);
+        inputViewModel.inputDatabase();
     }
 
-    public void applyTextCharge(double j) {
-        chargeText.setText(String.format(String.valueOf(j)," % Charge"));
+    public void setCharge(double j) {
+        inputViewModel.setSOC(j);
+        inputViewModel.inputDatabase();
     }
 
     public void applyTextInvalid() {
         chargeText.setText( "     Invalid Charge!\n Enter Valid Charge Value") ;
     }
-
-
-
-
-
-
-
 }

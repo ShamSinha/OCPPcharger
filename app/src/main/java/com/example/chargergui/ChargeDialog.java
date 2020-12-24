@@ -14,9 +14,6 @@ import android.widget.EditText;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import SOCDisplayRelated.InputRepo;
-
-
 public class ChargeDialog extends AppCompatDialogFragment {
     private EditText editCharge;
     private ChargeDialogListener listener;
@@ -32,8 +29,6 @@ public class ChargeDialog extends AppCompatDialogFragment {
 
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.layout_dialog_charge,null);
-
-        final InputRepo inputRepo = new InputRepo(getContext());
 
         editCharge.setHint(InitialSoc + "% < Input Charge < 100%");
         builder.setView(view)
@@ -52,10 +47,10 @@ public class ChargeDialog extends AppCompatDialogFragment {
                         double inputCharge = Double.parseDouble(editCharge.getText().toString());
 
                         if(inputCharge <=100.0  && inputCharge > InitialSoc) {
-                            listener.applyTextCharge(inputCharge);
+                            listener.setCharge(inputCharge);
                             UserInput userInput = new UserInput();
                             userInput.startCharging.setEnabled(true);
-                            
+
                         }
                         else {
                             listener.applyTextInvalid() ;
@@ -79,7 +74,7 @@ public class ChargeDialog extends AppCompatDialogFragment {
     }
 
     public interface ChargeDialogListener{
-        void applyTextCharge(double input) ;
+        void setCharge(double j) ;
         void applyTextInvalid();
     }
 }

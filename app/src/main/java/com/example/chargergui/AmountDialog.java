@@ -16,7 +16,7 @@ import androidx.appcompat.app.AppCompatDialogFragment;
 
 
 public class AmountDialog extends AppCompatDialogFragment {
-    private EditText editamount;
+    private EditText editAmount;
     private AmountDialogListener listener;
     @NonNull
     @Override
@@ -28,7 +28,7 @@ public class AmountDialog extends AppCompatDialogFragment {
         
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.layout_dialog_amount,null);
-        editamount.setHint("Input Amount < "+ maximumCost);
+        editAmount.setHint("Input Amount < "+ maximumCost);
         builder.setView(view)
                 .setTitle("Enter Amount")
                 .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
@@ -41,13 +41,13 @@ public class AmountDialog extends AppCompatDialogFragment {
                 .setPositiveButton("ok", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        int i = Integer.parseInt(editamount.getText().toString());
-                        if(i <= maximumCost) listener.applyTextAmount(i);
-                        else listener.applyTextAmount(maximumCost);
+                        int i = Integer.parseInt(editAmount.getText().toString());
+                        if(i <= maximumCost) listener.setAmount(i);
+                        else listener.setAmount(maximumCost);
                     }
                 });
 
-        editamount = view.findViewById(R.id.InRupees);
+        editAmount = view.findViewById(R.id.InRupees);
         return builder.create();
     }
 
@@ -63,6 +63,6 @@ public class AmountDialog extends AppCompatDialogFragment {
     }
 
     public interface AmountDialogListener{
-        void applyTextAmount(int i) ;
+        void setAmount(int i) ;
     }
 }

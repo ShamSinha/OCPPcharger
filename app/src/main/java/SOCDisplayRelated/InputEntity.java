@@ -11,9 +11,9 @@ public class InputEntity {
     private int id ;
 
     private final int InputAmount ;
-    private final float TargetCharge ;
+    private final double TargetCharge ;
 
-    public InputEntity(int inputAmount, float targetCharge) {
+    public InputEntity(int inputAmount, double targetCharge) {
         InputAmount = inputAmount;
         TargetCharge = targetCharge;
     }
@@ -30,7 +30,7 @@ public class InputEntity {
         return InputAmount;
     }
 
-    public float getTargetCharge() {
+    public double getTargetCharge() {
         return TargetCharge;
     }
 }
