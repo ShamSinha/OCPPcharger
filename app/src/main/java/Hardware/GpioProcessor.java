@@ -1,4 +1,4 @@
-package com.example.chargergui;
+package Hardware;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

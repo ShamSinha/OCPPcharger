@@ -54,8 +54,6 @@ public class Authorization2 extends Activity {
 
     private Rc522 mRc522;
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

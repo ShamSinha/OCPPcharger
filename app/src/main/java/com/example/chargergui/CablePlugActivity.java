@@ -23,6 +23,7 @@ import DisplayMessagesRelated.MessageStateEnumType;
 import EnumDataType.ChargingStateEnumType;
 import EnumDataType.ConnectorStatusEnumType;
 import EnumDataType.ReasonEnumType;
+import Hardware.GpioProcessor;
 import SOCDisplayRelated.SOCdisplay;
 import TransactionRelated.TransactionEventEnumType;
 import TransactionRelated.TriggerReasonEnumType;
