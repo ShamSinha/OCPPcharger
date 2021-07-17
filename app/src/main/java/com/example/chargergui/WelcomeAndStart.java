@@ -21,6 +21,7 @@ public class WelcomeAndStart extends Activity {
     MyClientEndpoint myClientEndpoint;
     MessageInfoEntity messageInfoType ;
     ControllerRepo controllerRepo = new ControllerRepo(WelcomeAndStart.this) ;
+    private boolean rootAccess = false ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,26 +41,32 @@ public class WelcomeAndStart extends Activity {
             Log.d("TAG","No root access");
         }
         else{
+            rootAccess = true ;
             List<Integer> gpioList= new ArrayList<Integer>();
             gpioList.add(2);
             gpioList.add(3);
             Permissions.GivePermissionToGpio(gpioList);
+        }
+    }
+
+    public void onClickStart(View view){
+        if(rootAccess) {
 
             GpioProcessor gpioProcessor = new GpioProcessor();
             GpioProcessor.Gpio led = gpioProcessor.getPin2();
             led.out();
             led.high();
-        }
-    }
 
-    public void onClickStart(View view){
-        if(controllerRepo.getController("AuthCtrlr", "Enabled").getvalue().equals("true")) {
-            Intent i = new Intent(WelcomeAndStart.this, Authentication.class);
-            startActivity(i);
+            if (controllerRepo.getController("AuthCtrlr", "Enabled").getvalue().equals("true")) {
+                Intent i = new Intent(WelcomeAndStart.this, Authentication.class);
+                startActivity(i);
+            } else {
+                Intent i = new Intent(WelcomeAndStart.this, CablePlugActivity.class);
+                startActivity(i);
+            }
         }
-        else{
-            Intent i = new Intent(WelcomeAndStart.this, CablePlugActivity.class);
-            startActivity(i);
+        else {
+            Log.e("ERROR", "Not able to access hardware");
         }
     }
 
