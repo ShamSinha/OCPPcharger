@@ -34,6 +34,11 @@ public class WelcomeAndStart extends Activity {
         setContentView(R.layout.activity_welcome_and_start);
         myClientEndpoint = MyClientEndpoint.getInstance();
         messageInfoType = new MessageInfoEntity();
+
+        GpioProcessor gpioProcessor = new GpioProcessor();
+        GpioProcessor.Gpio led = gpioProcessor.getPin2();
+        led.out();
+        led.high();
     }
 
     public void onClickStart(View view){

@@ -64,7 +64,7 @@ public class PINauthorizeDialog extends AppCompatDialogFragment {
                         IdTokenType.setIdToken(PIN.getText().toString());
 
                         try {
-                            send(toCSMS2.createAuthorizeRequest());
+                            toCSMS2.sendAuthorizeRequest();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -76,7 +76,7 @@ public class PINauthorizeDialog extends AppCompatDialogFragment {
                             TransactionType.chargingState = ChargingStateEnumType.EVConnected;
 
                             try {
-                                send(toCSMS2.createTransactionEventRequest());
+                                toCSMS2.sendTransactionEventRequest());
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }

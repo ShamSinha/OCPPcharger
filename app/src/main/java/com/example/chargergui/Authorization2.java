@@ -2,41 +2,33 @@ package com.example.chargergui;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.os.Handler;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-
-import android.os.Bundle;
 import android.widget.TextView;
 
 import androidx.cardview.widget.CardView;
 
 import com.galarzaa.androidthings.Rc522;
-import com.google.android.things.pio.Gpio;
-import com.google.android.things.pio.PeripheralManager;
-import com.google.android.things.pio.SpiDevice;
 
 import org.json.JSONException;
 
 import java.io.IOException;
 
-import javax.websocket.EncodeException;
-
+import AuthorizationRelated.AuthorizationStatusEnumType;
+import AuthorizationRelated.IdTokenType;
+import ChargingStationDetails.ChargingStationStates;
 import ChargingStationRequest.StatusNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
-import AuthorizationRelated.IdTokenType;
 import DataType.TransactionType;
-import AuthorizationRelated.AuthorizationStatusEnumType;
+import DisplayMessagesRelated.MessageStateEnumType;
 import EnumDataType.ChargingStateEnumType;
 import EnumDataType.ConnectorStatusEnumType;
 import EnumDataType.IdTokenEnumType;
-import DisplayMessagesRelated.MessageStateEnumType;
-import ChargingStationDetails.ChargingStationStates;
 import TransactionRelated.TransactionEventEnumType;
 import TransactionRelated.TriggerReasonEnumType;
 import UseCasesOCPP.SendRequestToCSMS;
@@ -61,7 +53,7 @@ public class Authorization2 extends Activity {
     MyClientEndpoint myClientEndpoint ;
 
     private Rc522 mRc522;
-    private Gpio resetPin;
+
 
 
     @Override
@@ -95,8 +87,6 @@ public class Authorization2 extends Activity {
         myClientEndpoint = MyClientEndpoint.getInstance() ;
 
         DisplayMessageState.setMessageState(MessageStateEnumType.Idle);
-
-        GetRFIDthread();
 
         try {
             PeripheralManager manager = PeripheralManager.getInstance();

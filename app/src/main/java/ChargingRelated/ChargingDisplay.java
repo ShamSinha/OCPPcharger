@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -18,8 +17,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.chargergui.CALL;
-import ChargingStationDetails.ChargingStationStates;
 import com.example.chargergui.DisplayMessageState;
 import com.example.chargergui.ImageChargeBattery;
 import com.example.chargergui.ImageSetBattery;
@@ -32,30 +29,28 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.websocket.EncodeException;
 
+import AuthorizationRelated.AuthorizationStatusEnumType;
+import AuthorizationRelated.IdTokenType;
+import ChargingStationDetails.CSPhysicalProperties;
+import ChargingStationDetails.ChargingStationStates;
 import ChargingStationRequest.StatusNotificationRequest;
 import ChargingStationRequest.TransactionEventRequest;
-import Controller_Components.ControllerRepo;
 import Controller_Components.SampledDataCtrlr;
-import AuthorizationRelated.IdTokenType;
 import DataType.SampledValueType;
 import DataType.TransactionType;
-import AuthorizationRelated.AuthorizationStatusEnumType;
 import DataType.UnitOfMeasureType;
+import DisplayMessagesRelated.MessageStateEnumType;
 import EnumDataType.ChargingStateEnumType;
 import EnumDataType.ConnectorStatusEnumType;
 import EnumDataType.IdTokenEnumType;
-import DisplayMessagesRelated.MessageStateEnumType;
 import EnumDataType.MeasurandEnumType;
 import EnumDataType.ReadingContextEnumType;
 import EnumDataType.ReasonEnumType;
 import TransactionRelated.TransactionEventEnumType;
 import TransactionRelated.TriggerReasonEnumType;
-import ChargingStationDetails.CSPhysicalProperties;
 import UseCasesOCPP.SendRequestToCSMS;
 
 import static java.lang.String.format;

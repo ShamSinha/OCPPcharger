@@ -96,6 +96,7 @@ public class Authorization1 extends AppCompatActivity {
         DisplayMessageState.setMessageState(MessageStateEnumType.Idle);
 
         authorization1ViewModel = new ViewModelProvider(this).get(Authorization1ViewModel.class) ;
+
     }
 
     @Override

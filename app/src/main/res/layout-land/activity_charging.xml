@@ -200,8 +200,7 @@
         app:layout_constraintEnd_toStartOf="@+id/imageViewcharge"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/current"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.442" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/textView17"

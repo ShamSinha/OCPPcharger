@@ -53,9 +53,11 @@ public class MainActivity extends Activity {
         myClientEndpoint.ConnectClientToServer(Boot);
 
         if(myClientEndpoint.getBootNotificationResponse().getBootStatus() == RegistrationStatusEnumType.Accepted){
+
             int interval = myClientEndpoint.getBootNotificationResponse().getBootInterval();
             String s = String.valueOf(interval);
             controllerRepo.updateController("OCPPCommCtrlr","HeartbeatInterval",s, AttributeEnumType.Actual.toString()) ;
+
 
             Intent i = new Intent(MainActivity.this , WelcomeAndStart.class);
             startActivity(i);

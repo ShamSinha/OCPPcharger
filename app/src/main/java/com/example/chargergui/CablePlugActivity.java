@@ -3,7 +3,6 @@ package com.example.chargergui;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -11,14 +10,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.google.android.things.pio.Gpio;
-import com.google.android.things.pio.GpioCallback;
-import com.google.android.things.pio.PeripheralManager;
+import androidx.lifecycle.ViewModelProvider;
 
 import org.json.JSONException;
 
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import ChargingStationRequest.StatusNotificationRequest;
@@ -41,12 +36,15 @@ public class CablePlugActivity extends AppCompatActivity {
     ImageView connected;
     ImageView plug1 ;
     ImageView plug2 ;
+
     SendRequestToCSMS toCSMS = new SendRequestToCSMS();
     MyClientEndpoint myClientEndpoint ;
-    // GPIO Pin Name
-    private static final String Cable = BoardDefaults.getGPIOForCable();
-    private Gpio CableGPIO;
-    MyGPIO myGPIO ;
+
+    private CablePlugViewModel cablePlugViewModel;
+
+    GpioProcessor gpioProcessor = new GpioProcessor();
+    GpioProcessor.Gpio led = gpioProcessor.getPin3();
+    boolean locked = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,52 +65,40 @@ public class CablePlugActivity extends AppCompatActivity {
 
         DisplayMessageState.setMessageState(MessageStateEnumType.Idle);
 
-        try {
-            PeripheralManager manager = PeripheralManager.getInstance();
-            CableGPIO= manager.openGpio(Cable);
+        cablePlugViewModel = new ViewModelProvider(this).get(CablePlugViewModel.class) ;
 
-        } catch (IOException e) {
-            Log.w("TAG", "Unable to access GPIO", e);
-        }
-        try {
-            myGPIO.configureInput(CableGPIO,gpioCallback1);
+        led.in();
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
-    private GpioCallback gpioCallback1 = new GpioCallback() {
-        @Override
-        public boolean onGpioEdge(Gpio gpio) {
-            // Read the active low pin state
-            try {
-                if (gpio.getValue()) {
-                    // Pin is HIGH
-                    AfterCablePluggedIn();
-                } else {
-                    // Pin is LOW
-
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            // Continue listening for more interrupts
-            return true;
-        }
-
-        @Override
-        public void onGpioError(Gpio gpio, int error) {
-            Log.w("TAG", gpio + ": Error event " + error);
-        }
-    };
 
     @Override
     protected void onStart() {
         super.onStart();
-
+        CheckGPIOCableIn();
         setCountdowntimer();
-
+    }
+    private void CheckGPIOCableIn(){
+        final Thread t = new Thread(){
+            @Override
+            public void run(){
+                while(!isInterrupted() && !locked){
+                    try {
+                        if(led.getValue() == 0){
+                            locked = true ;
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    AfterCablePluggedIn();
+                                }
+                            });
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        };
+        t.start();
     }
 
     private void AfterCablePluggedIn(){
@@ -146,9 +132,8 @@ public class CablePlugActivity extends AppCompatActivity {
 
     }
 
-
     public void setCountdowntimer(){
-        new CountDownTimer(TxCtrlr.getEVConnectionTimeOut()*1000, 1000){
+        new CountDownTimer(cablePlugViewModel.getEVConnectionTimeOut()*1000, 1000){
             public void onTick(long millisUntilFinished){
                 textView.setText(String.valueOf(counter));
                 counter++;
@@ -175,8 +160,4 @@ public class CablePlugActivity extends AppCompatActivity {
             }
         }.start();
     }
-
-
-
-
 }
