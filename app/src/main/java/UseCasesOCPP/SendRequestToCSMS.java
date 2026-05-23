@@ -54,7 +54,7 @@ public class SendRequestToCSMS {
 
     public void sendHeartBeatRequest() throws JSONException {
         if(CheckNewCallMessageCanBeSent()) {
-            CALL call = new CALL("HeartBeat", HeartBeatRequest.payload());
+            CALL call = new CALL("Heartbeat", HeartBeatRequest.payload());
             CALL.setMessageIdIfCallHasToSent();
             send(call);
         }
@@ -70,22 +70,31 @@ public class SendRequestToCSMS {
     }
 
     //Before Sending this make sure TransactionEvent , TriggerReason, TransactionType.ChargingStatus are set ;
+    public void sendTransactionEventRequest() throws JSONException {
+        sendTransactionEventRequest(null);
+    }
+
     public void sendTransactionEventRequest(Context context) throws JSONException {
-        TransactionEventRepo eventRepo = new TransactionEventRepo(context);
+        TransactionEventRepo eventRepo = context == null ? null : new TransactionEventRepo(context);
         if(CheckNewCallMessageCanBeSent()) {
             TransactionType.transactionId = TransId(TransactionEventRequest.eventType) ;
-            TransactionEventRequest.SetSeqNo(eventRepo.getSeqNo());
+            long seqNo = eventRepo == null ? TransactionEventRequest.SeqNo + 1 : eventRepo.getSeqNo();
+            TransactionEventRequest.SetSeqNo(seqNo);
             TransactionEventRequest.setTimestamp();
-            TransactionEntities.Transaction t = new TransactionEntities.Transaction(TransactionType.transactionId,TransactionType.chargingState.name(),
-                    TransactionType.timeSpentCharging,TransactionType.stoppedReason.name(),TransactionType.remoteStartId
+            String chargingState = TransactionType.chargingState == null ? "" : TransactionType.chargingState.name();
+            String stoppedReason = TransactionType.stoppedReason == null ? "" : TransactionType.stoppedReason.name();
+            TransactionEntities.Transaction t = new TransactionEntities.Transaction(TransactionType.transactionId, chargingState,
+                    TransactionType.timeSpentCharging, stoppedReason, TransactionType.remoteStartId
                     );
 
             TransactionEntities.TransactionEventRequest req = new TransactionEntities.TransactionEventRequest(TransactionEventRequest.eventType.name()
                     ,TransactionEventRequest.triggerReason.name(),
                     TransactionEventRequest.timestamp,t) ;
 
-            req.setSeqNo(eventRepo.getSeqNo());
-            eventRepo.insertEventReq(req);
+            req.setSeqNo(seqNo);
+            if (eventRepo != null) {
+                eventRepo.insertEventReq(req);
+            }
             CALL call = new CALL("TransactionEvent", TransactionEventRequest.payload());
             CALL.setMessageIdIfCallHasToSent();
             send(call);
@@ -113,6 +122,10 @@ public class SendRequestToCSMS {
             @Override
             public void run() {
                 try {
+                    if (myClientEndpoint.getOpenSession() == null || !myClientEndpoint.getOpenSession().isOpen()) {
+                        Log.e("ERROR", "OCPP websocket session is not open");
+                        return;
+                    }
                     myClientEndpoint.getOpenSession().getBasicRemote().sendObject(call);
                     Log.d("TAG" , "Message Sent" + CALL.getAction());
                     Log.d("TAG", myClientEndpoint.getOpenSession().getId());
@@ -127,6 +140,9 @@ public class SendRequestToCSMS {
     }
 
     private boolean CheckNewCallMessageCanBeSent(){
-        return CALLRESULT.getMessageId().equals(CALL.getMessageId()) || CALLERROR.getMessageId().equals(CALL.getMessageId());
+        String callMessageId = CALL.getMessageId();
+        return callMessageId == null
+                || callMessageId.equals(CALLRESULT.getMessageId())
+                || callMessageId.equals(CALLERROR.getMessageId());
     }
 }

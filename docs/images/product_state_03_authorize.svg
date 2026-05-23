@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+  <title id="title">Product charger authorize state</title>
+  <desc id="desc">Front panel showing blue station LED, blue RFID scanner LED, and Tap card screen.</desc>
+  <rect width="900" height="520" fill="#f8fafc"/>
+  <rect x="80" y="70" width="740" height="380" rx="28" fill="#e2e8f0" stroke="#94a3b8" stroke-width="3"/>
+  <rect x="118" y="110" width="160" height="300" rx="18" fill="#eef2f7"/>
+  <text x="148" y="148" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">CS01</text>
+  <circle cx="155" cy="196" r="15" fill="#cbd5e1" stroke="#94a3b8" stroke-width="2"/><text x="182" y="202" font-family="Arial, sans-serif" font-size="16" fill="#334155">Ready</text>
+  <circle cx="155" cy="244" r="15" fill="#2563eb" stroke="#1f2937" stroke-width="2"/><text x="182" y="250" font-family="Arial, sans-serif" font-size="16" fill="#334155">Active</text>
+  <circle cx="155" cy="292" r="15" fill="#cbd5e1" stroke="#94a3b8" stroke-width="2"/><text x="182" y="298" font-family="Arial, sans-serif" font-size="16" fill="#334155">Wait</text>
+  <circle cx="155" cy="340" r="15" fill="#cbd5e1" stroke="#94a3b8" stroke-width="2"/><text x="182" y="346" font-family="Arial, sans-serif" font-size="16" fill="#334155">Done</text>
+  <circle cx="155" cy="388" r="15" fill="#cbd5e1" stroke="#94a3b8" stroke-width="2"/><text x="182" y="394" font-family="Arial, sans-serif" font-size="16" fill="#334155">Fault</text>
+  <text x="138" y="420" font-family="Arial, sans-serif" font-size="14" fill="#64748b">RFID</text>
+  <circle cx="218" cy="416" r="18" fill="#2563eb" stroke="#1f2937" stroke-width="2"/>
+  <rect x="318" y="110" width="430" height="230" rx="14" fill="#0f172a"/>
+  <rect x="342" y="134" width="382" height="182" rx="8" fill="#fafbfd"/>
+  <circle cx="366" cy="162" r="8" fill="#2563eb"/>
+  <text x="386" y="168" font-family="Arial, sans-serif" font-size="18" fill="#334155">Authorize</text>
+  <text x="366" y="238" font-family="Arial, sans-serif" font-size="56" font-weight="700" fill="#0f172a">Tap card</text>
+  <text x="368" y="278" font-family="Arial, sans-serif" font-size="24" fill="#334155">PIN fallback below</text>
+  <rect x="342" y="370" width="150" height="52" rx="6" fill="#334155"/>
+  <text x="390" y="403" font-family="Arial, sans-serif" font-size="18" fill="#ffffff">Cancel</text>
+</svg>

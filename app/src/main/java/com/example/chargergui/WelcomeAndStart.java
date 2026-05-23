@@ -31,6 +31,7 @@ public class WelcomeAndStart extends Activity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_welcome_and_start);
         myClientEndpoint = MyClientEndpoint.getInstance();
+        myClientEndpoint.init(getApplicationContext());
         messageInfoType = new MessageInfoEntity();
     }
 

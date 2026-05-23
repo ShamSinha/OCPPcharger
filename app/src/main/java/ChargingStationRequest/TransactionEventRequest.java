@@ -45,8 +45,12 @@ public class TransactionEventRequest {
         jo.put("timestamp",timestamp);
         jo.put("triggerReason",TransactionEventRequest.triggerReason.toString());
         jo.put("seqNo",SeqNo);
-        jo.put("offline",offline);
-        jo.put("cableMaxCurrent",cableMaxCurrent);
+        if (offline != null) {
+            jo.put("offline", offline);
+        }
+        if (cableMaxCurrent > 0) {
+            jo.put("cableMaxCurrent", cableMaxCurrent);
+        }
         jo.put("transactionInfo", TransactionType.getp());
         if(TransactionEventRequest.triggerReason == TriggerReasonEnumType.Authorized || TransactionEventRequest.triggerReason == TriggerReasonEnumType.Deauthorized) {
             jo.put("idToken", IdTokenType.getp());
@@ -55,7 +59,9 @@ public class TransactionEventRequest {
             jo.put("evse", EVSEType.getp());
         }
         if( TransactionType.chargingState == ChargingStateEnumType.Charging || TransactionType.chargingState == ChargingStateEnumType.SuspendedEVSE ){
-            jo.put("meterValue" , meterValues);
+            if (meterValues != null) {
+                jo.put("meterValue" , new JSONArray().put(meterValues));
+            }
         }
         return jo ;
     }

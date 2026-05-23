@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="540" viewBox="0 0 900 540">
+  <rect width="900" height="540" fill="#f7fafc"/>
+  <rect x="90" y="50" width="720" height="440" rx="28" fill="#111827"/>
+  <rect x="120" y="78" width="660" height="384" rx="8" fill="#ffffff"/>
+  <text x="175" y="118" font-family="Arial, sans-serif" font-size="28" fill="#334155">&lt;</text>
+  <text x="450" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" font-weight="700" fill="#013d40">Authorize Using PIN</text>
+  <rect x="270" y="185" width="360" height="230" rx="12" fill="#32f8f8"/>
+  <rect x="315" y="222" width="270" height="48" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="450" y="253" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#64748b">Enter your Username</text>
+  <rect x="315" y="292" width="270" height="48" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="450" y="323" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#64748b">Enter your PIN here</text>
+  <rect x="390" y="360" width="120" height="46" rx="4" fill="#c5c7c8"/>
+  <text x="450" y="389" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#111827">Authorize</text>
+  <text x="650" y="440" font-family="Arial, sans-serif" font-size="18" fill="#475569">Authorize CALL</text>
+  <text x="450" y="515" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#64748b">Authorization1 / activity_authorization1.xml</text>
+</svg>

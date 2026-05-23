@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="540" viewBox="0 0 900 540">
+  <rect width="900" height="540" fill="#f7fafc"/>
+  <rect x="90" y="50" width="720" height="440" rx="28" fill="#111827"/>
+  <rect x="120" y="78" width="660" height="384" rx="8" fill="#ffffff"/>
+  <rect x="160" y="120" width="580" height="250" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="200" y="175" width="230" height="120" rx="18" fill="#e0f2fe" stroke="#0284c7" stroke-width="4"/>
+  <rect x="430" y="215" width="22" height="40" rx="4" fill="#0284c7"/>
+  <rect x="220" y="195" width="85" height="80" fill="#36ca33"/>
+  <text x="540" y="205" font-family="Arial, sans-serif" font-size="68" font-weight="700" fill="#039be5">40.5</text>
+  <text x="690" y="207" font-family="Arial, sans-serif" font-size="34" fill="#111827">%</text>
+  <text x="540" y="295" font-family="Arial, sans-serif" font-size="44" font-weight="700" fill="#00c1a7">10.6 kWh</text>
+  <rect x="180" y="390" width="470" height="48" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="205" y="421" font-family="Arial, sans-serif" font-size="19" fill="#475569">Personal Message</text>
+  <rect x="670" y="382" width="100" height="60" rx="6" fill="#32f8f8"/>
+  <text x="720" y="419" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#111827">Input</text>
+  <text x="450" y="515" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#64748b">SOCdisplay / activity_socdisplay.xml</text>
+</svg>

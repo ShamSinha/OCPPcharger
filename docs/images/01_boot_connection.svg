@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="540" viewBox="0 0 900 540">
+  <rect width="900" height="540" fill="#f7fafc"/>
+  <rect x="90" y="50" width="720" height="440" rx="28" fill="#111827"/>
+  <rect x="120" y="78" width="660" height="384" rx="8" fill="#ffffff"/>
+  <text x="150" y="118" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#013d40">Boot Connection</text>
+  <rect x="150" y="145" width="590" height="250" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="174" y="185" font-family="Arial, sans-serif" font-size="20" fill="#0f172a">Connection with CSMS Established</text>
+  <text x="174" y="225" font-family="Arial, sans-serif" font-size="18" fill="#334155">Connected to Session: ...</text>
+  <text x="174" y="265" font-family="Arial, sans-serif" font-size="18" fill="#334155">Boot Reason: PowerUp</text>
+  <text x="174" y="305" font-family="Arial, sans-serif" font-size="18" fill="#334155">Sending BootNotificationRequest</text>
+  <path d="M170 350 H420" stroke="#1e88e5" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="450" cy="350" r="10" fill="#22c55e"/>
+  <text x="174" y="382" font-family="Arial, sans-serif" font-size="16" fill="#475569">Boot Accepted opens the charger UI</text>
+  <text x="450" y="515" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#64748b">MainActivity / activity_main.xml</text>
+</svg>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="540" viewBox="0 0 900 540">
+  <rect width="900" height="540" fill="#f7fafc"/>
+  <rect x="90" y="50" width="720" height="440" rx="28" fill="#111827"/>
+  <rect x="120" y="78" width="660" height="384" rx="8" fill="#ffffff"/>
+  <text x="450" y="145" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#111827">Plug In the Cable</text>
+  <rect x="230" y="180" width="130" height="130" rx="12" fill="#e2e8f0"/>
+  <path d="M280 220 h45 v50 h-45 q-30 0-30-25 q0-25 30-25z" fill="#1976d2"/>
+  <rect x="540" y="180" width="130" height="130" rx="12" fill="#e2e8f0"/>
+  <path d="M590 220 h45 v50 h-45 q-30 0-30-25 q0-25 30-25z" fill="#36ca33"/>
+  <path d="M365 245 H535" stroke="#94a3b8" stroke-width="8" stroke-dasharray="16 12"/>
+  <text x="450" y="390" text-anchor="middle" font-family="Arial, sans-serif" font-size="70" font-weight="700" fill="#fa130d">120 s</text>
+  <text x="665" y="430" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#475569">StatusNotification + TransactionEvent</text>
+  <text x="450" y="515" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#64748b">CablePlugActivity / activity_cable_plug.xml</text>
+</svg>

@@ -93,6 +93,7 @@ public class Authorization1 extends AppCompatActivity {
         TickorCrossPIN = findViewById(R.id.tickorcrossimage);
 
         myClientEndpoint = MyClientEndpoint.getInstance();
+        myClientEndpoint.init(getApplicationContext());
         DisplayMessageState.setMessageState(MessageStateEnumType.Idle);
 
         authorization1ViewModel = new ViewModelProvider(this).get(Authorization1ViewModel.class) ;

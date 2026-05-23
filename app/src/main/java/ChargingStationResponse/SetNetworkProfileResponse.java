@@ -3,8 +3,6 @@ package ChargingStationResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import ChargingStationDetails.ChargingStationType;
-import ChargingStationRequest.BootNotificationRequest;
 import EnumDataType.SetNetworkProfileStatusEnumType;
 
 public class SetNetworkProfileResponse {
@@ -17,7 +15,7 @@ public class SetNetworkProfileResponse {
 
     public static JSONObject payload() throws JSONException {
         JSONObject jo  = new JSONObject();
-        jo.put("state", SetNetworkProfileResponse.status.toString()) ;
+        jo.put("status", SetNetworkProfileResponse.status.toString()) ;
         return jo;
     }
 

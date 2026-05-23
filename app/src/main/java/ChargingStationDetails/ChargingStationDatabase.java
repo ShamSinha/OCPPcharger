@@ -44,7 +44,10 @@ public abstract class ChargingStationDatabase extends RoomDatabase {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            chargingStationDao.insert(new ChargingStation("","SingleSocketCharger","VendorX","1","h"));
+            ChargingStation.Modem modem = new ChargingStation.Modem();
+            modem.iccid = "";
+            modem.imsi = "";
+            chargingStationDao.insert(new ChargingStation("CS01","SingleSocketCharger","VendorX","1",modem));
             return null;
         }
     }

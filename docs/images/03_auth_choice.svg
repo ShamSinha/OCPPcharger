@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="540" viewBox="0 0 900 540">
+  <rect width="900" height="540" fill="#f7fafc"/>
+  <rect x="90" y="50" width="720" height="440" rx="28" fill="#111827"/>
+  <rect x="120" y="78" width="660" height="384" rx="8" fill="#ffffff"/>
+  <text x="450" y="145" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" font-weight="700" fill="#111827">Use any one of the Authorization Method</text>
+  <rect x="210" y="205" width="190" height="165" rx="8" fill="#32f8f8"/>
+  <rect x="500" y="205" width="190" height="165" rx="8" fill="#32f8f8"/>
+  <text x="305" y="295" text-anchor="middle" font-family="Arial, sans-serif" font-size="54" font-weight="700" fill="#013d40">PIN</text>
+  <text x="595" y="288" text-anchor="middle" font-family="Arial, sans-serif" font-size="42" font-weight="700" fill="#013d40">RFID</text>
+  <path d="M548 315 h94" stroke="#013d40" stroke-width="8" stroke-linecap="round"/>
+  <text x="305" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#111827">Enter PIN</text>
+  <text x="595" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#111827">Scan RFID</text>
+  <text x="450" y="515" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#64748b">Authentication / activity_authentication.xml</text>
+</svg>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="540" viewBox="0 0 900 540">
+  <rect width="900" height="540" fill="#f7fafc"/>
+  <rect x="90" y="50" width="720" height="440" rx="28" fill="#111827"/>
+  <rect x="120" y="78" width="660" height="384" rx="8" fill="#ffffff"/>
+  <text x="175" y="118" font-family="Arial, sans-serif" font-size="28" fill="#334155">&lt;</text>
+  <text x="450" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#013d40">Authorize Using RFID Tag</text>
+  <rect x="190" y="205" width="520" height="150" rx="14" fill="#32f8f8"/>
+  <text x="385" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#111827">Show your EV card</text>
+  <text x="385" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#111827">below</text>
+  <rect x="575" y="238" width="74" height="84" rx="10" fill="#ffffff" stroke="#013d40" stroke-width="4"/>
+  <path d="M590 258 q26 24 0 48" fill="none" stroke="#013d40" stroke-width="5"/>
+  <path d="M610 258 q26 24 0 48" fill="none" stroke="#013d40" stroke-width="5"/>
+  <text x="450" y="400" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#475569">RC522 poll reads UID, then sends Authorize with ISO14443</text>
+  <text x="450" y="515" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#64748b">Authorization2 / activity_rfid_auth.xml</text>
+</svg>

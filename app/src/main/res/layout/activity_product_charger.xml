@@ -2,17 +2,17 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8FAFC"
+    android:background="#FAFBFD"
     android:orientation="horizontal"
-    android:paddingBottom="24dp"
+    android:paddingBottom="22dp"
     android:paddingLeft="30dp"
     android:paddingRight="36dp"
-    android:paddingTop="24dp">
+    android:paddingTop="22dp">
 
     <LinearLayout
-        android:layout_width="196dp"
+        android:layout_width="200dp"
         android:layout_height="match_parent"
-        android:background="#E8EEF5"
+        android:background="#EEF2F7"
         android:gravity="center_horizontal"
         android:orientation="vertical"
         android:paddingBottom="20dp"
@@ -28,43 +28,35 @@
             android:textSize="22sp"
             android:textStyle="bold" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="3dp"
-            android:text="OCPP 2.1"
-            android:textColor="#64748B"
-            android:textSize="14sp" />
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="20dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
             <View
-                android:id="@+id/bootSignalDot"
+                android:id="@+id/productSignalDot"
                 android:layout_width="18dp"
                 android:layout_height="18dp"
                 android:background="@drawable/product_led_idle" />
 
             <TextView
-                android:id="@+id/bootSignalLabel"
+                android:id="@+id/productSignalLabel"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
                 android:layout_weight="1"
                 android:maxLines="1"
-                android:text="Connecting"
+                android:text="Available"
                 android:textColor="#334155"
-                android:textSize="16sp" />
+                android:textSize="15sp" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="26dp"
+            android:layout_marginTop="22dp"
             android:orientation="vertical">
 
             <LinearLayout
@@ -74,7 +66,7 @@
                 android:orientation="horizontal">
 
                 <View
-                    android:id="@+id/bootGreenLed"
+                    android:id="@+id/stationGreenLed"
                     android:layout_width="26dp"
                     android:layout_height="26dp"
                     android:background="@drawable/product_led_idle" />
@@ -95,7 +87,7 @@
                 android:orientation="horizontal">
 
                 <View
-                    android:id="@+id/bootBlueLed"
+                    android:id="@+id/stationBlueLed"
                     android:layout_width="26dp"
                     android:layout_height="26dp"
                     android:background="@drawable/product_led_idle" />
@@ -116,7 +108,7 @@
                 android:orientation="horizontal">
 
                 <View
-                    android:id="@+id/bootAmberLed"
+                    android:id="@+id/stationAmberLed"
                     android:layout_width="26dp"
                     android:layout_height="26dp"
                     android:background="@drawable/product_led_idle" />
@@ -137,7 +129,7 @@
                 android:orientation="horizontal">
 
                 <View
-                    android:id="@+id/bootWhiteLed"
+                    android:id="@+id/stationWhiteLed"
                     android:layout_width="26dp"
                     android:layout_height="26dp"
                     android:background="@drawable/product_led_idle" />
@@ -158,7 +150,7 @@
                 android:orientation="horizontal">
 
                 <View
-                    android:id="@+id/bootRedLed"
+                    android:id="@+id/stationRedLed"
                     android:layout_width="26dp"
                     android:layout_height="26dp"
                     android:background="@drawable/product_led_idle" />
@@ -187,6 +179,7 @@
             android:textStyle="bold" />
 
         <View
+            android:id="@+id/rfidScannerLed"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginTop="12dp"
@@ -196,59 +189,183 @@
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_marginLeft="42dp"
+        android:layout_marginLeft="40dp"
         android:layout_weight="1"
         android:orientation="vertical">
 
         <TextView
+            android:id="@+id/productTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="Connecting"
+            android:layout_marginTop="18dp"
+            android:text="Ready"
             android:textColor="#0F172A"
-            android:textSize="46sp"
+            android:textSize="48sp"
             android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/productSubtitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="Starting secure OCPP session"
+            android:text="Tap RFID"
             android:textColor="#334155"
-            android:textSize="22sp" />
+            android:textSize="24sp" />
 
         <TextView
+            android:id="@+id/productDetail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="22dp"
-            android:text="Station"
-            android:textColor="#64748B"
-            android:textSize="15sp"
-            android:textStyle="bold" />
+            android:layout_marginTop="10dp"
+            android:maxLines="2"
+            android:text=""
+            android:textColor="#475569"
+            android:textSize="16sp"
+            android:visibility="gone" />
 
-        <TextView
-            android:id="@+id/boottext"
+        <LinearLayout
+            android:id="@+id/productMetricsPanel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Battery"
+                    android:textColor="#334155"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/productSoc"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="42%"
+                    android:textColor="#0F172A"
+                    android:textSize="28sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/productBatteryIndicator"
+                android:layout_width="190dp"
+                android:layout_height="120dp"
+                android:layout_marginTop="6dp"
+                android:adjustViewBounds="true"
+                android:contentDescription="Battery indicator"
+                android:scaleType="fitCenter"
+                android:src="@drawable/drawing40" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/productEnergy"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="0.00 kWh"
+                    android:textColor="#64748B"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/productCost"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="INR 0.00"
+                    android:textColor="#64748B"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/productTime"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="right"
+                    android:text="00:00"
+                    android:textColor="#64748B"
+                    android:textSize="15sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/productAuthPanel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <EditText
+                android:id="@+id/productPinInput"
+                android:layout_width="240dp"
+                android:layout_height="54dp"
+                android:background="@drawable/product_pin_field"
+                android:hint="PIN"
+                android:inputType="numberPassword"
+                android:maxLines="1"
+                android:textColor="#0F172A"
+                android:textColorHint="#94A3B8"
+                android:textSize="20sp" />
+
+            <Button
+                android:id="@+id/productPinButton"
+                android:layout_width="wrap_content"
+                android:layout_height="54dp"
+                android:layout_marginLeft="14dp"
+                android:background="@drawable/product_button_secondary"
+                android:minWidth="138dp"
+                android:text="Use PIN"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <Space
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginTop="8dp"
-            android:layout_weight="1"
-            android:background="#E8EEF5"
-            android:gravity="left|top"
-            android:lineSpacingExtra="4dp"
-            android:paddingBottom="18dp"
-            android:paddingLeft="18dp"
-            android:paddingRight="18dp"
-            android:paddingTop="18dp"
-            android:text="Connecting to CSMS..."
-            android:textColor="#334155"
-            android:textSize="17sp" />
+            android:layout_weight="1" />
 
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:text="If boot is accepted, the charger moves to the driver screen."
-            android:textColor="#64748B"
-            android:textSize="15sp" />
+            android:layout_height="64dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/productPrimaryButton"
+                android:layout_width="200dp"
+                android:layout_height="56dp"
+                android:background="@drawable/product_button_primary"
+                android:text="Start"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp" />
+
+            <Button
+                android:id="@+id/productSecondaryButton"
+                android:layout_width="164dp"
+                android:layout_height="56dp"
+                android:layout_marginLeft="14dp"
+                android:background="@drawable/product_button_secondary"
+                android:text="Cancel"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:visibility="gone" />
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>
