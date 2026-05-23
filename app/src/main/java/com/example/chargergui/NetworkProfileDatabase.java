@@ -52,7 +52,7 @@ public abstract class NetworkProfileDatabase extends RoomDatabase {
         protected Void doInBackground(Void... voids) {
 
             NetworkProfile.NetworkConnectionProfileType connectionData ;
-            connectionData = new NetworkProfile.NetworkConnectionProfileType(OCPPVersionEnumType.OCPP20.name(), OCPPTransportEnumType.JSON.name(),"",30, OCPPInterfaceEnumType.Wireless0.name());
+            connectionData = new NetworkProfile.NetworkConnectionProfileType(OCPPVersionEnumType.OCPP21.name(), OCPPTransportEnumType.JSON.name(),"ws://10.0.2.2:8080/CSMSWebsocketServer-1/CS01",30, OCPPInterfaceEnumType.Wireless0.name());
 
             NetworkProfile networkProfile = new NetworkProfile(connectionData);
             networkProfile.setConfigurationSlot(1);

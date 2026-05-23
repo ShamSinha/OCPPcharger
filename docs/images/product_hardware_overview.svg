@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="680" viewBox="0 0 1200 680" role="img" aria-labelledby="title desc">
+  <title id="title">Product charger hardware overview</title>
+  <desc id="desc">OCPP charger product layout with Android screen, colored LED bulbs, RFID reader, cable sensor, and CSMS connection.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#334155"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#0f172a" flood-opacity="0.16"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="680" fill="#f8fafc"/>
+  <text x="54" y="66" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#0f172a">OCPP charger product hardware</text>
+  <text x="56" y="100" font-family="Arial, sans-serif" font-size="18" fill="#475569">The screen stays simple. Physical hardware communicates most charger state.</text>
+
+  <rect x="80" y="150" width="390" height="430" rx="26" fill="#e2e8f0" stroke="#94a3b8" stroke-width="3" filter="url(#shadow)"/>
+  <rect x="120" y="190" width="310" height="185" rx="10" fill="#0f172a"/>
+  <rect x="138" y="208" width="274" height="149" rx="6" fill="#fafbfd"/>
+  <circle cx="160" cy="232" r="8" fill="#16803c"/>
+  <text x="182" y="238" font-family="Arial, sans-serif" font-size="18" fill="#334155">Available</text>
+  <text x="156" y="292" font-family="Arial, sans-serif" font-size="48" font-weight="700" fill="#0f172a">Ready</text>
+  <text x="158" y="326" font-family="Arial, sans-serif" font-size="24" fill="#334155">Tap RFID</text>
+  <rect x="146" y="410" width="108" height="84" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+  <path d="M176 446 C176 426 205 426 205 446 C205 466 176 466 176 446" fill="none" stroke="#2563eb" stroke-width="5"/>
+  <path d="M168 446 C168 416 214 416 214 446 C214 476 168 476 168 446" fill="none" stroke="#2563eb" stroke-width="3" opacity="0.55"/>
+  <circle cx="225" cy="426" r="6" fill="#2563eb"/>
+  <circle cx="225" cy="446" r="6" fill="#16a34a"/>
+  <circle cx="225" cy="466" r="6" fill="#b42318"/>
+  <text x="122" y="520" font-family="Arial, sans-serif" font-size="17" fill="#334155">RFID reader</text>
+  <text x="122" y="542" font-family="Arial, sans-serif" font-size="14" fill="#64748b">/dev/ttyACM0</text>
+  <text x="122" y="562" font-family="Arial, sans-serif" font-size="14" fill="#64748b">LEDs 9/10/11</text>
+  <rect x="300" y="414" width="78" height="78" rx="39" fill="#111827"/>
+  <circle cx="339" cy="453" r="18" fill="#64748b"/>
+  <text x="312" y="520" font-family="Arial, sans-serif" font-size="17" fill="#334155">Cable socket</text>
+  <text x="312" y="542" font-family="Arial, sans-serif" font-size="14" fill="#64748b">GPIO 3</text>
+  <text x="312" y="562" font-family="Arial, sans-serif" font-size="14" fill="#64748b">plug sensor</text>
+
+  <rect x="532" y="168" width="96" height="300" rx="22" fill="#111827" filter="url(#shadow)"/>
+  <circle cx="580" cy="214" r="24" fill="#16803c"/>
+  <circle cx="580" cy="271" r="24" fill="#2563eb"/>
+  <circle cx="580" cy="328" r="24" fill="#d97706"/>
+  <circle cx="580" cy="385" r="24" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+  <circle cx="580" cy="442" r="24" fill="#b42318"/>
+  <text x="652" y="220" font-family="Arial, sans-serif" font-size="18" fill="#0f172a">Green: ready</text>
+  <text x="652" y="277" font-family="Arial, sans-serif" font-size="18" fill="#0f172a">Blue: authorize / charging</text>
+  <text x="652" y="334" font-family="Arial, sans-serif" font-size="18" fill="#0f172a">Amber: booting / plug in</text>
+  <text x="652" y="391" font-family="Arial, sans-serif" font-size="18" fill="#0f172a">White: complete</text>
+  <text x="652" y="448" font-family="Arial, sans-serif" font-size="18" fill="#0f172a">Red: attention</text>
+  <text x="532" y="508" font-family="Arial, sans-serif" font-size="17" fill="#334155">Station LED bulbs</text>
+  <text x="532" y="532" font-family="Arial, sans-serif" font-size="14" fill="#64748b">GPIO 4, 5, 6, 7, 8</text>
+
+  <rect x="846" y="176" width="250" height="118" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" filter="url(#shadow)"/>
+  <text x="874" y="220" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#0f172a">Android controller</text>
+  <text x="874" y="252" font-family="Arial, sans-serif" font-size="16" fill="#475569">ProductChargerActivity</text>
+  <text x="874" y="274" font-family="Arial, sans-serif" font-size="16" fill="#475569">StationSignalController</text>
+
+  <rect x="846" y="390" width="250" height="118" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" filter="url(#shadow)"/>
+  <text x="874" y="434" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#0f172a">CSMS</text>
+  <text x="874" y="466" font-family="Arial, sans-serif" font-size="16" fill="#475569">OCPP-J WebSocket</text>
+  <text x="874" y="488" font-family="Arial, sans-serif" font-size="16" fill="#475569">Boot, Authorize, TransactionEvent</text>
+
+  <path d="M430 270 C470 260 495 250 532 240" fill="none" stroke="#334155" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M628 256 C705 232 774 225 846 226" fill="none" stroke="#334155" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M971 294 L971 390" fill="none" stroke="#334155" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M846 452 C732 468 656 478 628 452" fill="none" stroke="#334155" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <text x="446" y="244" font-family="Arial, sans-serif" font-size="14" fill="#475569">state</text>
+  <text x="705" y="214" font-family="Arial, sans-serif" font-size="14" fill="#475569">GPIO outputs</text>
+  <text x="984" y="346" font-family="Arial, sans-serif" font-size="14" fill="#475569">OCPP</text>
+  <text x="690" y="506" font-family="Arial, sans-serif" font-size="14" fill="#475569">commands / status</text>
+</svg>

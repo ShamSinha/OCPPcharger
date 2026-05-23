@@ -65,6 +65,7 @@ import EnumDataType.MutabilityEnumType;
 import EnumDataType.OCPPInterfaceEnumType;
 import EnumDataType.OCPPTransportEnumType;
 import EnumDataType.OCPPVersionEnumType;
+import EnumDataType.RPCErrorCodes;
 import EnumDataType.RegistrationStatusEnumType;
 import EnumDataType.ResetEnumType;
 import EnumDataType.ResetStatusEnumType;
@@ -74,18 +75,25 @@ import TransactionRelated.TransactionEventEnumType;
 import UseCasesOCPP.BootNotificationResponse;
 import UseCasesOCPP.SendRequestToCSMS;
 
-import static android.webkit.URLUtil.isValidUrl;
-
 @ClientEndpoint(
         decoders = {MessageDecoder.class},
         encoders = {MessageEncoder.class,MessageEncodeResult.class , MessageEncodeError.class},
-        subprotocols = {"ocpp2.0.1"},
+        subprotocols = {"ocpp2.1", "ocpp2.0.1"},
         configurator = ClientConfigurator.class
 )
 
 public class MyClientEndpoint  {
 
+    private static final String DEFAULT_CSMS_URL = "ws://10.0.2.2:8080/CSMSWebsocketServer-1/CS01";
+
+    public interface ConnectionListener {
+        void onBootAccepted(int interval);
+        void onBootRejected(RegistrationStatusEnumType status, int interval);
+        void onConnectionFailed(String message);
+    }
+
     private Session session ;
+    private ConnectionListener connectionListener;
 
     private static MyClientEndpoint instance = new MyClientEndpoint(); // Eagerly Loading of single ton instance
 
@@ -107,10 +115,15 @@ public class MyClientEndpoint  {
 
     //BootNotificationResponse
     private BootNotificationResponse bootNotificationResponse = new BootNotificationResponse();
+    private IdTokenInfoEntity idInfo = new IdTokenInfoEntity("Invalid", "", 0, 0, new MessageContent());
 
 
     public Session getOpenSession() {
         return session;
+    }
+
+    public IdTokenInfoEntity getIdInfo() {
+        return idInfo;
     }
 
     public NetworkProfileRepo networkProfileRepo ;
@@ -118,6 +131,11 @@ public class MyClientEndpoint  {
 
 
     void ConnectClientToServer(final TextView text) {
+        ConnectClientToServer(text, null);
+    }
+
+    void ConnectClientToServer(final TextView text, ConnectionListener listener) {
+        connectionListener = listener;
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -127,61 +145,111 @@ public class MyClientEndpoint  {
         thread.start();
     }
 
-    private void connectToWebSocket(TextView text)  {
+    private void connectToWebSocket(final TextView text)  {
         //WebSocketContainer container = ContainerProvider.getWebSocketContainer();
         // session = container.connectToServer(this, uri);
 
-        networkProfileRepo = new NetworkProfileRepo(context.get());
+        Context appContext = context == null ? null : context.get();
+        if (appContext == null) {
+            notifyConnectionFailed("Android context is not initialized");
+            appendText(text, "\nAndroid context is not initialized\n");
+            return;
+        }
+
+        networkProfileRepo = new NetworkProfileRepo(appContext);
         NetworkProfile networkProfile = networkProfileRepo.getNetworkProfile(1) ;
 
-        URI uri = URI.create(networkProfile.getConnectionData().getOcppCsmsUrl());
+        URI uri;
+        try {
+            uri = URI.create(resolveCsmsUrl(networkProfile));
+        } catch (IllegalArgumentException e) {
+            notifyConnectionFailed("Invalid CSMS websocket URL");
+            appendText(text, "\nInvalid CSMS websocket URL\n");
+            return;
+        }
 
-        ChargingStationRepo chargingStationRepo = new ChargingStationRepo(context.get());
+        ChargingStationRepo chargingStationRepo = new ChargingStationRepo(appContext);
 
         ClientManager client = ClientManager.createClient();
 
         client.getProperties().put(ClientProperties.CREDENTIALS, new Credentials("ws_user", "password")); // Basic Authentication for Charging Station
         client.getProperties().put(ClientProperties.LOG_HTTP_UPGRADE, true);
 
+        session = null;
         try {
             client.connectToServer(this,uri) ;
         } catch (DeploymentException e) {
             e.printStackTrace();
-            text.append("\nDeployment Exception"+ R.string.conncsmsnot + "\n");
+            notifyConnectionFailed("Deployment Exception: CSMS connection failed");
+            appendText(text, "\nDeployment Exception"+ R.string.conncsmsnot + "\n");
         } catch (IOException e) {
             e.printStackTrace();
-            text.append("\nIO Exception" + R.string.conncsmsnot + "\n");
+            notifyConnectionFailed("IO Exception: CSMS connection failed");
+            appendText(text, "\nIO Exception" + R.string.conncsmsnot + "\n");
         }
 
 
         if(session != null){
-            text.append("Connection with CSMS Established");
-            text.append("\nConnected to Session :"+ session.getId() + "\n" );
-            text.append("\nBoot Reason: "+ BootNotificationRequest.getReason()+"\n");
+            appendText(text, "Connection with CSMS Established");
+            appendText(text, "\nConnected to Session :"+ session.getId() + "\n" );
+            appendText(text, "\nBoot Reason: "+ BootNotificationRequest.getReason()+"\n");
 
             ChargingStation chargingStation = chargingStationRepo.getChargingStationType() ;
 
-            ChargingStationType.setSerialNumber(chargingStation.getSerialNumber());
-            ChargingStationType.setModel(chargingStation.getModel());
-            ChargingStationType.setVendorName(chargingStation.getVendorName());
-            ChargingStationType.setFirmwareVersion(chargingStation.getFirmwareVersion());
-            ModemType.setIccid(chargingStation.getModem().iccid);
-            ModemType.setImsi(chargingStation.getModem().imsi);
+            if (chargingStation != null) {
+                ChargingStationType.setSerialNumber(chargingStation.getSerialNumber());
+                ChargingStationType.setModel(chargingStation.getModel());
+                ChargingStationType.setVendorName(chargingStation.getVendorName());
+                ChargingStationType.setFirmwareVersion(chargingStation.getFirmwareVersion());
+                if (chargingStation.getModem() != null) {
+                    ModemType.setIccid(chargingStation.getModem().iccid);
+                    ModemType.setImsi(chargingStation.getModem().imsi);
+                }
+            }
 
-            text.append("\nCharging Station\n");
-            text.append("\nserialNumber: "+ChargingStationType.serialNumber+"\n");
-            text.append("\nmodel: "+ChargingStationType.model+"\n");
-            text.append("\nvendorName: "+ChargingStationType.vendorName+"\n");
-            text.append("\nfirmwareVersion: "+ChargingStationType.firmwareVersion+"\n");
-            text.append("\nmodem iccid:"+ ModemType.iccid+"\n");
-            text.append("\nmodem imsi:"+ ModemType.imsi+"\n");
-            text.append("\nSending BootNotificationRequest to CSMS\n");
+            appendText(text, "\nCharging Station\n");
+            appendText(text, "\nserialNumber: "+ChargingStationType.serialNumber+"\n");
+            appendText(text, "\nmodel: "+ChargingStationType.model+"\n");
+            appendText(text, "\nvendorName: "+ChargingStationType.vendorName+"\n");
+            appendText(text, "\nfirmwareVersion: "+ChargingStationType.firmwareVersion+"\n");
+            appendText(text, "\nmodem iccid:"+ ModemType.iccid+"\n");
+            appendText(text, "\nmodem imsi:"+ ModemType.imsi+"\n");
+            appendText(text, "\nSending BootNotificationRequest to CSMS\n");
             try {
                 toCSMS.sendBootNotificationRequest();
             } catch (JSONException e) {
                 e.printStackTrace();
+                notifyConnectionFailed("BootNotification payload could not be created");
             }
-            text.append("\nBoot status: "+ bootNotificationResponse.getBootStatus() + "\n");
+        }
+    }
+
+    private String resolveCsmsUrl(NetworkProfile networkProfile) {
+        if (networkProfile == null
+                || networkProfile.getConnectionData() == null
+                || networkProfile.getConnectionData().getOcppCsmsUrl() == null
+                || networkProfile.getConnectionData().getOcppCsmsUrl().trim().length() == 0) {
+            return DEFAULT_CSMS_URL;
+        }
+        return networkProfile.getConnectionData().getOcppCsmsUrl().trim();
+    }
+
+    private void appendText(final TextView text, final String value) {
+        if (text == null) {
+            return;
+        }
+        text.post(new Runnable() {
+            @Override
+            public void run() {
+                text.append(value);
+            }
+        });
+    }
+
+    private void notifyConnectionFailed(String message) {
+        final ConnectionListener listener = connectionListener;
+        if (listener != null) {
+            listener.onConnectionFailed(message);
         }
     }
 
@@ -206,19 +274,23 @@ public class MyClientEndpoint  {
 
             Log.d("TAG", "CALL received: " + CALL.getAction());
             JSONObject responsePayload = new JSONObject();   // responsePayload is JSON payload requested by CSMS.
+            boolean sendCallResult = false;
             JSONObject requestPayload = ((CALL) msg).getPayload(); // get JSON payload from server request
             Log.d("TAG", "requestPayload: " + requestPayload);
             switch (CALL.getAction()) {
                 case "CostUpdated":
 
                     responsePayload = processCostUpdatedRequest(requestPayload);
+                    sendCallResult = true;
 
                     break;
+                case "SetDisplayMessage":
                 case "SetDisplayMessages":
                     JSONObject setDisplayMessage = requestPayload.getJSONObject("message");
                     DisplayMessageStatusEnumType status = processSetDisplayMessageRequest(setDisplayMessage);
                     SetDisplayMessagesResponse.setStatus(status);
                     responsePayload = SetDisplayMessagesResponse.payload();
+                    sendCallResult = true;
                     break;
 
                 case "GetDisplayMessages":
@@ -257,6 +329,7 @@ public class MyClientEndpoint  {
                         }
                     }
                     sendResponse(new CALLRESULT(GetDisplayMessagesResponse.payload()));
+                    responsePayload = new JSONObject();
 
                     if (GetDisplayMessagesResponse.getStatus().equals(GetDisplayMessagesStatusEnumType.Accepted)) {
                         NotifyDisplayMessagesRequest.setRequestId(requestId);
@@ -269,47 +342,57 @@ public class MyClientEndpoint  {
                             sendRequest(new CALL("NotifyDisplayMessages", NotifyDisplayMessagesRequest.payload(notifyDisplayMessage.get(k))));
                         }
                     }
+                    break;
 
                 case "Reset":
                     AfterResetCommand(ResetEnumType.valueOf(requestPayload.getString("type")));
-                    //responsePayload = ResetResponse.payload();
+                    responsePayload = ResetResponse.payload();
+                    sendCallResult = true;
                     break;
                 case "ReserveNow":
-
-                    break;
+                    sendUnsupportedAction(CALL.getAction());
+                    return;
                 case "RequestStartTransaction":
-
-                    break;
+                    sendUnsupportedAction(CALL.getAction());
+                    return;
                 case "TriggerMessage":
-
-                    break;
+                    sendUnsupportedAction(CALL.getAction());
+                    return;
                 case "SetVariables":
                     JSONArray setVariableData = requestPayload.getJSONArray("setVariableData");
 
                     responsePayload = processSetVariablesRequest(setVariableData) ;
+                    sendCallResult = true;
 
                     break;
                 case "GetVariables":
                     JSONArray getVariableData = requestPayload.getJSONArray("getVariableData");
 
                     responsePayload = processGetVariablesRequest(getVariableData) ;
+                    sendCallResult = true;
 
                     break;
                 case "SetNetworkProfile" :
 
                     responsePayload = processSetNetworkProfileRequest(requestPayload);
+                    sendCallResult = true;
+                    break;
 
                 default:
-                    throw new IllegalStateException("Unexpected value: " + CALL.getAction());
+                    sendUnsupportedAction(CALL.getAction());
+                    return;
                 }
 
+                if (sendCallResult) {
+                    sendResponse(new CALLRESULT(responsePayload));
+                }
 
             }
             if (msg instanceof CALLRESULT) {
 
                 Log.d("TAG", "CALL received: " + CALL.getAction());
                 JSONObject respondedPayload;  // respondedPayload is a CALL message Response from CSMS
-                if (CALLRESULT.getMessageId().equals(CALL.getMessageId())) {
+                if (CALL.getMessageId() != null && CALL.getMessageId().equals(CALLRESULT.getMessageId())) {
 
                     Log.d("TAG", "CALLRESULT received: " + CALL.getAction());
                     respondedPayload = ((CALLRESULT) msg).getPayload();
@@ -319,6 +402,7 @@ public class MyClientEndpoint  {
                         case "BootNotification":
 
                             processBootResponse(respondedPayload);
+                            notifyBootResponse();
                             break;
 
                         case "Authorize":
@@ -327,7 +411,7 @@ public class MyClientEndpoint  {
                             processAuthResponse(authResponse);
                             break;
 
-                        case "HeartBeat":
+                        case "Heartbeat":
                             String currentTime = respondedPayload.getString("currentTime");
 
                             break;
@@ -402,21 +486,31 @@ public class MyClientEndpoint  {
         ChargingStationStatesRepo chargingStationStatesRepo = new ChargingStationStatesRepo(context.get());
 
         String status = j2.getString("status");
-        String cacheExpiryDateTime =  j2.getString("cacheExpiryDateTime");
-        int chargingPriority = j2.getInt("chargingPriority");
-        int evseId = j2.getInt("evseId") ;
+        String cacheExpiryDateTime =  j2.optString("cacheExpiryDateTime", "");
+        int chargingPriority = j2.optInt("chargingPriority", 0);
+        int evseId = 0;
+        if (j2.has("evseId")) {
+            if (j2.optJSONArray("evseId") != null && j2.optJSONArray("evseId").length() > 0) {
+                evseId = j2.optJSONArray("evseId").optInt(0, 0);
+            } else {
+                evseId = j2.optInt("evseId", 0);
+            }
+        }
 
         MessageContent personalMessage = new MessageContent();
-        JSONObject j3 = j2.getJSONObject("personalMessage");
-        personalMessage.setContent(j3.getString("content"));
-        personalMessage.setLanguage(j3.getString("language"));
-        personalMessage.setFormat(j3.getString("format")) ;
+        if (j2.has("personalMessage")) {
+            JSONObject j3 = j2.getJSONObject("personalMessage");
+            personalMessage.setContent(j3.optString("content", ""));
+            personalMessage.setLanguage(j3.optString("language", ""));
+            personalMessage.setFormat(j3.optString("format", "")) ;
+        }
 
         idTokenRepo.deleteIdTokenInfo();
 
-        String transactionId = idTokenRepo.getIdToken().getTransactionId();
+        String transactionId = idTokenRepo.getIdToken() == null ? "" : idTokenRepo.getIdToken().getTransactionId();
 
-        idTokenRepo.insertIdTokenInfo(new IdTokenInfoEntity(status,cacheExpiryDateTime,chargingPriority,evseId,personalMessage));
+        idInfo = new IdTokenInfoEntity(status,cacheExpiryDateTime,chargingPriority,evseId,personalMessage);
+        idTokenRepo.insertIdTokenInfo(idInfo);
         if (status.equals("Accepted")) {
             chargingStationStatesRepo.updateAuthorized(transactionId ,true);
         }
@@ -426,6 +520,19 @@ public class MyClientEndpoint  {
     private void processBootResponse(JSONObject jsonObject) throws JSONException {
         bootNotificationResponse.setBootStatus(RegistrationStatusEnumType.valueOf(jsonObject.getString("status"))) ;
         bootNotificationResponse.setBootInterval(jsonObject.getInt("interval"));
+    }
+
+    private void notifyBootResponse() {
+        final ConnectionListener listener = connectionListener;
+        if (listener == null || bootNotificationResponse.getBootStatus() == null) {
+            return;
+        }
+
+        if (bootNotificationResponse.getBootStatus() == RegistrationStatusEnumType.Accepted) {
+            listener.onBootAccepted(bootNotificationResponse.getBootInterval());
+        } else {
+            listener.onBootRejected(bootNotificationResponse.getBootStatus(), bootNotificationResponse.getBootInterval());
+        }
     }
 
     private JSONObject processCostUpdatedRequest(JSONObject requestPayload) throws JSONException {
@@ -456,12 +563,44 @@ public class MyClientEndpoint  {
         executorService.shutdown();
     }
 
+    private void sendUnsupportedAction(String action) {
+        RPCErrorCodes code = OcppActionRegistry.isKnownAction(action)
+                ? RPCErrorCodes.NotSupported
+                : RPCErrorCodes.NotImplemented;
+        String description = OcppActionRegistry.isKnownAction(action)
+                ? "Action is recognized by OCPP 2.1 but not supported by this charging station"
+                : "Action is not known by this charging station";
+        sendError(new CALLERROR(code, description, new JSONObject()));
+    }
+
+    private void sendError(final CALLERROR callerror) {
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        executorService.execute(new Runnable() {
+            public void run() {
+                try {
+                    if (MyClientEndpoint.getInstance().getOpenSession() == null
+                            || !MyClientEndpoint.getInstance().getOpenSession().isOpen()) {
+                        Log.e("ERROR", "OCPP websocket session is not open");
+                        return;
+                    }
+                    MyClientEndpoint.getInstance().getOpenSession().getBasicRemote().sendObject(callerror);
+                    Log.d("TAG", "CALLERROR Sent: " + callerror.getErrorCode());
+                } catch (IOException | EncodeException e) {
+                    Log.e("ERROR", "IOException in BasicRemote");
+                    e.printStackTrace();
+                }
+            }
+        });
+        executorService.shutdown();
+    }
+
     private void sendRequest(final CALL call) {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         executorService.execute(new Runnable() {
             @Override
             public void run() {
                 try {
+                    CALL.setMessageIdIfCallHasToSent();
                     MyClientEndpoint.getInstance().getOpenSession().getBasicRemote().sendObject(call);
                     Log.d("TAG", "Message Sent: " + CALL.getAction() + call.getPayload());
 
@@ -580,7 +719,7 @@ public class MyClientEndpoint  {
         int messageTimeOut = connectionData.getInt("messageTimeOut");
         String ocppInterface = OCPPInterfaceEnumType.valueOf(connectionData.getString("ocppInterface")).name();
 
-        if (isValidUrl(ocppCsmsUrl)) {
+        if (isValidOcppWebsocketUrl(ocppCsmsUrl)) {
             NetworkProfile networkProfile = new NetworkProfile(new NetworkProfile.NetworkConnectionProfileType(ocppVersion, ocppTransport, ocppCsmsUrl, messageTimeOut, ocppInterface));
             networkProfile.setConfigurationSlot(configurationSlot);
             networkProfileRepo.insert(networkProfile);
@@ -589,6 +728,21 @@ public class MyClientEndpoint  {
             SetNetworkProfileResponse.setStatus(SetNetworkProfileStatusEnumType.Rejected);
         }
         return SetNetworkProfileResponse.payload();
+    }
+
+    private boolean isValidOcppWebsocketUrl(String ocppCsmsUrl) {
+        if (ocppCsmsUrl == null) {
+            return false;
+        }
+        try {
+            URI uri = URI.create(ocppCsmsUrl);
+            return ("ws".equalsIgnoreCase(uri.getScheme()) || "wss".equalsIgnoreCase(uri.getScheme()))
+                    && uri.getHost() != null
+                    && uri.getPath() != null
+                    && uri.getPath().length() > 1;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
 }

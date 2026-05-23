@@ -9,7 +9,7 @@ import org.json.JSONObject;
 
 public class BootNotificationRequest {
 
-    private static BootReasonEnumType reason ;
+    private static BootReasonEnumType reason = BootReasonEnumType.PowerUp ;
 
     public static BootReasonEnumType getReason() {
         return reason;
@@ -21,10 +21,9 @@ public class BootNotificationRequest {
 
     public static JSONObject payload() throws JSONException {
         JSONObject jo  = new JSONObject();
-        jo.put("reason", BootNotificationRequest.reason) ;
+        jo.put("reason", BootNotificationRequest.reason.toString()) ;
         jo.put("chargingStation", ChargingStationType.getp());
         return jo;
     }
 
 }
-

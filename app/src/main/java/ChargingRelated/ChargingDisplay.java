@@ -28,10 +28,6 @@ import com.example.chargergui.R;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import java.io.IOException;
-
-import javax.websocket.EncodeException;
-
 import AuthorizationRelated.AuthorizationStatusEnumType;
 import AuthorizationRelated.IdTokenType;
 import ChargingStationDetails.CSPhysicalProperties;
@@ -81,8 +77,10 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
     int count = 0 ;
     int counter ;
     long timeSpent = 0 ;   //seconds
+    double targetSoc = 100;
     boolean stopThread =false;
     boolean stopThread1 = false ;
+    boolean chargingCompleted = false;
     Handler mHandler = new Handler();
     SendRequestToCSMS toCSMS1 = new SendRequestToCSMS();
     MyClientEndpoint myClientEndpoint ;
@@ -117,6 +115,10 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
 
         Intent intent = getIntent();
         currentsoc = intent.getStringExtra("currentsoc");
+        if (currentsoc == null) {
+            currentsoc = "0";
+        }
+        targetSoc = intent.getDoubleExtra("targetsoc", 100);
         SOC = Float.parseFloat(currentsoc);
         new ImageChargeBattery(SOC, BatteryCharge);
 
@@ -135,6 +137,7 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
         progressBar.setVisibility(View.GONE);
 
         myClientEndpoint = MyClientEndpoint.getInstance() ;
+        myClientEndpoint.init(getApplicationContext());
 
         DisplayMessageState.setMessageState(MessageStateEnumType.Charging);
 
@@ -171,7 +174,6 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
     @Override
     protected void onStart() {
         super.onStart();
-        BluetoothThreadMeter();
         StartSendingMeterValues();
     }
 
@@ -179,6 +181,15 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
         @Override
         public void run() {
             try {
+                if (chargingCompleted) {
+                    return;
+                }
+                updateMeterSnapshot();
+                if (SOC >= targetSoc) {
+                    AfterChargingComplete();
+                    return;
+                }
+
                 TransactionEventRequest.eventType = TransactionEventEnumType.Updated ;
                 TransactionEventRequest.triggerReason = TriggerReasonEnumType.MeterValuePeriodic ;
                 TransactionType.chargingState = ChargingStateEnumType.Charging ;
@@ -186,20 +197,20 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
                 TransactionType.stoppedReason = null ;
                 TransactionType.timeSpentCharging = (int) timeSpent;
 
-                SampledValueType energy = new SampledValueType(,ReadingContextEnumType.SamplePeriodic, MeasurandEnumType.EnergyActiveImportRegister) ;
-                SampledValueType soc = new SampledValueType(,ReadingContextEnumType.SamplePeriodic,MeasurandEnumType.SoC) ;
-                SampledValueType voltage = new SampledValueType(,ReadingContextEnumType.SamplePeriodic,MeasurandEnumType.Voltage);
+                SampledValueType energy = new SampledValueType(Energy, ReadingContextEnumType.SamplePeriodic, MeasurandEnumType.EnergyActiveImportRegister);
+                SampledValueType soc = new SampledValueType(SOC, ReadingContextEnumType.SamplePeriodic,MeasurandEnumType.SoC);
+                SampledValueType voltageSample = new SampledValueType(Voltage, ReadingContextEnumType.SamplePeriodic,MeasurandEnumType.Voltage);
 
                 JSONArray jsonArray = new JSONArray() ;
                 jsonArray.put(0,energy.getp(new UnitOfMeasureType("KWh",1)));
                 jsonArray.put(1,soc.getp(new UnitOfMeasureType("%",1))) ;
-                jsonArray.put(2,voltage.getp(new UnitOfMeasureType("V",1))) ;
+                jsonArray.put(2,voltageSample.getp(new UnitOfMeasureType("V",1))) ;
 
                 TransactionEventRequest.SetMeterValues(jsonArray);
 
                 toCSMS1.sendTransactionEventRequest(ChargingDisplay.this) ;
 
-                mHandler.postDelayed(this,1000* SampledDataCtrlr.TxUpdatedInterval) ;
+                mHandler.postDelayed(this,1000L * Math.max(1, SampledDataCtrlr.TxUpdatedInterval)) ;
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -208,6 +219,10 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
 
 
     private void AfterChargingComplete()  {
+        if (chargingCompleted) {
+            return;
+        }
+        chargingCompleted = true;
 
         StopSendingMeterValues();
         ChargingStationStates.setEnergyTransfer(false);
@@ -252,7 +267,7 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
 
     }
 
-    private void OnClickStop(View view )  {
+    public void OnClickStop(View view )  {
         if(IdTokenType.type == IdTokenEnumType.KeyCode){
             openDialogPIN();
         }
@@ -301,6 +316,25 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
     public void OnClickWantToChargeMore(View view){
 
     }
+
+    private void updateMeterSnapshot() {
+        if (Voltage <= 0) {
+            Voltage = 230;
+        }
+        if (Current <= 0) {
+            Current = 16;
+        }
+
+        int intervalSeconds = Math.max(1, SampledDataCtrlr.TxUpdatedInterval);
+        Energy += (Voltage * Current * intervalSeconds) / 3600000f;
+        if (targetSoc > SOC) {
+            SOC = (float) Math.min(targetSoc, SOC + intervalSeconds / 60f);
+        }
+
+        voltage.setText(format("%.2f", Voltage));
+        current.setText(format("%.2f", Current));
+        Charge.setText(format("%.1f", SOC));
+    }
 /*
     private void TimerForTimeSpent(){
         final Thread t = new Thread(){
@@ -334,80 +368,6 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
     }*/
 
     private void BluetoothThreadMeter() {
-        if (bs.BTinit()) {
-            if (bs.BTconnect()) {
-                bs.deviceConnected = true;
-                final Handler handler = new Handler();
-                Thread thread = new Thread(new Runnable() {
-                    public void run() {
-                        while (!Thread.currentThread().isInterrupted() && !stopThread) {
-                            try {
-                                final String string  = "METER";
-                                bs.outputStream.write(string.getBytes());
-
-                                int byteCount = bs.inputStream.available();
-                                if (byteCount > 0) {
-
-                                    byte[] mmBuffer = new byte[1024];
-                                    int numBytes; // bytes returned from read()
-                                    numBytes = bs.inputStream.read(mmBuffer);
-                                    final String variable = new String(mmBuffer, 0,numBytes ,"UTF-8");
-                                    //variable = V-220-I-15.6-SOC-45.6-E-10.6-CPEV-T-EO-T;
-                                    handler.post(new Runnable() {
-                                        public void run() {
-
-                                            if (ChargingStationStates.isEVSideCablePluggedIn && ChargingStationStates.isEnergyTransfer) {
-                                                String[] output = variable.split("-");
-
-                                                // Instantaneous DC or AC RMS supply voltage
-                                                voltage.setText(output[1]);
-                                                Voltage = Float.parseFloat(output[1]);
-
-                                                // Instantaneous current flow to EV
-                                                current.setText(output[3]);
-                                                Current = Float.parseFloat(output[3]);
-
-                                                // State of charge of charging vehicle in percentage
-                                                Charge.setText(output[5]);
-                                                SOC = Float.parseFloat(output[5]);
-                                                if (SOC >= Target.SOC) {
-                                                    AfterChargingComplete();
-                                                }
-                                                Energy = Float.parseFloat(output[7]);  // Energy in KWh
-
-                                                if (output[9].equals("T")) {
-                                                    ChargingStationStates.setCablePluggedIn(true);
-                                                }
-                                                if (output[9].equals("F")) {
-                                                    ChargingStationStates.setCablePluggedIn(false);
-                                                    try {
-                                                        afterCableUnplugAtEVSide();
-
-                                                    } catch (IOException e) {
-                                                        e.printStackTrace();
-                                                    } catch (EncodeException e) {
-                                                        e.printStackTrace();
-                                                    } catch (JSONException e) {
-                                                        e.printStackTrace();
-                                                    }
-                                                }
-                                                if (output[11].equals("T") ) {
-                                                    ChargingStationStates.setEnergyTransfer(true);
-                                                }
-                                            }
-                                        }
-                                    });
-                                }
-                            } catch (IOException ex) {
-                                stopThread = true;
-                            }
-                        }
-                    }
-                });
-
-                thread.start();
-            }
-        }
     }
 
     private void StopSendingMeterValues(){
@@ -419,48 +379,6 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
     }
 
     private void BluetoothThreadforCablePlug() {
-        if (bs.BTinit()) {
-            if (bs.BTconnect()) {
-                bs.deviceConnected = true;
-                Thread thread = new Thread(new Runnable() {
-                    public void run() {
-                        while (!Thread.currentThread().isInterrupted() && !stopThread1) {
-                            try {
-                                String string = "CPEV";
-                                bs.outputStream.write(string.getBytes());
-
-                                int byteCount = bs.inputStream.available();
-                                if (byteCount > 0) {
-                                    byte[] mmBuffer = new byte[1024];
-                                    int numBytes; // bytes returned from read()
-                                    numBytes = bs.inputStream.read(mmBuffer);
-                                    final String cableplug = new String(mmBuffer,0,numBytes,"UTF-8");
-                                    Handler handler = new Handler();
-                                    handler.post(new Runnable() {
-                                        public void run() {
-                                            if(cableplug.equals("T")) {
-                                                ChargingStationStates.setCablePluggedIn(true);
-                                                afterSuspendCablePluggedAtEVSide();
-                                                stopThread1 = true ;
-                                            }
-                                            else if(cableplug.equals("F")){
-                                                ChargingStationStates.setCablePluggedIn(false);
-                                            }
-
-                                        }
-                                    });
-
-                                }
-                            } catch (IOException ex) {
-                                stopThread = true;
-                            }
-                        }
-                    }
-                });
-
-                thread.start();
-            }
-        }
     }
 
     private void afterSuspendCablePluggedAtEVSide(){
@@ -471,7 +389,7 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
         AfterSuspend.setVisibility(View.INVISIBLE);
         SuspendTimer.setVisibility(View.INVISIBLE);
 
-        TimerForTimeSpent();
+        startChronometer();
 
         TransactionEventRequest.eventType = TransactionEventEnumType.Updated;
         TransactionEventRequest.triggerReason = TriggerReasonEnumType.CablePluggedIn;
@@ -481,8 +399,6 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        BluetoothThreadMeter();
-
         StartSendingMeterValues();
     }
 
@@ -603,11 +519,3 @@ public class ChargingDisplay extends AppCompatActivity implements PINauthorizeDi
 
     }
 }
-
-
-
-
-
-
-
-

@@ -76,7 +76,7 @@ public class PINauthorizeDialog extends AppCompatDialogFragment {
                             TransactionType.chargingState = ChargingStateEnumType.EVConnected;
 
                             try {
-                                toCSMS2.sendTransactionEventRequest());
+                                toCSMS2.sendTransactionEventRequest(getContext());
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }

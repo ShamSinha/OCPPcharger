@@ -36,8 +36,8 @@ public class IdTokenInfoEntity {
         return id;
     }
 
-    public String getStatus() {
-        return status;
+    public AuthorizationStatusEnumType getStatus() {
+        return AuthorizationStatusEnumType.valueOf(status);
     }
 
     public String getCacheExpiryDateTime() {

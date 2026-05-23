@@ -87,6 +87,8 @@ public class UserInput extends AppCompatActivity implements AmountDialog.AmountD
 
     public void OnclickStart(View view){
         Intent i = new Intent(UserInput.this , ChargingDisplay.class);
+        i.putExtra("currentsoc", String.valueOf(inputViewModel.getInitialSoc()));
+        i.putExtra("targetsoc", inputViewModel.getInputCharge());
         startActivity(i);
     }
 

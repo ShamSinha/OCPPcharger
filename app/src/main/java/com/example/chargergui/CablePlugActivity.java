@@ -63,6 +63,7 @@ public class CablePlugActivity extends AppCompatActivity {
         plug2 = findViewById(R.id.imageView2);
 
         myClientEndpoint = MyClientEndpoint.getInstance() ;
+        myClientEndpoint.init(getApplicationContext());
 
         DisplayMessageState.setMessageState(MessageStateEnumType.Idle);
 

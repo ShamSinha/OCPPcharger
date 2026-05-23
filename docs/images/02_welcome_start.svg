@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="540" viewBox="0 0 900 540">
+  <rect width="900" height="540" fill="#f7fafc"/>
+  <rect x="90" y="50" width="720" height="440" rx="28" fill="#111827"/>
+  <rect x="120" y="78" width="660" height="384" rx="8" fill="#ffffff"/>
+  <text x="640" y="112" font-family="Arial, sans-serif" font-size="15" fill="#334155">2026-05-23T10:24</text>
+  <rect x="150" y="165" width="600" height="110" fill="#ffffff"/>
+  <text x="450" y="238" text-anchor="middle" font-family="Arial, sans-serif" font-size="58" font-weight="700" fill="#36ca33">EV Solutions</text>
+  <rect x="590" y="350" width="150" height="72" rx="4" fill="#1976d2"/>
+  <text x="665" y="396" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#ffffff">START</text>
+  <text x="450" y="515" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#64748b">WelcomeAndStart / activity_welcome_and_start.xml</text>
+</svg>

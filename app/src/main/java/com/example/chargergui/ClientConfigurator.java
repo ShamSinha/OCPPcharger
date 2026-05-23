@@ -27,9 +27,9 @@ public class ClientConfigurator extends ClientEndpointConfig.Configurator {
         //headers.put("AUTHORIZATION", Collections.singletonList("Basic " + Base64.getEncoder().encodeToString((chargingStationIdentity+":password").getBytes()))); // byte array to string
 
         List<String> WebSocketProtocols = new ArrayList<String>();
-        WebSocketProtocols.add(0,"ocpp2.0.1");
-        WebSocketProtocols.add(1,"ocpp1.6");
-        headers.put("SEC_WEBSOCKET_PROTOCOL", WebSocketProtocols);
+        WebSocketProtocols.add(0,"ocpp2.1");
+        WebSocketProtocols.add(1,"ocpp2.0.1");
+        headers.put("Sec-WebSocket-Protocol", WebSocketProtocols);
 
 
     }

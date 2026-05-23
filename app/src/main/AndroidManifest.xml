@@ -14,15 +14,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".WelcomeAndStart" />
-        <activity android:name=".CablePlugActivity" />
-        <activity android:name=".Authentication" />
-        <activity android:name=".Authorization2" />
-        <activity android:name="ChargingRelated.ChargingDisplay" />
-        <activity android:name=".UserInput" />
-        <activity android:name=".Authorization1" />
-        <activity android:name=".cs_unavailable" />
-        <activity android:name="SOCDisplayRelated.SOCdisplay" />
+        <activity
+            android:name=".ProductChargerActivity"
+            android:screenOrientation="landscape"
+            tools:ignore="LockedOrientationActivity" />
 
         <uses-library android:name="com.google.android.things"/>
         <activity

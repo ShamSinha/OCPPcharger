@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="540" viewBox="0 0 900 540">
+  <rect width="900" height="540" fill="#f7fafc"/>
+  <rect x="90" y="50" width="720" height="440" rx="28" fill="#111827"/>
+  <rect x="120" y="78" width="660" height="384" rx="8" fill="#ffffff"/>
+  <text x="450" y="126" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#013d40">User Input</text>
+  <text x="450" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="#334155">Choose only one Input Option</text>
+  <text x="250" y="205" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#111827">Tariff - Rs. 4/KWh</text>
+  <text x="560" y="205" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#111827">SOC - 40.5%</text>
+  <rect x="210" y="245" width="220" height="160" rx="10" fill="#32f8f8"/>
+  <rect x="250" y="270" width="140" height="70" rx="4" fill="#ffffff"/>
+  <text x="320" y="318" text-anchor="middle" font-family="Arial, sans-serif" font-size="42" font-weight="700" fill="#1e88e5">Rs</text>
+  <text x="320" y="378" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#111827">AMOUNT</text>
+  <rect x="470" y="245" width="220" height="160" rx="10" fill="#32f8f8"/>
+  <rect x="510" y="270" width="140" height="70" rx="4" fill="#ffffff"/>
+  <text x="580" y="318" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#1e88e5">BAT</text>
+  <text x="580" y="378" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#111827">CHARGE</text>
+  <rect x="365" y="425" width="170" height="52" rx="6" fill="#1e88e5"/>
+  <text x="450" y="458" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#ffffff">START CHARGING</text>
+  <text x="450" y="515" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#64748b">UserInput / activity_user_input.xml</text>
+</svg>

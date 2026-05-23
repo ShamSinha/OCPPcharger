@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -14,6 +15,9 @@ import android.widget.TextView;
 import androidx.cardview.widget.CardView;
 
 import com.galarzaa.androidthings.Rc522;
+import com.google.android.things.pio.Gpio;
+import com.google.android.things.pio.PeripheralManager;
+import com.google.android.things.pio.SpiDevice;
 
 import org.json.JSONException;
 
@@ -34,9 +38,14 @@ import TransactionRelated.TriggerReasonEnumType;
 import UseCasesOCPP.SendRequestToCSMS;
 
 public class Authorization2 extends Activity {
+    private static final String TAG = "Authorization2";
+    private static final String SPI_PORT = "SPI0.0";
+    private static final String RESET_PIN = "BCM25";
+
     ImageButton imageButton ;
     boolean stopThread = false;
     boolean stopThread1 = false ;
+    boolean stopRfidThread = false;
     CardView cardView1 ;
     CardView cardView2 ;
     CardView cardView3 ;
@@ -49,10 +58,14 @@ public class Authorization2 extends Activity {
 
     int count ;
     SendRequestToCSMS toCSMS = new SendRequestToCSMS();
-    final MainActivity bs = new MainActivity();
     MyClientEndpoint myClientEndpoint ;
 
     private Rc522 mRc522;
+    private Gpio resetPin;
+    private SpiDevice spiDevice;
+    private Thread rfidThread;
+    private boolean cableEventSent;
+    private boolean authorizationInFlight;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,45 +96,79 @@ public class Authorization2 extends Activity {
         cablepluggedinText.setVisibility(View.GONE);
 
         myClientEndpoint = MyClientEndpoint.getInstance() ;
+        myClientEndpoint.init(getApplicationContext());
 
         DisplayMessageState.setMessageState(MessageStateEnumType.Idle);
 
-        try {
-            PeripheralManager manager = PeripheralManager.getInstance();
-            resetPin = manager.openGpio("BCM25");
-            SpiDevice spiDevice = manager.openSpiDevice("SPI0.0") ;
-            mRc522 = new Rc522(spiDevice, resetPin);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        initializeRfidReader();
 
     }
+
+    private void initializeRfidReader() {
+        try {
+            PeripheralManager manager = PeripheralManager.getInstance();
+            resetPin = manager.openGpio(RESET_PIN);
+            spiDevice = manager.openSpiDevice(SPI_PORT);
+            mRc522 = new Rc522(this, spiDevice, resetPin);
+        } catch (IOException e) {
+            Log.e(TAG, "Could not initialize RC522 RFID reader", e);
+        }
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
+        stopThread = false;
+        stopRfidThread = false;
 
         Thread thread1 = new Thread(new Runnable() {
             @Override
             public void run() {
                 while (!Thread.currentThread().isInterrupted() && !stopThread) {
-
-                    if( IsCableConnectedBeforeAuthorized()){
-                        CablePlugInImage.setVisibility(View.VISIBLE);
-                        cablepluggedinText.setVisibility(View.VISIBLE);
-                    }
-                    else {
-                        CablePlugInImage.setVisibility(View.GONE);
-                        cablepluggedinText.setVisibility(View.GONE);
+                    final boolean cableConnected = IsCableConnectedBeforeAuthorized();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            CablePlugInImage.setVisibility(cableConnected ? View.VISIBLE : View.GONE);
+                            cablepluggedinText.setVisibility(cableConnected ? View.VISIBLE : View.GONE);
+                        }
+                    });
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
                     }
                 }
             }
         });
         thread1.start();
+        startRfidPolling();
 
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        stopThread = true;
+        stopRfidThread = true;
+        if (rfidThread != null) {
+            rfidThread.interrupt();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        closeQuietly(spiDevice);
+        closeQuietly(resetPin);
+        super.onDestroy();
+    }
+
     public boolean IsCableConnectedBeforeAuthorized(){
 
         if(ChargingStationStates.isEVSideCablePluggedIn && !ChargingStationStates.isAuthorized){
+            if (cableEventSent) {
+                return true;
+            }
 
             StatusNotificationRequest.setConnectorStatus(ConnectorStatusEnumType.Occupied);
             try {
@@ -134,13 +181,15 @@ public class Authorization2 extends Activity {
             TransactionType.chargingState = ChargingStateEnumType.EVConnected;
             TransactionEventRequest.triggerReason = TriggerReasonEnumType.CablePluggedIn;
             try {
-                toCSMS.sendTransactionEventRequest();
+                toCSMS.sendTransactionEventRequest(Authorization2.this);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
 
+            cableEventSent = true;
             return true ;
         }
+        cableEventSent = false;
         return false ;
     }
 
@@ -159,6 +208,76 @@ public class Authorization2 extends Activity {
             e.printStackTrace();
         }
         getResponse();
+    }
+
+    private void startRfidPolling() {
+        if (mRc522 == null || rfidThread != null && rfidThread.isAlive()) {
+            return;
+        }
+        rfidThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (!Thread.currentThread().isInterrupted() && !stopRfidThread) {
+                    final String rfid = readRfidUid();
+                    if (rfid != null && !authorizationInFlight) {
+                        authorizationInFlight = true;
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                AfterHavingRFID(rfid);
+                            }
+                        });
+                        return;
+                    }
+                    try {
+                        Thread.sleep(250);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            }
+        });
+        rfidThread.start();
+    }
+
+    private String readRfidUid() {
+        try {
+            mRc522.stopCrypto();
+            if (!mRc522.request()) {
+                return null;
+            }
+            if (!mRc522.antiCollisionDetect()) {
+                return null;
+            }
+            byte[] uid = mRc522.getUid();
+            if (uid == null || uid.length == 0) {
+                return null;
+            }
+            mRc522.selectTag(uid);
+            return toHexString(uid);
+        } catch (Exception e) {
+            Log.e(TAG, "RFID polling failed", e);
+            return null;
+        }
+    }
+
+    private String toHexString(byte[] bytes) {
+        StringBuilder builder = new StringBuilder();
+        for (byte value : bytes) {
+            builder.append(String.format("%02X", value & 0xFF));
+        }
+        return builder.toString();
+    }
+
+    private void closeQuietly(AutoCloseable closeable) {
+        if (closeable == null) {
+            return;
+        }
+        try {
+            closeable.close();
+        } catch (Exception e) {
+            Log.e(TAG, "Could not close RFID resource", e);
+        }
     }
 
     private void Processing(){
@@ -230,7 +349,7 @@ public class Authorization2 extends Activity {
                         TransactionType.chargingState =ChargingStateEnumType.Idle ;
                     }
                     try {
-                        toCSMS.sendTransactionEventRequest();
+                        toCSMS.sendTransactionEventRequest(Authorization2.this);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
