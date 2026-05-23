@@ -21,9 +21,9 @@ The app behaves like a simple OCPP charging station:
 5. Lets the EV driver authorize with RFID or PIN fallback.
 6. Sends `Authorize`.
 7. Sends cable and connector state through `StatusNotification` and `TransactionEvent`.
-8. Starts a simple default charge session.
+8. Starts charging and shows live meter/battery/cost data.
 9. Sends periodic charging updates through `TransactionEvent` with `meterValue`.
-10. Handles driver stop or target-SOC completion.
+10. Handles EV-side unplug suspension, driver-authorized stop, billing payment display, and target-SOC completion.
 
 ## Product Branch UI
 
@@ -42,17 +42,21 @@ Hardware state gallery:
 | Authorize | <img src="docs/images/product_state_03_authorize.svg" width="360" alt="Product charger authorize state"> |
 | Plug in | <img src="docs/images/product_state_04_plug_in.svg" width="360" alt="Product charger plug-in state"> |
 | Charging | <img src="docs/images/product_state_05_charging.svg" width="360" alt="Product charger charging state"> |
-| Complete | <img src="docs/images/product_state_06_complete.svg" width="360" alt="Product charger complete state"> |
+| Billing | <img src="docs/images/product_state_06_billing.svg" width="360" alt="Product charger billing state"> |
 | Attention | <img src="docs/images/product_state_07_attention.svg" width="360" alt="Product charger attention state"> |
 
 The active screen is intentionally minimal:
 
 - The boot screen only shows connection state, the station LED rail, and a compact CSMS log.
-- Big state text, for example `Ready`, `Tap card`, `Plug in`, `Charging`, or `Complete`.
+- Big state text, for example `Ready`, `Tap card`, `Plug in`, `Charging`, or `Billing`.
 - One primary action button.
 - PIN input only when RFID fallback is needed.
-- A single battery artwork indicator from `app/src/main/drawing*-playstore.png` during active or completed charging, with energy/cost/time kept as small secondary text.
-- Physical LED bulbs carry availability, authorization, plug-in, charging, complete, and fault state.
+- A single battery artwork indicator from `app/src/main/drawing*-playstore.png` during active charging, with energy/cost/time kept as small secondary text.
+- While charging is active, the bill is only shown after a successful stop.
+- After a successful stop, `Billing` directly shows transaction id, energy, duration, amount, a scannable UPI QR, and the owner UPI ID.
+- The demo owner UPI ID is `station.owner@upi`. Replace it with the station owner's real VPA before using the payment QR outside a demo.
+- `Pay` opens the same `upi://pay` payload on the station device when a UPI app is installed; normally the driver scans the on-screen QR from their phone.
+- Physical LED bulbs carry availability, authorization, plug-in, charging, finished-session, and fault state.
 - The RFID scanner has its own LED feedback below/near the screen.
 
 Battery artwork used by the Android UI:
@@ -80,7 +84,7 @@ All product states:
 | Amber | Booting or waiting for cable connection. |
 | Green | Connector available. |
 | Blue | Waiting for authorization or actively charging. |
-| White | Session complete. |
+| White | Session finished; Billing screen is active. |
 | Red | Authorization denied or station attention needed. |
 
 `StationSignalController` maps these states to GPIO bulbs inspired by the `RHA` project. The default assumed pins are:
@@ -111,8 +115,29 @@ Product flow:
 4. Blue station light and blue scanner light: charger waits for RFID; PIN is a fallback.
 5. Scanner green blinks on accepted authorization; scanner red blinks on rejected authorization.
 6. Amber station light: driver plugs in the cable.
-7. Blue station light: charging session runs and sends meter updates.
-8. White station light: session finished; Done resets to Ready.
+7. Blue station light: charging session runs, meter values come from the controller/Bluetooth path, and `CostUpdated` from CSMS refreshes the amount shown on screen.
+8. If a permanently attached cable is unplugged at the EV side, charging is suspended. If it is not reconnected before `EVConnectionTimeOut`, the transaction ends and connector status returns to `Available`.
+9. To stop charging manually, the driver must present the same IdToken used to start the session.
+10. White station light: session finished; `Billing` shows the bill, UPI QR/UPI ID, and `Charge more` resets to Ready.
+
+Charging and payment UI states:
+
+| UI State | Driver Action | OCPP / Product Behavior |
+| --- | --- | --- |
+| Charging | Watch live battery/energy/cost/time. | Meter values are fed to the screen from the controller path; CSMS can update cost via `CostUpdated`. |
+| Charging | Press Stop. | Screen asks for the same RFID/PIN IdToken before stopping. |
+| Suspended | Reconnect EV-side cable. | Transaction resumes before `EVConnectionTimeOut`. |
+| Suspended | Timeout expires. | Transaction ends with `EVDisconnected`; connector status becomes `Available`. |
+| Billing | Scan QR from phone. | UPI app opens a prefilled payment to `station.owner@upi`. |
+| Billing | Press Pay on station device. | Android opens installed UPI apps with the same payment payload. |
+| Billing | Press Charge more. | Station resets to Ready for the next driver. |
+
+Payment implementation notes:
+
+- The QR encodes a standard UPI deep link with `pa`, `pn`, `tr`, `tn`, `am`, and `cu=INR`.
+- The amount comes from CSMS `CostUpdated` when available, otherwise from the local demo tariff.
+- Scanning the QR from a driver's phone sends payment directly to the VPA in `pa`.
+- A production charger should confirm settlement through the payment provider or CSMS backend before issuing a final paid receipt. A QR scan from a separate phone does not automatically send a callback to the charger display.
 
 RFID in the product screen follows the serial-Arduino style from `RHA`: `SerialRfidReader` reads UIDs from `/dev/ttyACM0`.
 
@@ -129,7 +154,7 @@ The product branch intentionally has only two registered Activities:
 | Activity | Purpose |
 | --- | --- |
 | `MainActivity` | Boot, WebSocket connection, and `BootNotification`. |
-| `ProductChargerActivity` | Driver flow, side-by-side LED rail, RFID scanner feedback, cable wait, charging, and completion. |
+| `ProductChargerActivity` | Driver flow, side-by-side LED rail, RFID scanner feedback, cable wait, charging, and billing. |
 
 ## OCPP Messages
 
@@ -163,7 +188,8 @@ CSMS-originated actions handled by the charger include:
 | --- | --- |
 | `SetNetworkProfile` | Validates and stores a new CSMS WebSocket URL. |
 | `SetVariables` / `GetVariables` | Reads and updates local controller variables. |
-| `SetDisplayMessage` / `GetDisplayMessages` | Stores and reports display messages. |
+| `SetDisplayMessage` / `SetDisplayMessages` | Stores display messages from the CSMS/CSO path. |
+| `GetDisplayMessages` | Replies with status and sends matching messages through `NotifyDisplayMessages`. |
 | `Reset` | Processes reset request and replies with `ResetResponse`. |
 | `CostUpdated` | Updates displayed transaction cost. |
 
