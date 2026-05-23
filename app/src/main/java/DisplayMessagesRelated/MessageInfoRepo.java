@@ -50,4 +50,8 @@ public class MessageInfoRepo {
         return messageInfoDao.getMessageInfoByState(state) ;
     }
 
+    public List<MessageInfoEntity.MessageInfo> getAllMessageInfo(){
+        return messageInfoDao.getAllMessageInfo();
+    }
+
 }

@@ -92,8 +92,15 @@ public class MyClientEndpoint  {
         void onConnectionFailed(String message);
     }
 
+    public interface CostUpdateListener {
+        void onCostUpdated(String transactionId, float totalCost);
+    }
+
     private Session session ;
     private ConnectionListener connectionListener;
+    private CostUpdateListener costUpdateListener;
+    private float latestCost;
+    private String latestCostTransactionId = "";
 
     private static MyClientEndpoint instance = new MyClientEndpoint(); // Eagerly Loading of single ton instance
 
@@ -124,6 +131,18 @@ public class MyClientEndpoint  {
 
     public IdTokenInfoEntity getIdInfo() {
         return idInfo;
+    }
+
+    public void setCostUpdateListener(CostUpdateListener costUpdateListener) {
+        this.costUpdateListener = costUpdateListener;
+    }
+
+    public float getLatestCost() {
+        return latestCost;
+    }
+
+    public String getLatestCostTransactionId() {
+        return latestCostTransactionId;
     }
 
     public NetworkProfileRepo networkProfileRepo ;
@@ -311,18 +330,26 @@ public class MyClientEndpoint  {
                         }
                     } else if (requestPayload.has("priority")) {
                         String priority = requestPayload.getString("priority");
-                        if (messageInfoRepo.getMessageInfoByPriority(priority) != null) {
+                        messageInfoEntityList = messageInfoRepo.getMessageInfoByPriority(priority);
+                        if (messageInfoEntityList != null && !messageInfoEntityList.isEmpty()) {
                             GetDisplayMessagesResponse.setStatus(GetDisplayMessagesStatusEnumType.Accepted);
-                            messageInfoEntityList = messageInfoRepo.getMessageInfoByPriority(priority);
                             notifyDisplayMessage = processGetDisplayMessages(messageInfoEntityList);
                         } else {
                             GetDisplayMessagesResponse.setStatus(GetDisplayMessagesStatusEnumType.Unknown);
                         }
                     } else if (requestPayload.has("state")) {
                         String state = requestPayload.getString("state");
-                        if (messageInfoRepo.getMessageInfoByState(state) != null) {
+                        messageInfoEntityList = messageInfoRepo.getMessageInfoByState(state);
+                        if (messageInfoEntityList != null && !messageInfoEntityList.isEmpty()) {
                             GetDisplayMessagesResponse.setStatus(GetDisplayMessagesStatusEnumType.Accepted);
-                            messageInfoEntityList = messageInfoRepo.getMessageInfoByState(state);
+                            notifyDisplayMessage = processGetDisplayMessages(messageInfoEntityList);
+                        } else {
+                            GetDisplayMessagesResponse.setStatus(GetDisplayMessagesStatusEnumType.Unknown);
+                        }
+                    } else {
+                        messageInfoEntityList = messageInfoRepo.getAllMessageInfo();
+                        if (messageInfoEntityList != null && !messageInfoEntityList.isEmpty()) {
+                            GetDisplayMessagesResponse.setStatus(GetDisplayMessagesStatusEnumType.Accepted);
                             notifyDisplayMessage = processGetDisplayMessages(messageInfoEntityList);
                         } else {
                             GetDisplayMessagesResponse.setStatus(GetDisplayMessagesStatusEnumType.Unknown);
@@ -452,32 +479,58 @@ public class MyClientEndpoint  {
         MessageInfoRepo messageInfoRepo = new MessageInfoRepo(context.get());
 
         String priority = j.getString("priority");
-        for (MessagePriorityEnumType s : MessagePriorityEnumType.values()) {
-                if(!priority.equals(s.name())) {
-                    return DisplayMessageStatusEnumType.NotSupportedPriority ;
-                }
+        if (!isSupportedPriority(priority)) {
+            return DisplayMessageStatusEnumType.NotSupportedPriority;
         }
         String state = j.getString("state") ;
-        for (MessageStateEnumType s : MessageStateEnumType.values()){
-            if(!state.equals(s.name())){
-                return DisplayMessageStatusEnumType.NotSupportedState ;
-            }
+        if (!isSupportedState(state)) {
+            return DisplayMessageStatusEnumType.NotSupportedState;
         }
-        String startDateTime = j.getString("startDateTime");
-        String endDateTime = j.getString("endDataTime");
-        String transactionId = j.getString("transactionId");
+        String startDateTime = j.optString("startDateTime", "");
+        String endDateTime = j.optString("endDateTime", j.optString("endDataTime", ""));
+        String transactionId = j.optString("transactionId", "");
 
         MessageInfoEntity.MessageContent messageContent = new MessageInfoEntity.MessageContent();
         JSONObject displayMessage = j.getJSONObject("message");
-        messageContent.content = displayMessage.getString("content");
-        messageContent.format = displayMessage.getString("format");
-        messageContent.language = displayMessage.getString("language");
+        messageContent.content = displayMessage.optString("content", "");
+        messageContent.format = displayMessage.optString("format", MessageFormatEnumType.UTF8.name());
+        if (!isSupportedFormat(messageContent.format)) {
+            return DisplayMessageStatusEnumType.NotSupportedMessageFormat;
+        }
+        messageContent.language = displayMessage.optString("language", "");
 
         MessageInfoEntity.MessageInfo message = new MessageInfoEntity.MessageInfo(priority,state,startDateTime,endDateTime,transactionId,messageContent) ;
         message.setId(j.getInt("id"));
         messageInfoRepo.insert(message);
 
         return DisplayMessageStatusEnumType.Accepted ;
+    }
+
+    private boolean isSupportedPriority(String priority) {
+        for (MessagePriorityEnumType supportedPriority : MessagePriorityEnumType.values()) {
+            if (supportedPriority.name().equals(priority)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isSupportedState(String state) {
+        for (MessageStateEnumType supportedState : MessageStateEnumType.values()) {
+            if (supportedState.name().equals(state)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isSupportedFormat(String format) {
+        for (MessageFormatEnumType supportedFormat : MessageFormatEnumType.values()) {
+            if (supportedFormat.name().equals(format)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void processAuthResponse(JSONObject j2) throws JSONException {
@@ -536,8 +589,12 @@ public class MyClientEndpoint  {
     }
 
     private JSONObject processCostUpdatedRequest(JSONObject requestPayload) throws JSONException {
-        ChargeRepo chargeRepo = new ChargeRepo(context.get()) ;
-        chargeRepo.updateCost((float)requestPayload.getDouble("totalCost"),requestPayload.getString("transactionId"));
+        latestCost = (float) requestPayload.getDouble("totalCost");
+        latestCostTransactionId = requestPayload.optString("transactionId", "");
+        CostUpdateListener listener = costUpdateListener;
+        if (listener != null) {
+            listener.onCostUpdated(latestCostTransactionId, latestCost);
+        }
         return CostUpdatedResponse.payload() ;
     }
 
@@ -595,6 +652,7 @@ public class MyClientEndpoint  {
     }
 
     private void sendRequest(final CALL call) {
+        CALL.setMessageIdIfCallHasToSent();
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         executorService.execute(new Runnable() {
             @Override

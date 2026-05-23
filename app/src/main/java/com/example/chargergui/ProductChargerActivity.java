@@ -1,8 +1,11 @@
 package com.example.chargergui;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -57,13 +60,21 @@ public class ProductChargerActivity extends Activity {
     private static final float VOLTAGE = 230f;
     private static final float CURRENT = 16f;
     private static final float TARIFF_PER_KWH = 6f;
+    private static final int DEFAULT_EV_CONNECTION_TIMEOUT_SECONDS = 60;
+    private static final boolean CABLE_PERMANENTLY_ATTACHED = true;
+    private static final int UPI_PAYMENT_REQUEST_CODE = 7401;
+    private static final String STATION_ID = "CS01";
+    private static final String OWNER_UPI_ID = "station.owner@upi";
+    private static final String OWNER_UPI_NAME = "Demo EV Charging Station";
 
     private enum ProductState {
         READY,
         AUTHORIZING,
         WAIT_FOR_PLUG,
         CHARGING,
-        COMPLETE,
+        STOP_AUTHORIZING,
+        SUSPENDED,
+        BILLING,
         FAULT
     }
 
@@ -92,10 +103,13 @@ public class ProductChargerActivity extends Activity {
     private View rfidScannerLed;
     private LinearLayout authPanel;
     private LinearLayout metricsPanel;
+    private LinearLayout paymentPanel;
     private EditText pinInput;
     private Button pinButton;
     private Button primaryButton;
     private Button secondaryButton;
+    private ImageView upiQrImage;
+    private TextView upiIdText;
 
     private GpioProcessor.Gpio cablePin;
     private Thread cableThread;
@@ -104,7 +118,17 @@ public class ProductChargerActivity extends Activity {
     private boolean authorizing;
     private float soc = INITIAL_SOC;
     private float energyKwh;
+    private float csmsCost;
     private int elapsedSeconds;
+    private boolean costFromCsms;
+    private String activeIdToken = "";
+    private IdTokenEnumType activeIdTokenType;
+    private String pendingIdToken = "";
+    private IdTokenEnumType pendingIdTokenType;
+    private boolean evSideCablePlugged;
+    private Uri currentUpiUri;
+    private String billingMessage = "";
+    private String paymentReference = "";
 
     private final Runnable chargingTick = new Runnable() {
         @Override
@@ -130,6 +154,18 @@ public class ProductChargerActivity extends Activity {
         }
     };
 
+    private final Runnable evConnectionTimeoutRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (state == ProductState.SUSPENDED) {
+                finishCharging(
+                        ReasonEnumType.EVDisconnected,
+                        TriggerReasonEnumType.EVCommunicationLost,
+                        "EV side cable unplugged. Session stopped after connection timeout.");
+            }
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -141,6 +177,17 @@ public class ProductChargerActivity extends Activity {
         bindViews();
         myClientEndpoint = MyClientEndpoint.getInstance();
         myClientEndpoint.init(getApplicationContext());
+        myClientEndpoint.setCostUpdateListener(new MyClientEndpoint.CostUpdateListener() {
+            @Override
+            public void onCostUpdated(final String transactionId, final float totalCost) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        handleCostUpdated(transactionId, totalCost);
+                    }
+                });
+            }
+        });
         signalController = new StationSignalController();
 
         EVSEType.setId(1);
@@ -175,10 +222,44 @@ public class ProductChargerActivity extends Activity {
     @Override
     protected void onDestroy() {
         handler.removeCallbacksAndMessages(null);
+        if (myClientEndpoint != null) {
+            myClientEndpoint.setCostUpdateListener(null);
+        }
         if (signalController != null) {
             signalController.close();
         }
         super.onDestroy();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode != UPI_PAYMENT_REQUEST_CODE) {
+            return;
+        }
+
+        String response = data == null ? "" : data.getStringExtra("response");
+        if (response == null) {
+            response = "";
+        }
+
+        String status = upiResponseValue(response, "Status");
+        if ("SUCCESS".equalsIgnoreCase(status) || response.toUpperCase(Locale.US).contains("SUCCESS")) {
+            subtitle.setText("Payment reported");
+            setDetail(billingSummary()
+                    + "\nUPI app reported success. Confirm settlement in CSMS before closing the payment.");
+        } else if ("FAILURE".equalsIgnoreCase(status)
+                || "FAILED".equalsIgnoreCase(status)
+                || response.toUpperCase(Locale.US).contains("FAILURE")) {
+            subtitle.setText("Payment failed");
+            setDetail(billingSummary() + "\nPayment failed. Scan the QR again or retry Pay.");
+        } else if (resultCode == RESULT_CANCELED) {
+            subtitle.setText("Payment pending");
+            setDetail(billingSummary() + "\nPayment was cancelled. Scan the QR again or retry Pay.");
+        } else {
+            subtitle.setText("Payment pending");
+            setDetail(billingSummary() + "\nPayment status is pending. Confirm settlement before release.");
+        }
     }
 
     private void bindViews() {
@@ -200,10 +281,13 @@ public class ProductChargerActivity extends Activity {
         rfidScannerLed = findViewById(R.id.rfidScannerLed);
         authPanel = findViewById(R.id.productAuthPanel);
         metricsPanel = findViewById(R.id.productMetricsPanel);
+        paymentPanel = findViewById(R.id.productPaymentPanel);
         pinInput = findViewById(R.id.productPinInput);
         pinButton = findViewById(R.id.productPinButton);
         primaryButton = findViewById(R.id.productPrimaryButton);
         secondaryButton = findViewById(R.id.productSecondaryButton);
+        upiQrImage = findViewById(R.id.productUpiQr);
+        upiIdText = findViewById(R.id.productUpiId);
 
         pinButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -227,9 +311,19 @@ public class ProductChargerActivity extends Activity {
         state = ProductState.READY;
         authorizing = false;
         handler.removeCallbacks(chargingTick);
+        handler.removeCallbacks(evConnectionTimeoutRunnable);
         soc = INITIAL_SOC;
         energyKwh = 0;
+        csmsCost = 0;
         elapsedSeconds = 0;
+        costFromCsms = false;
+        activeIdToken = "";
+        activeIdTokenType = null;
+        pendingIdToken = "";
+        pendingIdTokenType = null;
+        evSideCablePlugged = false;
+        billingMessage = "";
+        paymentReference = "";
         renderSignal(StationSignal.READY);
         showScannerReady();
         DisplayMessageState.setMessageState(MessageStateEnumType.Idle);
@@ -239,6 +333,7 @@ public class ProductChargerActivity extends Activity {
         setDetail(null);
         authPanel.setVisibility(View.GONE);
         metricsPanel.setVisibility(View.GONE);
+        hidePaymentPanel();
         primaryButton.setVisibility(View.VISIBLE);
         primaryButton.setEnabled(true);
         primaryButton.setBackgroundResource(R.drawable.product_button_primary);
@@ -250,6 +345,7 @@ public class ProductChargerActivity extends Activity {
             }
         });
         secondaryButton.setVisibility(View.GONE);
+        secondaryButton.setEnabled(true);
 
         sendStatus(ConnectorStatusEnumType.Available);
     }
@@ -265,9 +361,11 @@ public class ProductChargerActivity extends Activity {
         setDetail(null);
         authPanel.setVisibility(View.VISIBLE);
         metricsPanel.setVisibility(View.GONE);
+        hidePaymentPanel();
         primaryButton.setVisibility(View.GONE);
         primaryButton.setEnabled(true);
         secondaryButton.setVisibility(View.VISIBLE);
+        secondaryButton.setEnabled(true);
         secondaryButton.setBackgroundResource(R.drawable.product_button_secondary);
         secondaryButton.setText("Cancel");
         secondaryButton.setOnClickListener(new View.OnClickListener() {
@@ -288,6 +386,7 @@ public class ProductChargerActivity extends Activity {
         setDetail(null);
         authPanel.setVisibility(View.GONE);
         metricsPanel.setVisibility(View.GONE);
+        hidePaymentPanel();
         primaryButton.setVisibility(View.VISIBLE);
         primaryButton.setEnabled(true);
         primaryButton.setBackgroundResource(R.drawable.product_button_primary);
@@ -299,6 +398,7 @@ public class ProductChargerActivity extends Activity {
             }
         });
         secondaryButton.setVisibility(View.VISIBLE);
+        secondaryButton.setEnabled(true);
         secondaryButton.setBackgroundResource(R.drawable.product_button_secondary);
         secondaryButton.setText("Cancel");
         secondaryButton.setOnClickListener(new View.OnClickListener() {
@@ -317,9 +417,10 @@ public class ProductChargerActivity extends Activity {
 
         title.setText("Charging");
         subtitle.setText("Target " + TARGET_SOC + "%");
-        setDetail(null);
+        setDetail("Live meter data is read from the controller. Cost is updated by CSMS.");
         authPanel.setVisibility(View.GONE);
         metricsPanel.setVisibility(View.VISIBLE);
+        hidePaymentPanel();
         primaryButton.setVisibility(View.VISIBLE);
         primaryButton.setEnabled(true);
         primaryButton.setBackgroundResource(R.drawable.product_button_danger);
@@ -327,35 +428,106 @@ public class ProductChargerActivity extends Activity {
         primaryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                finishCharging(ReasonEnumType.Local, TriggerReasonEnumType.StopAuthorized);
+                showStopAuthorize();
             }
         });
         secondaryButton.setVisibility(View.GONE);
+        secondaryButton.setEnabled(true);
         renderMetrics();
     }
 
-    private void showComplete(String message) {
-        state = ProductState.COMPLETE;
+    private void showBilling(String message) {
+        state = ProductState.BILLING;
         renderSignal(StationSignal.COMPLETE);
         showScannerOff();
         DisplayMessageState.setMessageState(MessageStateEnumType.Idle);
 
-        title.setText("Complete");
-        subtitle.setText("Unplug when ready");
-        setDetail(message);
+        title.setText("Billing");
+        subtitle.setText("Scan to pay");
+        billingMessage = message == null ? "" : message;
+        setDetail(billingDisplayText(billingMessage));
         authPanel.setVisibility(View.GONE);
-        metricsPanel.setVisibility(View.VISIBLE);
+        metricsPanel.setVisibility(View.GONE);
+        renderUpiPayment();
         primaryButton.setVisibility(View.VISIBLE);
         primaryButton.setEnabled(true);
         primaryButton.setBackgroundResource(R.drawable.product_button_primary);
-        primaryButton.setText("Done");
+        primaryButton.setText("Pay");
         primaryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                launchUpiPayment();
+            }
+        });
+        secondaryButton.setVisibility(View.VISIBLE);
+        secondaryButton.setEnabled(true);
+        secondaryButton.setBackgroundResource(R.drawable.product_button_secondary);
+        secondaryButton.setText("Charge more");
+        secondaryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 showReady();
             }
         });
+        renderMetrics();
+    }
+
+    private void showStopAuthorize() {
+        if (state != ProductState.CHARGING && state != ProductState.SUSPENDED) {
+            return;
+        }
+
+        state = ProductState.STOP_AUTHORIZING;
+        renderSignal(StationSignal.AUTHORIZE);
+        showScannerReady();
+        title.setText("Verify stop");
+        subtitle.setText("Present same ID");
+        setDetail("Use the same RFID/PIN that started this session.");
+        authPanel.setVisibility(activeIdTokenType == IdTokenEnumType.KeyCode ? View.VISIBLE : View.GONE);
+        metricsPanel.setVisibility(View.VISIBLE);
+        hidePaymentPanel();
+        primaryButton.setVisibility(View.GONE);
+        secondaryButton.setVisibility(View.VISIBLE);
+        secondaryButton.setEnabled(true);
+        secondaryButton.setBackgroundResource(R.drawable.product_button_secondary);
+        secondaryButton.setText("Resume");
+        secondaryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (evSideCablePlugged) {
+                    showCharging();
+                    handler.postDelayed(chargingTick, 1000);
+                } else {
+                    showSuspended();
+                    handler.removeCallbacks(evConnectionTimeoutRunnable);
+                    handler.postDelayed(evConnectionTimeoutRunnable, getEvConnectionTimeoutSeconds() * 1000L);
+                }
+            }
+        });
+    }
+
+    private void showSuspended() {
+        state = ProductState.SUSPENDED;
+        renderSignal(StationSignal.PLUG_IN);
+        showScannerOff();
+        title.setText("Charging paused");
+        subtitle.setText("Cable unplugged");
+        setDetail("Reconnect EV side cable within " + getEvConnectionTimeoutSeconds() + "s.");
+        authPanel.setVisibility(View.GONE);
+        metricsPanel.setVisibility(View.VISIBLE);
+        hidePaymentPanel();
+        primaryButton.setVisibility(View.VISIBLE);
+        primaryButton.setEnabled(true);
+        primaryButton.setBackgroundResource(R.drawable.product_button_danger);
+        primaryButton.setText("Stop");
+        primaryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showStopAuthorize();
+            }
+        });
         secondaryButton.setVisibility(View.GONE);
+        secondaryButton.setEnabled(true);
         renderMetrics();
     }
 
@@ -365,6 +537,7 @@ public class ProductChargerActivity extends Activity {
         title.setText("Attention");
         subtitle.setText("Try again");
         setDetail(message);
+        hidePaymentPanel();
     }
 
     private void authorizeWithPin() {
@@ -384,17 +557,20 @@ public class ProductChargerActivity extends Activity {
             return;
         }
 
+        final boolean stopRequest = state == ProductState.STOP_AUTHORIZING;
         authorizing = true;
-        state = ProductState.AUTHORIZING;
+        state = stopRequest ? ProductState.STOP_AUTHORIZING : ProductState.AUTHORIZING;
+        pendingIdToken = token.trim();
+        pendingIdTokenType = type;
         renderSignal(StationSignal.AUTHORIZE);
         showScannerReading();
-        title.setText("Checking");
+        title.setText(stopRequest ? "Checking stop" : "Checking");
         subtitle.setText("Please wait");
         setDetail(null);
         authPanel.setVisibility(View.GONE);
 
         IdTokenType.setType(type);
-        IdTokenType.setIdToken(token.trim());
+        IdTokenType.setIdToken(pendingIdToken);
         try {
             toCSMS.sendAuthorizeRequest();
         } catch (JSONException e) {
@@ -408,7 +584,11 @@ public class ProductChargerActivity extends Activity {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                handleAuthorizationResult();
+                if (stopRequest) {
+                    handleStopAuthorizationResult();
+                } else {
+                    handleAuthorizationResult();
+                }
             }
         }, AUTH_RESPONSE_DELAY_MS);
     }
@@ -416,6 +596,8 @@ public class ProductChargerActivity extends Activity {
     private void handleAuthorizationResult() {
         authorizing = false;
         if (myClientEndpoint.getIdInfo().getStatus() == AuthorizationStatusEnumType.Accepted) {
+            activeIdToken = pendingIdToken;
+            activeIdTokenType = pendingIdTokenType;
             showScannerAccepted();
             sendAuthorizedTransactionEvent();
             handler.postDelayed(new Runnable() {
@@ -437,11 +619,39 @@ public class ProductChargerActivity extends Activity {
         }, 2500);
     }
 
+    private void handleStopAuthorizationResult() {
+        authorizing = false;
+        boolean accepted = myClientEndpoint.getIdInfo().getStatus() == AuthorizationStatusEnumType.Accepted;
+        boolean sameToken = pendingIdTokenType == activeIdTokenType && pendingIdToken.equals(activeIdToken);
+        if (accepted && sameToken) {
+            showScannerAccepted();
+            finishCharging(ReasonEnumType.Local, TriggerReasonEnumType.StopAuthorized, "Stopped by authorized IdToken.");
+            return;
+        }
+
+        showScannerRejected();
+        showFault("Stop denied. Present the original IdToken.");
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (evSideCablePlugged) {
+                    showCharging();
+                    handler.postDelayed(chargingTick, 1000);
+                } else {
+                    showSuspended();
+                    handler.removeCallbacks(evConnectionTimeoutRunnable);
+                    handler.postDelayed(evConnectionTimeoutRunnable, getEvConnectionTimeoutSeconds() * 1000L);
+                }
+            }
+        }, 2500);
+    }
+
     private void handleCableConnected() {
         if (state != ProductState.WAIT_FOR_PLUG) {
             return;
         }
 
+        evSideCablePlugged = true;
         state = ProductState.CHARGING;
         title.setText("Starting");
         subtitle.setText("Preparing session");
@@ -482,11 +692,18 @@ public class ProductChargerActivity extends Activity {
     }
 
     private void finishCharging(ReasonEnumType reason, TriggerReasonEnumType triggerReason) {
-        if (state != ProductState.CHARGING) {
+        finishCharging(reason, triggerReason, null);
+    }
+
+    private void finishCharging(ReasonEnumType reason, TriggerReasonEnumType triggerReason, String message) {
+        if (state != ProductState.CHARGING
+                && state != ProductState.STOP_AUTHORIZING
+                && state != ProductState.SUSPENDED) {
             return;
         }
 
         handler.removeCallbacks(chargingTick);
+        handler.removeCallbacks(evConnectionTimeoutRunnable);
         TransactionEventRequest.eventType = TransactionEventEnumType.Ended;
         TransactionEventRequest.triggerReason = triggerReason;
         TransactionType.chargingState = ChargingStateEnumType.Idle;
@@ -502,8 +719,8 @@ public class ProductChargerActivity extends Activity {
 
         String reasonText = reason == ReasonEnumType.SOCLimitReached
                 ? "Target charge reached."
-                : "Stopped by driver.";
-        showComplete(reasonText);
+                : message == null ? "Stopped by driver." : message;
+        showBilling(reasonText);
     }
 
     private void cancelTransaction() {
@@ -568,6 +785,63 @@ public class ProductChargerActivity extends Activity {
         sendTransactionEvent();
     }
 
+    private void handleCostUpdated(String transactionId, float totalCost) {
+        String currentTransactionId = TransactionType.transactionId == null ? "" : TransactionType.transactionId;
+        if (transactionId != null
+                && transactionId.trim().length() > 0
+                && currentTransactionId.length() > 0
+                && !transactionId.equals(currentTransactionId)) {
+            return;
+        }
+
+        csmsCost = totalCost;
+        costFromCsms = true;
+        if (metricsPanel.getVisibility() == View.VISIBLE) {
+            renderMetrics();
+        }
+        if (state == ProductState.BILLING && paymentPanel.getVisibility() == View.VISIBLE) {
+            setDetail(billingDisplayText(billingMessage));
+            renderUpiPayment();
+        }
+    }
+
+    private void handleEvSideCableUnplugged() {
+        if (state != ProductState.CHARGING || !CABLE_PERMANENTLY_ATTACHED) {
+            return;
+        }
+
+        evSideCablePlugged = false;
+        handler.removeCallbacks(chargingTick);
+        showSuspended();
+
+        TransactionEventRequest.eventType = TransactionEventEnumType.Updated;
+        TransactionEventRequest.triggerReason = TriggerReasonEnumType.EVCommunicationLost;
+        TransactionType.chargingState = ChargingStateEnumType.SuspendedEVSE;
+        TransactionType.stoppedReason = null;
+        TransactionType.timeSpentCharging = elapsedSeconds;
+        sendTransactionEvent();
+
+        handler.removeCallbacks(evConnectionTimeoutRunnable);
+        handler.postDelayed(evConnectionTimeoutRunnable, getEvConnectionTimeoutSeconds() * 1000L);
+    }
+
+    private void handleEvSideCableReconnected() {
+        if (state != ProductState.SUSPENDED) {
+            return;
+        }
+
+        evSideCablePlugged = true;
+        handler.removeCallbacks(evConnectionTimeoutRunnable);
+        TransactionEventRequest.eventType = TransactionEventEnumType.Updated;
+        TransactionEventRequest.triggerReason = TriggerReasonEnumType.CablePluggedIn;
+        TransactionType.chargingState = ChargingStateEnumType.Charging;
+        TransactionType.stoppedReason = null;
+        TransactionType.timeSpentCharging = elapsedSeconds;
+        sendTransactionEvent();
+        showCharging();
+        handler.postDelayed(chargingTick, 1000);
+    }
+
     private void updateMeterSnapshot() {
         energyKwh += (VOLTAGE * CURRENT) / 3600000f;
         if (soc < TARGET_SOC) {
@@ -580,10 +854,126 @@ public class ProductChargerActivity extends Activity {
         socMetric.setText(String.format(Locale.US, "%d%%", roundedSoc));
         batteryIndicator.setImageResource(getBatteryIndicatorResource(roundedSoc));
         energyMetric.setText(String.format(Locale.US, "%.2f kWh", energyKwh));
-        costMetric.setText(String.format(Locale.US, "INR %.2f", energyKwh * TARIFF_PER_KWH));
+        costMetric.setText(String.format(Locale.US, "INR %.2f", displayedCost()));
+        timeMetric.setText(formattedElapsedTime());
+    }
+
+    private float displayedCost() {
+        return costFromCsms ? csmsCost : energyKwh * TARIFF_PER_KWH;
+    }
+
+    private String billingSummary() {
+        String transactionId = TransactionType.transactionId == null ? "" : TransactionType.transactionId;
+        if (transactionId.trim().length() == 0) {
+            transactionId = buildPaymentReference();
+        }
+        return String.format(Locale.US,
+                "Transaction %s\nEnergy %.2f kWh | Time %s\nAmount INR %.2f",
+                transactionId,
+                energyKwh,
+                formattedElapsedTime(),
+                displayedCost());
+    }
+
+    private String billingDisplayText(String message) {
+        if (message == null || message.trim().length() == 0) {
+            return billingSummary();
+        }
+        return message.trim() + "\n" + billingSummary();
+    }
+
+    private void renderUpiPayment() {
+        if (paymentPanel == null) {
+            return;
+        }
+
+        currentUpiUri = buildUpiPaymentUri();
+        try {
+            upiQrImage.setImageBitmap(SimpleQrCode.bitmap(currentUpiUri.toString(), 4, 4));
+        } catch (IllegalArgumentException e) {
+            Log.e(TAG, "UPI QR payload could not be rendered", e);
+            upiQrImage.setImageBitmap(null);
+        }
+        upiIdText.setText(String.format(Locale.US,
+                "UPI ID: %s\nAmount: INR %.2f",
+                OWNER_UPI_ID,
+                displayedCost()));
+        paymentPanel.setVisibility(View.VISIBLE);
+    }
+
+    private void hidePaymentPanel() {
+        currentUpiUri = null;
+        if (paymentPanel != null) {
+            paymentPanel.setVisibility(View.GONE);
+        }
+    }
+
+    private Uri buildUpiPaymentUri() {
+        String reference = buildPaymentReference();
+        return new Uri.Builder()
+                .scheme("upi")
+                .authority("pay")
+                .appendQueryParameter("pa", OWNER_UPI_ID)
+                .appendQueryParameter("pn", OWNER_UPI_NAME)
+                .appendQueryParameter("tr", reference)
+                .appendQueryParameter("tn", "EV charging " + reference)
+                .appendQueryParameter("am", String.format(Locale.US, "%.2f", Math.max(0f, displayedCost())))
+                .appendQueryParameter("cu", "INR")
+                .build();
+    }
+
+    private String buildPaymentReference() {
+        if (paymentReference.length() > 0) {
+            return paymentReference;
+        }
+        String transactionId = TransactionType.transactionId == null ? "" : TransactionType.transactionId.trim();
+        String cleaned = transactionId.replaceAll("[^A-Za-z0-9]", "");
+        if (cleaned.length() == 0) {
+            cleaned = String.valueOf(System.currentTimeMillis() % 100000000L);
+        }
+        if (cleaned.length() > 24) {
+            cleaned = cleaned.substring(cleaned.length() - 24);
+        }
+        paymentReference = STATION_ID + cleaned;
+        return paymentReference;
+    }
+
+    private void launchUpiPayment() {
+        if (currentUpiUri == null) {
+            renderUpiPayment();
+        }
+        Intent upiIntent = new Intent(Intent.ACTION_VIEW, currentUpiUri);
+        try {
+            startActivityForResult(Intent.createChooser(upiIntent, "Pay with UPI"), UPI_PAYMENT_REQUEST_CODE);
+        } catch (ActivityNotFoundException e) {
+            subtitle.setText("Scan QR");
+            setDetail(billingSummary()
+                    + "\nNo UPI app is installed on this device. Scan the QR or pay to " + OWNER_UPI_ID + ".");
+        }
+    }
+
+    private String upiResponseValue(String response, String key) {
+        if (response == null || response.length() == 0) {
+            return "";
+        }
+        String[] fields = response.split("&");
+        for (String field : fields) {
+            String[] pair = field.split("=", 2);
+            if (pair.length == 2 && key.equalsIgnoreCase(pair[0])) {
+                return pair[1];
+            }
+        }
+        return "";
+    }
+
+    private String formattedElapsedTime() {
         int minutes = elapsedSeconds / 60;
         int seconds = elapsedSeconds % 60;
-        timeMetric.setText(String.format(Locale.US, "%02d:%02d", minutes, seconds));
+        return String.format(Locale.US, "%02d:%02d", minutes, seconds);
+    }
+
+    private int getEvConnectionTimeoutSeconds() {
+        return DEFAULT_EV_CONNECTION_TIMEOUT_SECONDS;
     }
 
     private int getBatteryIndicatorResource(int socValue) {
@@ -691,11 +1081,26 @@ public class ProductChargerActivity extends Activity {
             public void run() {
                 while (!Thread.currentThread().isInterrupted() && !stopThreads) {
                     try {
-                        if (state == ProductState.WAIT_FOR_PLUG && cablePin.getValue() == 0) {
+                        final boolean cablePlugged = cablePin.getValue() == 0;
+                        if (state == ProductState.WAIT_FOR_PLUG && cablePlugged) {
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
                                     handleCableConnected();
+                                }
+                            });
+                        } else if (state == ProductState.CHARGING && !cablePlugged) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    handleEvSideCableUnplugged();
+                                }
+                            });
+                        } else if (state == ProductState.SUSPENDED && cablePlugged) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    handleEvSideCableReconnected();
                                 }
                             });
                         }
@@ -728,7 +1133,10 @@ public class ProductChargerActivity extends Activity {
             public void run() {
                 while (!Thread.currentThread().isInterrupted() && !stopThreads) {
                     try {
-                        if ((state != ProductState.READY && state != ProductState.AUTHORIZING) || authorizing) {
+                        if ((state != ProductState.READY
+                                && state != ProductState.AUTHORIZING
+                                && state != ProductState.STOP_AUTHORIZING)
+                                || authorizing) {
                             Thread.sleep(250);
                             continue;
                         }
